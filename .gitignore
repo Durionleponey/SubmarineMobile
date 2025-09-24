@@ -11,3 +11,5 @@
 .cxx
 local.properties
 .env
+/frontend/.idea/
+/frontend/.gradle/

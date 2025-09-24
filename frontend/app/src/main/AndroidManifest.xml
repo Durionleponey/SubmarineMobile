@@ -11,8 +11,10 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.Submarine">
+
+        <activity android:name=".auth.Signup" />
         <activity
-            android:name=".MainActivity"
+        android:name=".MainActivity"
             android:exported="true"
             android:label="@string/app_name"
             android:theme="@style/Theme.Submarine">

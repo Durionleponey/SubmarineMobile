@@ -12,8 +12,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.example.submarine.auth.Signup
 import com.example.submarine.ui.theme.SubmarineTheme
+import com.example.submarine.navigation.AppNavigation
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -22,13 +22,16 @@ class MainActivity : ComponentActivity() {
         setContent {
             SubmarineTheme {
                 MainScreen()
+                AppNavigation()
             }
         }
     }
 }
 
 @Composable
-fun MainScreen() {
+fun MainScreen(
+    onNavigateToConversation: () -> Unit = {}
+) {
     val context = LocalContext.current
 
     Scaffold(
@@ -42,12 +45,10 @@ fun MainScreen() {
         ) {
             Text(text = "Submarine ⚠️⚠️⚠️")
 
-            Button(onClick = {
-                val intent = Intent(context, Signup::class.java)
-                context.startActivity(intent)
-            }) {
-                Text("go")
+            Button(onClick = onNavigateToConversation) {
+                Text(text = "Go to Conversation")
             }
+
         }
     }
 }

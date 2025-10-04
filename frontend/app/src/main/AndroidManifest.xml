@@ -13,6 +13,7 @@
         android:theme="@style/Theme.Submarine">
 
         <activity android:name=".auth.Signup" />
+        <activity android:name=".contacts.ContactsActivity" />
         <activity
         android:name=".MainActivity"
             android:exported="true"

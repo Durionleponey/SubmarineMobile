@@ -14,3 +14,4 @@ local.properties
 /frontend/.idea/
 /frontend/.gradle/
 /frontend/gradle
+/backend/node_modules

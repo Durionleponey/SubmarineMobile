@@ -45,12 +45,12 @@ fun MainScreen() {
         ) {
             Text(text = "Submarine ⚠️⚠️⚠️")
 
-  /*          Button(onClick = {
+            Button(onClick = {
                 val intent = Intent(context, Signup::class.java)
                 context.startActivity(intent)
             }) {
                 Text("go")
-            }*/
+            }
             Button(onClick = {
                 val intent = Intent(context, ConversationActivity ::class.java)
                 context.startActivity(intent)

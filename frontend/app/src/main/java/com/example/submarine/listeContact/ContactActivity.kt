@@ -1,6 +1,5 @@
 package com.example.submarine.contacts
 
-import androidx.compose.material3.CenterAlignedTopAppBar
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -8,6 +7,8 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -22,7 +23,7 @@ class ContactsActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             SubmarineTheme {
-                ContactsScreen()
+                ContactsScreen(onBack = { finish() }) // ferme l’activité
             }
         }
     }
@@ -30,7 +31,7 @@ class ContactsActivity : ComponentActivity() {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ContactsScreen() {
+fun ContactsScreen(onBack: () -> Unit) {
     val contacts = listOf(
         Contact("Alice Dupont", "0470 12 34 56"),
         Contact("Bob Martin", "0499 98 76 54"),
@@ -39,8 +40,14 @@ fun ContactsScreen() {
 
     Scaffold(
         topBar = {
-            CenterAlignedTopAppBar(
-                title = { Text("Mes Contacts") })
+            TopAppBar(
+                title = { Text("Mes Contacts") },
+                navigationIcon = { // icône de retour
+                    IconButton(onClick = onBack) {
+                        Icon(Icons.Default.ArrowBack, contentDescription = "Retour")
+                    }
+                }
+            )
         }
     ) { padding ->
         LazyColumn(

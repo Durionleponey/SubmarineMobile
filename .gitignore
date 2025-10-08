@@ -13,3 +13,8 @@ local.properties
 .env
 /frontend/.idea/
 /frontend/.gradle/
+/backend/node_modules
+/frontend/gradle
+
+
+

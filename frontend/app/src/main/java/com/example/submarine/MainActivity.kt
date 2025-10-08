@@ -14,6 +14,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.submarine.auth.Signup
 import com.example.submarine.contacts.ContactsActivity
+import com.example.submarine.conversation.ConversationActivity
+//import com.example.submarine.auth.Signup
 import com.example.submarine.ui.theme.SubmarineTheme
 
 class MainActivity : ComponentActivity() {
@@ -43,12 +45,19 @@ fun MainScreen() {
         ) {
             Text(text = "Submarine ⚠️⚠️⚠️")
 
-            Button(onClick = {
+  /*          Button(onClick = {
                 val intent = Intent(context, Signup::class.java)
                 context.startActivity(intent)
             }) {
                 Text("go")
+            }*/
+            Button(onClick = {
+                val intent = Intent(context, ConversationActivity ::class.java)
+                context.startActivity(intent)
+            }) {
+                Text("Conversation")
             }
+
 
             Button(onClick = {
                 val intent = Intent(context, ContactsActivity::class.java)
@@ -56,6 +65,8 @@ fun MainScreen() {
             }) {
                 Text("Voir mes contacts")
             }
+
+
 
         }
     }

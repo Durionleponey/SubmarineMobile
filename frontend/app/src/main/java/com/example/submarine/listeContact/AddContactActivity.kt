@@ -9,7 +9,9 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.example.submarine.contacts.ContactsScreen
 import com.example.submarine.ui.theme.SubmarineTheme
 
 class AddContactActivity : ComponentActivity() {
@@ -61,5 +63,16 @@ fun AddContactScreen(onBack: () -> Unit) {
                 Text("Envoyer une demande d’ami")
             }
         }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun PreviewContactsScreen() {
+    SubmarineTheme {
+        ContactsScreen(
+            onBack = {}, // fonction de retour à définir
+            onAddFriendClick = {}
+        )
     }
 }

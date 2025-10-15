@@ -21,7 +21,12 @@
 
         <activity android:name=".auth.Signup" />
         <activity android:name=".contacts.ContactsActivity" />
-
+        <activity
+            android:name=".listeContact.AddContactActivity"
+            android:exported="false"
+            android:label="Ajouter un contact"
+            android:theme="@style/Theme.Submarine">
+        </activity>
     </application>
 
 

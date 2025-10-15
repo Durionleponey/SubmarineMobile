@@ -19,6 +19,9 @@ import androidx.compose.ui.unit.sp
 import com.example.submarine.model.Contact
 import com.example.submarine.ui.theme.SubmarineTheme
 import androidx.compose.material.icons.filled.PersonAdd
+import androidx.compose.ui.platform.LocalContext
+import android.content.Intent
+import com.example.submarine.listeContact.AddContactActivity
 
 
 class ContactsActivity : ComponentActivity() {
@@ -26,7 +29,14 @@ class ContactsActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             SubmarineTheme {
-                ContactsScreen(onBack = { finish() }) // ferme l’activité
+                ContactsScreen(
+                    onBack = { finish() },// ferme l'activité
+                    onAddFriendClick = {
+                        // Créez un Intent pour ouvrir AddContactActivity
+                        val intent = Intent(this, AddContactActivity::class.java)
+                        // Démarrez l'activité
+                        startActivity(intent)
+                })
             }
         }
     }
@@ -34,7 +44,9 @@ class ContactsActivity : ComponentActivity() {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ContactsScreen(onBack: () -> Unit) {
+fun ContactsScreen(onBack: () -> Unit, onAddFriendClick: () -> Unit) {
+    val context = LocalContext.current
+
     val temps = 2 // donnée arbitraire mtn mais change après
     val contacts = listOf(
         Contact("Alice Dupont", "Message non lu", "Il y a $temps heures"),
@@ -56,7 +68,7 @@ fun ContactsScreen(onBack: () -> Unit) {
                 },
                         // ajoute la section "actions" pour mettre d'autres icones
                 actions = {
-                    IconButton(onClick = { /* TODO : Naviguer vers l'écran d'ajout d'amis */ }) {
+                    IconButton(onClick =  onAddFriendClick) {
                         Icon(
                             imageVector = Icons.Filled.PersonAdd,
                             contentDescription = "Ajouter un contact"
@@ -106,6 +118,7 @@ fun PreviewContactsScreen() {
     SubmarineTheme {
         ContactsScreen(
             onBack = {}, // fonction de retour à définir
+            onAddFriendClick = {} // fonction à définir
         )
-    }
+}
 }

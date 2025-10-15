@@ -13,10 +13,13 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview   // <-- CET IMPORT
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.submarine.model.Contact
 import com.example.submarine.ui.theme.SubmarineTheme
+import androidx.compose.material.icons.filled.PersonAdd
+
 
 class ContactsActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -32,19 +35,32 @@ class ContactsActivity : ComponentActivity() {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ContactsScreen(onBack: () -> Unit) {
+    val temps = 2 // donnée arbitraire mtn mais change après
     val contacts = listOf(
-        Contact("Alice Dupont", "0470 12 34 56"),
-        Contact("Bob Martin", "0499 98 76 54"),
-        Contact("Charlie Durand", "0485 55 66 77")
+        Contact("Alice Dupont", "Message non lu", "Il y a $temps heures"),
+        Contact("Bob Martin", "Message non lu", "Il y a $temps Jours"),
+        Contact("Charlie Durand", "Message lu", "5/10/2025")
     )
 
     Scaffold(
         topBar = {
             TopAppBar(
                 title = { Text("Mes Contacts") },
-                navigationIcon = { // icône de retour
+                navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Retour")
+                        Icon(
+                            imageVector = Icons.Filled.ArrowBack,
+                            contentDescription = "Retour"
+                        )
+                    }
+                },
+                        // ajoute la section "actions" pour mettre d'autres icones
+                actions = {
+                    IconButton(onClick = { /* TODO : Naviguer vers l'écran d'ajout d'amis */ }) {
+                        Icon(
+                            imageVector = Icons.Filled.PersonAdd,
+                            contentDescription = "Ajouter un contact"
+                        )
                     }
                 }
             )
@@ -72,8 +88,24 @@ fun ContactItem(contact: Contact) {
             }
             .padding(16.dp)
     ) {
-        Text(text = contact.nom, fontSize = 20.sp, fontWeight = FontWeight.Bold)
-        Text(text = contact.numero, fontSize = 16.sp)
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween)
+        {
+            Text(text = contact.nom, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+            Text(text = contact.derniereConnexion, fontSize = 16.sp)
+
+        }
+
+        Text(text = contact.dernierMessage, fontSize = 16.sp)
     }
-    Divider()
+    HorizontalDivider()
+}
+
+@Preview(showBackground = true)
+@Composable
+fun PreviewContactsScreen() {
+    SubmarineTheme {
+        ContactsScreen(
+            onBack = {}, // fonction de retour à définir
+        )
+    }
 }

@@ -9,6 +9,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.ArrowLeft
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.getValue
@@ -20,6 +21,11 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.submarine.ui.theme.SubmarineTheme
+import com.example.submarine.conversation.composants.MessageBubble
+import com.example.submarine.conversation.composants.IconUser
+import com.example.submarine.conversation.composants.Media
+import com.example.submarine.conversation.composants.SendButton
+
 
 data class Message(
     val text: String,
@@ -47,7 +53,6 @@ fun ConversationScreen(
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 IconButton(onClick = onNavigateBack) {
@@ -56,6 +61,8 @@ fun ConversationScreen(
                         contentDescription = "Back"
                     )
                 }
+                IconUser(modifier = Modifier.size(45.dp))
+                Spacer(modifier = Modifier.width(8.dp)) //espace entre l'image et le nom du contact
                 Text(
                     text = contactName,
                     style = MaterialTheme.typography.titleLarge
@@ -86,6 +93,7 @@ fun ConversationScreen(
                     .padding(horizontal = 8.dp, vertical = 4.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
+                Media(modifier = Modifier.size(40.dp))
                 OutlinedTextField(
                     value = textState,
                     onValueChange = { textState = it },
@@ -98,47 +106,21 @@ fun ConversationScreen(
                         unfocusedIndicatorColor = Color.Transparent
                     )
                 )
-                IconButton(
+                SendButton(
+                    isEnabled = textState.isNotBlank(),
                     onClick = {
                         if (textState.isNotBlank()) {
-                            messagesList.add(Message(textState, isSentByMe = true))
+                            messagesList.add(Message(textState, true))
                             textState = ""
                         }
-                    },
-                    enabled = textState.isNotBlank()
-                ) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Filled.Send,
-                        contentDescription = "Envoyer",
-                        tint = if (textState.isNotBlank()) Color.Blue else Color.Gray
-                    )
-                }
+                    }
+                )
+
             }
         }
     }
 }
 
-@Composable
-fun MessageBubble(message: Message) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 4.dp),
-        horizontalArrangement = if (message.isSentByMe) Arrangement.End else Arrangement.Start
-    ) {
-        Box(
-            modifier = Modifier
-                .clip(RoundedCornerShape(16.dp))
-                .background(if (message.isSentByMe) Color.DarkGray else Color.LightGray)
-        ) {
-            Text(
-                text = message.text,
-                color = if (message.isSentByMe) Color.White else Color.Black,
-                modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp)
-            )
-        }
-    }
-}
 
 @Preview(showBackground = true, name = "Conversation Screen Preview")
 @Composable

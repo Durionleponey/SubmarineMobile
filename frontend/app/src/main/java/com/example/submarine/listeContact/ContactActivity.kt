@@ -44,7 +44,9 @@ fun ContactsScreen() {
             Contact("Alice Dupont", "0470 12 34 56"),
             Contact("Bob Martin", "0499 98 76 54"),
             Contact("Charlie Durand", "0485 55 66 77"),
-            Contact("David Leroy", "0488 77 55 22")
+            Contact("David Leroy", "0488 77 55 22"),
+            Contact("LeBron Raymond James", "0488 23 32 23")
+
         )
     }
 

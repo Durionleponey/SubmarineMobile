@@ -1,6 +1,5 @@
 package com.example.submarine.contacts
 
-import androidx.compose.material3.CenterAlignedTopAppBar
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -8,8 +7,16 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.Divider
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -31,25 +38,60 @@ class ContactsActivity : ComponentActivity() {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ContactsScreen() {
-    val contacts = listOf(
-        Contact("Alice Dupont", "0470 12 34 56"),
-        Contact("Bob Martin", "0499 98 76 54"),
-        Contact("Charlie Durand", "0485 55 66 77")
-    )
+    // TODO: remplacera par les données du backend
+    val contacts = remember {
+        listOf(
+            Contact("Alice Dupont", "0470 12 34 56"),
+            Contact("Bob Martin", "0499 98 76 54"),
+            Contact("Charlie Durand", "0485 55 66 77"),
+            Contact("David Leroy", "0488 77 55 22")
+        )
+    }
+
+    // État de la recherche
+    var searchQuery by remember { mutableStateOf("") }
+
+    // Filtrage insensible à la casse sur le nom
+    val filteredContacts = remember(searchQuery, contacts) {
+        contacts.filter { it.nom.contains(searchQuery, ignoreCase = true) }
+    }
 
     Scaffold(
         topBar = {
             CenterAlignedTopAppBar(
-                title = { Text("Mes Contacts") })
+                title = { Text("Mes Contacts") }
+            )
         }
     ) { padding ->
-        LazyColumn(
+        Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
         ) {
-            items(contacts) { contact ->
-                ContactItem(contact)
+            // Barre de recherche avec icône loupe
+            OutlinedTextField(
+                value = searchQuery,
+                onValueChange = { searchQuery = it },
+                label = { Text("Rechercher dans Submarine") },
+                leadingIcon = { Icon(Icons.Filled.Search, contentDescription = "Recherche") },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(8.dp)
+            )
+
+            if (filteredContacts.isEmpty()) {
+                Text(
+                    text = "Aucun contact trouvé",
+                    modifier = Modifier.padding(16.dp)
+                )
+            } else {
+                LazyColumn(
+                    modifier = Modifier.fillMaxSize()
+                ) {
+                    items(filteredContacts) { contact ->
+                        ContactItem(contact)
+                    }
+                }
             }
         }
     }
@@ -61,7 +103,7 @@ fun ContactItem(contact: Contact) {
         modifier = Modifier
             .fillMaxWidth()
             .clickable {
-                // plus tard : ouvrir ChatActivity(contact.nom)
+                // TODO: plus tard : ouvrir la conversation ou la fiche du contact
             }
             .padding(16.dp)
     ) {

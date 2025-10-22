@@ -1,0 +1,87 @@
+# Indicates exactly one field must be supplied and this field must not be `null`.
+directive @oneOf on INPUT_OBJECT
+
+type User {
+  _id: ID!
+  pseudo: String!
+  email: String!
+}
+
+type Message {
+  _id: ID!
+  content: String!
+  createdAt: DateTime!
+  userId: String!
+  userPseudo: String!
+  chatId: String!
+  views: [String!]!
+  latitude: Float
+  longitude: Float
+  radius: Float
+  city: String
+}
+
+# A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
+scalar DateTime
+
+type Chat {
+  _id: ID!
+  userId: String!
+  isPrivate: Boolean!
+  userIds: [String!]!
+  name: String
+  lastMessage: Message
+}
+
+type Query {
+  users(search: String!): [User!]!
+  user(id: String!): User!
+  userMail(email: String!): User!
+  me: User!
+  chatss: [Chat!]!
+  chat(_id: String!): Chat!
+  getMessages(chatId: String!): [Message!]!
+  getMessageViewers(messageId: String!, chatId: String!): [String!]!
+}
+
+type Mutation {
+  createUser(createUserInput: CreateUserInput!): User!
+  updateUser(updateUserInput: UpdateUserInput!): User!
+  removeUser: User!
+  createChat(createChatInput: CreateChatInput!): Chat!
+  leaveAllChat: Int!
+  addUserToChat(email: String!, chatId: String!): String!
+  removeChat(id: Int!): Chat!
+  createMessage(createMessageInput: CreateMessageInput!): Message!
+  viewMessage(messageId: String, chatId: String!): String!
+}
+
+input CreateUserInput {
+  email: String!
+  password: String!
+}
+
+input UpdateUserInput {
+  email: String
+  password: String
+}
+
+input CreateChatInput {
+  isPrivate: Boolean!
+  userIds: [String!]
+  name: String
+}
+
+input CreateMessageInput {
+  content: String!
+  chatId: String!
+  latitude: Float
+  longitude: Float
+  radius: Float
+  city: String
+}
+
+type Subscription {
+  chatCreated: Chat!
+  messageCreated(chatId: String!): Message!
+}

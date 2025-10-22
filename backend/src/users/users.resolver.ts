@@ -47,6 +47,7 @@ export class UsersResolver {
   ) {
     return this.usersService.update(user._id, updateUserInput);
   }
+
   @Mutation(() => User)
   @UseGuards(GqlAuthGuard)
   updateBio(
@@ -64,6 +65,16 @@ export class UsersResolver {
       @CurrentUser() user: TokenPayload) {
     return this.usersService.remove(user._id);
   }
+  
+  @Query(() => String, { name: 'getBio' })
+  @UseGuards(GqlAuthGuard)
+  async getBio(@CurrentUser() user: TokenPayload) {
+    const foundUser = await this.usersService.findOne(user._id);
+    return foundUser.bio ?? ""; // retourne la bio actuelle ou une chaîne vide
+  }
+  
+
+
 
   @Query(() => User, { name: 'me' })
   @UseGuards(GqlAuthGuard)

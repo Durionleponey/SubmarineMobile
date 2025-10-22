@@ -22,7 +22,7 @@ export class User extends AbstractEntity {
     password: string;
 
     @Prop({ maxlength: 150 })//prop mean this thing have to be stored in the db prop -> proprity a proprety have to be stored
-    @Field()//accessible via a graphQL request, field comme from expose field
+    @Field({ nullable: true })//accessible via a graphQL request, field comme from expose field
     bio: string;
 
 }

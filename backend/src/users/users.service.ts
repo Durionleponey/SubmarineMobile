@@ -109,4 +109,8 @@ export class UsersService {
     });
   }
 
+  async getBio(_id: string) {
+    return this.userRepository.findOne({ _id: _id });
+  }
+
 }

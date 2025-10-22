@@ -8,6 +8,7 @@ import {GqlAuthGuard} from "../auth/guards/gql-auth.guard";
 import {CurrentUser} from "../auth/current-user.decorator";
 import {TokenPayload} from "../auth/token-payload.interface";
 import * as sea from "node:sea";
+import {UpdateUserBio} from "./dto/update-user-input";
 
 @Resolver(() => User)
 export class UsersResolver {
@@ -20,7 +21,7 @@ export class UsersResolver {
 
   @Query(() => [User], { name: 'users' })
   @UseGuards(GqlAuthGuard)
-  findAll(@Args('search', { type: () => String! }) search: string) {
+  findAll(@Args('search', { type: () => String!}) search: string) {
     return this.usersService.findAll(search);
   }
 
@@ -45,6 +46,14 @@ export class UsersResolver {
       @CurrentUser() user: TokenPayload,
   ) {
     return this.usersService.update(user._id, updateUserInput);
+  }
+  @Mutation(() => User)
+  @UseGuards(GqlAuthGuard)
+  updateBio(
+      @Args('updateUserBio') updateUserBio: UpdateUserBio,
+      @CurrentUser() user: TokenPayload,
+  ) {
+    return this.usersService.updateBio(user._id,  updateUserBio );
   }
 
 

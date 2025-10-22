@@ -18,8 +18,12 @@ export class User extends AbstractEntity {
     email:string;
 
     @Prop()// here with a password we cannot expose it so no field || if you try to query pasword you will gate a error
-    //@Field()//just to test
+    // @Field()//just to test
     password: string;
+
+    @Prop({ maxlength: 150 })//prop mean this thing have to be stored in the db prop -> proprity a proprety have to be stored
+    @Field()//accessible via a graphQL request, field comme from expose field
+    bio: string;
 
 }
 

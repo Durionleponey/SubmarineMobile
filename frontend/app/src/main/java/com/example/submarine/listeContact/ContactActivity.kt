@@ -49,9 +49,9 @@ fun ContactsScreen(onBack: () -> Unit, onAddFriendClick: () -> Unit) {
 
     val temps = 2 // donnée arbitraire mtn mais change après
     val contacts = listOf(
-        Contact("Alice Dupont", "Message non lu", "Il y a $temps heures"),
-        Contact("Bob Martin", "Message non lu", "Il y a $temps Jours"),
-        Contact("Charlie Durand", "Message lu", "5/10/2025")
+        Contact("Martin Dupont", "Message non lu", "Il y a $temps heures"),
+        Contact("Bob jones", "Message non lu", "Il y a $temps Jours"),
+        Contact("Mick Gordon", "Message lu", "5/10/2025")
     )
 
     Scaffold(

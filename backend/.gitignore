@@ -1,0 +1,25 @@
+# Fichiers de dépendances
+node_modules/
+
+# Fichiers de build
+dist/
+build/
+
+# Fichiers de logs
+logs/
+*.log
+
+# Fichiers d'environnement
+.env
+db/
+
+# Fichiers de configuration d'IDE
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+
+# Fichiers système
+.DS_Store
+Thumbs.db

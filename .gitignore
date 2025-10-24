@@ -5,7 +5,7 @@
 /local.properties
 /.idea
 .DS_Store
-/build
+**/build
 /captures
 .externalNativeBuild
 .cxx
@@ -13,3 +13,5 @@ local.properties
 .env
 /frontend/.idea/
 /frontend/.gradle/
+/backend/node_modules
+/frontend/gradle

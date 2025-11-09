@@ -1,0 +1,6 @@
+query GetUserByID($userId: String!) {
+    user(id: $userId) {
+        _id
+        pseudo
+    }
+}

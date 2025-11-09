@@ -1,6 +1,5 @@
 package com.example.submarine.network
 
 object TokenProvider {
-    var token: String? = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2OGY4ZmIyNzg3MjFlYTg0MGU1NWU0NjEiLCJlbWFpbCI6InRlc3Q2QGV4YW1wbGUuY29tIiwiaWF0IjoxNzYxMTY4NTA5LCJleHAiOjE3NjExNzIxMDl9.rGaqxIdZB8TOPac_lsKxy8G_iM-5B0F3wqqfOQnuVAQ"
-
+    var token: String? = null
 }

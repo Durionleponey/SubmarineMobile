@@ -16,6 +16,13 @@ async function bootstrap() {
   const configService = app.get(ConfigService);
   app.use(cookieParser());//to parse user cookie
 
-  await app.listen(process.env.PORT ?? configService.getOrThrow('PORT'));//port config
+  app.enableCors({
+    origin: ['http://localhost:3000', 'http://192.168.1.43'], // l’URL de ton front (ex: React)
+    credentials: true, // 🔥 indispensable pour les cookies
+  });
+  
+
+  await app.listen(process.env.PORT ?? configService.getOrThrow('PORT'),
+  '0.0.0.0');//port config
 }
 bootstrap();//idk meaby to start the back

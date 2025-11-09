@@ -16,7 +16,6 @@ class EditBioViewModel : ViewModel() {
     val username = MutableStateFlow("Bio")
     val bio = MutableStateFlow("")
 
-
     private val _updateStatus = MutableStateFlow<String?>(null)
     val updateStatus = _updateStatus.asStateFlow()
 
@@ -50,7 +49,8 @@ class EditBioViewModel : ViewModel() {
                     variables = mapOf("bio" to bio.value)
                 )
 
-                val response = RetrofitInstance.api.updateBio(
+                // ✅ Utilise bien l’API GraphQL
+                val response = RetrofitInstance.bioApi.updateBio(
                     token = "Bearer $token",
                     request = request
                 )
@@ -80,24 +80,17 @@ class EditBioViewModel : ViewModel() {
         viewModelScope.launch {
             try {
                 val query = """
-                    
-                      query { getBio }
-                    
-
+                    query { getBio }
                 """.trimIndent()
-                Log.d("GraphQL", "✉️ Requête GraphQL : $query")
-
 
                 val request = GraphQLRequest(query = query)
                 Log.d("GraphQL", "✉️ Requête GraphQL : $request")
 
-
-                val response = RetrofitInstance.api.queryGraphQL(
+                // ✅ Utilise ici aussi l’API GraphQL
+                val response = RetrofitInstance.bioApi.queryGraphQL(
                     token = "Bearer $token",
                     request = request
                 )
-                Log.d("GraphQL", "✉️ Requête GraphQL : $response")
-
 
                 Log.d("GraphQL", "📡 Code HTTP = ${response.code()}")
                 Log.d("GraphQL", "🧾 Body = ${response.body()}")

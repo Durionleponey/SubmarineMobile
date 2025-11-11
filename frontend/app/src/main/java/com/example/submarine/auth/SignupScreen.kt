@@ -7,7 +7,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import com.example.submarine.bio.EditBioActivity
+import com.example.submarine.contacts.ContactsActivity
 import com.example.submarine.network.RetrofitInstance
 import com.example.submarine.network.LoginRequest
 import com.example.submarine.network.TokenProvider
@@ -20,6 +20,7 @@ import kotlinx.coroutines.withContext
 fun SignupScreen() {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+    var errorMessage by remember { mutableStateOf<String?>(null) } // 🟠 variable pour le message d’erreur
     val context = LocalContext.current
 
     Column(
@@ -44,6 +45,15 @@ fun SignupScreen() {
             modifier = Modifier.fillMaxWidth()
         )
 
+        // 🔴 Affiche le message d'erreur s'il y en a un
+        if (errorMessage != null) {
+            Text(
+                text = errorMessage!!,
+                color = MaterialTheme.colorScheme.error,
+                style = MaterialTheme.typography.bodyMedium
+            )
+        }
+
         Button(
             onClick = {
                 CoroutineScope(Dispatchers.IO).launch {
@@ -52,13 +62,16 @@ fun SignupScreen() {
                         TokenProvider.token = response.body()?.token
                         println("✅ Token reçu : ${TokenProvider.token}")
 
-                        // 🟢 Redirige vers EditBioActivity après connexion réussie
                         withContext(Dispatchers.Main) {
-                            val intent = Intent(context, EditBioActivity::class.java)
+                            errorMessage = null // efface le message d’erreur précédent
+                            val intent = Intent(context, ContactsActivity::class.java)
                             context.startActivity(intent)
                         }
                     } else {
                         println("❌ Erreur de connexion : ${response.code()}")
+                        withContext(Dispatchers.Main) {
+                            errorMessage = "Email ou mot de passe incorrect."
+                        }
                     }
                 }
             },

@@ -16,11 +16,13 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import androidx.activity.ComponentActivity
+
 
 @Composable
 fun LoginScreen() {
     val context = LocalContext.current
-    val activity = (LocalContext.current as? Activity)
+    val activity = context as? ComponentActivity
     val intent = activity?.intent
 
     val prefillEmail = intent?.getStringExtra("email") ?: ""
@@ -97,3 +99,4 @@ fun LoginScreen() {
         }
     }
 }
+

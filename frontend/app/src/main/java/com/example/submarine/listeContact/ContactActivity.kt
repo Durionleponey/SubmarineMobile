@@ -61,7 +61,7 @@ fun ContactsScreen(
             Contact("Alice", "Lambert", "alice_waves", "J'adore le monde sous-marin."),
             Contact("Bob", "Jones", "bobby_j", "Joyeux anniversaire bébé."),
             Contact("Lebron", "King James", "KingJames", "Je suis la définition de l'expression 'le travail paye''"),
-            Contact("Kevin", "Durand", "k_durand", "Sad ajd.."),
+            Contact("Kevin", "Durand", "kd_35", "Sad ajd.."),
         )
     }
 

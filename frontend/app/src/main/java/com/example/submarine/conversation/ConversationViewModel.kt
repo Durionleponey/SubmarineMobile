@@ -27,6 +27,7 @@ class ConversationViewModel : ViewModel() {
             Log.d("ConversationViewModel", "userPseudo = $userPseudo")
             _userPseudo.value = userPseudo ?: "User inconnu"
 
+
         }
     }
 

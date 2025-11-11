@@ -87,7 +87,7 @@ fun LoginScreen() {
                             context.startActivity(intent)
                         }
                     } else {
-                        println("❌ Erreur de connexion : ${response.code()}")
+                        println("❌ Erreur lors de la connexion : ${response.errorBody()?.string()}")
                         withContext(Dispatchers.Main) {
                             errorMessage = "Email ou mot de passe incorrect."
                         }

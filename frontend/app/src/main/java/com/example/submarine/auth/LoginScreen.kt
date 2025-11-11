@@ -1,6 +1,5 @@
 package com.example.submarine.auth
 
-import android.app.Activity
 import android.content.Intent
 import androidx.activity.ComponentActivity
 import android.util.Log
@@ -30,7 +29,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import androidx.activity.ComponentActivity
 
 
 

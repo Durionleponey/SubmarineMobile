@@ -1,15 +1,26 @@
 package com.example.submarine.auth
 
 import android.content.Intent
-import androidx.compose.foundation.layout.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Button
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.example.submarine.contacts.ContactsActivity
-import com.example.submarine.network.RetrofitInstance
 import com.example.submarine.network.LoginRequest
+import com.example.submarine.network.RetrofitInstance
 import com.example.submarine.network.TokenProvider
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -20,7 +31,7 @@ import kotlinx.coroutines.withContext
 fun SignupScreen() {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
-    var errorMessage by remember { mutableStateOf<String?>(null) } // 🟠 variable pour le message d’erreur
+    var errorMessage by remember { mutableStateOf<String?>(null) }
     val context = LocalContext.current
 
     Column(
@@ -45,7 +56,6 @@ fun SignupScreen() {
             modifier = Modifier.fillMaxWidth()
         )
 
-        // 🔴 Affiche le message d'erreur s'il y en a un
         if (errorMessage != null) {
             Text(
                 text = errorMessage!!,
@@ -63,7 +73,7 @@ fun SignupScreen() {
                         println("✅ Token reçu : ${TokenProvider.token}")
 
                         withContext(Dispatchers.Main) {
-                            errorMessage = null // efface le message d’erreur précédent
+                            errorMessage = null
                             val intent = Intent(context, ContactsActivity::class.java)
                             context.startActivity(intent)
                         }

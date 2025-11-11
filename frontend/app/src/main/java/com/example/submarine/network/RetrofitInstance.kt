@@ -8,8 +8,10 @@ import retrofit2.converter.gson.GsonConverterFactory
 
 object RetrofitInstance {
 
-    private const val BASE_URL = "http://10.0.2.2:4000/" // ton backend local
+    // 🧩 Adresse de ton backend (Android Emulator → localhost)
+    private const val BASE_URL = "http://10.0.2.2:4000/"
 
+    // 🔐 Ajoute automatiquement le token JWT dans chaque requête si présent
     private val authInterceptor = Interceptor { chain ->
         val requestBuilder = chain.request().newBuilder()
         TokenProvider.token?.let { token ->
@@ -18,16 +20,18 @@ object RetrofitInstance {
         chain.proceed(requestBuilder.build())
     }
 
+    // 🧾 Intercepteur pour afficher les requêtes/réponses dans Logcat
     private val logging = HttpLoggingInterceptor().apply {
         level = HttpLoggingInterceptor.Level.BODY
     }
 
+    // ⚙️ Configuration du client HTTP commun
     private val client = OkHttpClient.Builder()
         .addInterceptor(authInterceptor)
         .addInterceptor(logging)
         .build()
 
-    // 🔹 Instance Retrofit pour les appels REST (auth)
+    // 🔹 Instance Retrofit pour les appels REST (authentification, etc.)
     val authApi: AuthApiService by lazy {
         Retrofit.Builder()
             .baseUrl(BASE_URL)
@@ -37,13 +41,13 @@ object RetrofitInstance {
             .create(AuthApiService::class.java)
     }
 
-    // 🔹 Instance Retrofit pour les appels GraphQL (bio, etc.)
-    val bioApi: BioApiService by lazy {
+    // 🔹 Instance Retrofit pour les appels GraphQL génériques (bio, pseudo, etc.)
+    val graphqlApi: GraphQLApiService by lazy {
         Retrofit.Builder()
             .baseUrl(BASE_URL)
             .addConverterFactory(GsonConverterFactory.create())
             .client(client)
             .build()
-            .create(BioApiService::class.java)
+            .create(GraphQLApiService::class.java)
     }
 }

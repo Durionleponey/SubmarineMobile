@@ -1,20 +1,10 @@
 package com.example.submarine.auth
 
+import android.app.Activity
 import android.content.Intent
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Button
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
@@ -28,11 +18,17 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 @Composable
-fun SignupScreen() {
-    var email by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
-    var errorMessage by remember { mutableStateOf<String?>(null) }
+fun LoginScreen() {
     val context = LocalContext.current
+    val activity = (LocalContext.current as? Activity)
+    val intent = activity?.intent
+
+    val prefillEmail = intent?.getStringExtra("email") ?: ""
+    val prefillPassword = intent?.getStringExtra("password") ?: ""
+
+    var email by remember { mutableStateOf(prefillEmail) }
+    var password by remember { mutableStateOf(prefillPassword) }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
 
     Column(
         modifier = Modifier
@@ -87,7 +83,17 @@ fun SignupScreen() {
             },
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text("GO!")
+            Text("Login")
+        }
+
+        OutlinedButton(
+            onClick = {
+                val intent = Intent(context, SignUpActivity::class.java)
+                context.startActivity(intent)
+            },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("Create a new account")
         }
     }
 }

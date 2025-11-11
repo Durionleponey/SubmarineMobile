@@ -12,10 +12,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.example.submarine.auth.Signup
+import com.example.submarine.auth.SignUpScreen
 import com.example.submarine.contacts.ContactsActivity
 import com.example.submarine.conversation.ConversationActivity
-//import com.example.submarine.auth.Signup
+import com.example.submarine.auth.LoginActivity
 import com.example.submarine.ui.theme.SubmarineTheme
 
 class MainActivity : ComponentActivity() {
@@ -45,12 +45,14 @@ fun MainScreen() {
         ) {
             Text(text = "Submarine ⚠️⚠️⚠️")
 
+
             Button(onClick = {
-                val intent = Intent(context, Signup::class.java)
+                val intent = Intent(context, LoginActivity::class.java)
                 context.startActivity(intent)
             }) {
-                Text("go")
+                Text("Login Account")
             }
+
             Button(onClick = {
                 val intent = Intent(context, ConversationActivity ::class.java)
                 context.startActivity(intent)

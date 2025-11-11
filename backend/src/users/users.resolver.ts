@@ -19,14 +19,14 @@ export class UsersResolver {
   }
 
   @Query(() => [User], { name: 'users' })
-  @UseGuards(GqlAuthGuard)
+  //@UseGuards(GqlAuthGuard)
   findAll(@Args('search', { type: () => String! }) search: string) {
     return this.usersService.findAll(search);
   }
 
 
   @Query(() => User, { name: 'user' })
-  @UseGuards(GqlAuthGuard)//test
+  //@UseGuards(GqlAuthGuard)//test
   findOne(@Args('id', { type: () => String }) id: string) {
     return this.usersService.findOne(id);
   }
@@ -39,7 +39,7 @@ export class UsersResolver {
   }
 
   @Mutation(() => User)
-  @UseGuards(GqlAuthGuard)
+  //@UseGuards(GqlAuthGuard)
   updateUser(
       @Args('updateUserInput') updateUserInput: UpdateUserInput,
       @CurrentUser() user: TokenPayload,
@@ -49,7 +49,7 @@ export class UsersResolver {
 
 
   @Mutation(() => User)
-  @UseGuards(GqlAuthGuard)
+  //@UseGuards(GqlAuthGuard)
   removeUser(
       //@Args('id') id: string,
       @CurrentUser() user: TokenPayload) {
@@ -57,7 +57,7 @@ export class UsersResolver {
   }
 
   @Query(() => User, { name: 'me' })
-  @UseGuards(GqlAuthGuard)
+  //@UseGuards(GqlAuthGuard)
   getMe(@CurrentUser() user: TokenPayload) {//getMe will return the current login user idk how it's work but it's work
     return user;
   }

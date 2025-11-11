@@ -80,4 +80,6 @@ dependencies {
     implementation(libs.apollo.runtime)
     implementation(libs.apollo.api)
     implementation(libs.apollo.adapters)
+    implementation("com.apollographql.apollo3:apollo-ws-transport:3.8.2")
+
 }

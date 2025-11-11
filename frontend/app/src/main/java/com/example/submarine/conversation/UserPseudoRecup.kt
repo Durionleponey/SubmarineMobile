@@ -1,6 +1,7 @@
 package com.example.submarine.conversation
 
 
+import android.util.Log
 import com.apollographql.apollo3.exception.ApolloException
 import com.example.submarine.graphql.GetUserByIDQuery
 import com.example.submarine.network.Apollo
@@ -15,14 +16,22 @@ import com.example.submarine.network.Apollo
 class UserPseudoRecup{
 
     suspend fun fetchUser(userId: String): String? {
+        Log.d("UserPseudoRecup", "fetchUser: $userId")
         try {
             val response = Apollo.apolloClient
                 .query(GetUserByIDQuery(userId = userId))
                 .execute()
+            if (response.hasErrors()) {
+                Log.d("UserPseudoRecup", "fetchUser: ${response.errors}")
+                return null
+            }
+            val pesudo = response.data?.user?.pseudo
+            Log.d("UserPseudoRecup", "fetchUser: $pesudo")
 
-            return response.data?.user?.pseudo
+            return pesudo
         } catch (e: ApolloException) {
-            println("erreur recuperation pseudo")
+
+            Log.d("UserPseudoRecup", "fetchUser ECHEC: ${e.message}")
             return null
 
         }

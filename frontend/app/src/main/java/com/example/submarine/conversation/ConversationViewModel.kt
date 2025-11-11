@@ -1,5 +1,6 @@
 package com.example.submarine.conversation
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -19,8 +20,11 @@ class ConversationViewModel : ViewModel() {
      */
 
     fun chargePseudo(userId: String) {
+        Log.d("ConversationViewModel", "chargePseudo() called with: userId = $userId")
         viewModelScope.launch {
             val userPseudo = userPseudoRecup.fetchUser(userId)
+
+            Log.d("ConversationViewModel", "userPseudo = $userPseudo")
             _userPseudo.value = userPseudo ?: "user inconnu"
 
         }

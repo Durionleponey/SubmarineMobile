@@ -33,6 +33,8 @@ class ConversationActivity : ComponentActivity() {
             finish()
             return
         }else{
+
+            Log.d(TAG, "L'ID de l'utilisateur est : $userId")
             viewModel.chargePseudo(userId)
 
         }

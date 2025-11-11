@@ -16,6 +16,7 @@ import com.apollographql.apollo3.api.Optional
 class ChatSessionStarter (userIds: List<String>, isPrivate: Boolean, name: String? = null) {
 
     suspend fun makeChat(userIds: List<String>?, isPrivate: Boolean, name: String? = null): Result<CreateTestGroupMutation.CreateChat?> {
+
         Log.d("makeChat", "makeChat avec: $userIds et privée $isPrivate")
         try {
             val response = apolloClient

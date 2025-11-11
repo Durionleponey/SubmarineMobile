@@ -82,6 +82,7 @@ fun SignUpScreen() {
                             context.startActivity(intent)
                         } else {
                             message = "❌ Error creating account: invalid email or password is not secure enough"
+                            message = "❌ Error: ${response.errorBody()?.string() ?: response.message()}"
                         }
                     }
                 }

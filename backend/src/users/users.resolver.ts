@@ -27,7 +27,7 @@ export class UsersResolver {
 
 
   @Query(() => User, { name: 'user' })
- // @UseGuards(GqlAuthGuard)//test a reactiver quand AUTHENTIFICATION marchera
+  @UseGuards(GqlAuthGuard)//test a reactiver quand AUTHENTIFICATION marchera
   findOne(@Args('id', { type: () => String }) id: string) {
     return this.usersService.findOne(id);
   }

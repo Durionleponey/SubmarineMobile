@@ -2,6 +2,7 @@ package com.example.submarine.auth
 
 import android.content.Intent
 import androidx.activity.ComponentActivity
+import android.util.Log
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -76,10 +77,10 @@ fun LoginScreen() {
         Button(
             onClick = {
                 CoroutineScope(Dispatchers.IO).launch {
-                    val response = RetrofitInstance.authApi.login(LoginRequest(email, password))
+                    val response = RetrofitInstance.authApi.login(LoginRequest(email.trim(), password))
                     if (response.isSuccessful) {
                         TokenProvider.token = response.body()?.token
-                        println("✅ Token reçu : ${TokenProvider.token}")
+                        Log.d("API", "Token reçu : ${TokenProvider.token}")
 
                         withContext(Dispatchers.Main) {
                             errorMessage = null
@@ -88,6 +89,7 @@ fun LoginScreen() {
                         }
                     } else {
                         println("❌ Erreur lors de la connexion : ${response.errorBody()?.string()}")
+                        Log.e("auth","❌ Erreur de connexion : ${response.code()}")
                         withContext(Dispatchers.Main) {
                             errorMessage = "Email ou mot de passe incorrect."
                         }

@@ -77,9 +77,9 @@ dependencies {
     implementation("androidx.compose.material:material-icons-core:1.7.8")
     implementation("androidx.compose.material:material-icons-extended:1.7.8")
 
+
+    implementation(libs.apollo.adapters)
     implementation(libs.apollo.runtime)
     implementation(libs.apollo.api)
-    implementation(libs.apollo.adapters)
-    implementation("com.apollographql.apollo3:apollo-ws-transport:3.8.2")
 
 }

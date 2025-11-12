@@ -1,33 +1,47 @@
 package com.example.submarine.auth
 
 import android.content.Intent
-import androidx.compose.foundation.layout.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import android.util.Log
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Button
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import com.example.submarine.network.GraphQLRequest
+import com.example.submarine.contacts.ContactsActivity
+import com.example.submarine.network.LoginRequest
 import com.example.submarine.network.RetrofitInstance
+import com.example.submarine.network.TokenProvider
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 @Composable
-fun SignUpScreen() {
+fun SignupScreen() {
     var email by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
-    var message by remember { mutableStateOf<String?>(null) }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
     val context = LocalContext.current
 
     Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(24.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+        verticalArrangement = Arrangement.spacedBy(24.dp)
     ) {
-        Text("Create Account", style = MaterialTheme.typography.headlineMedium)
+        Text(text = "Login", style = MaterialTheme.typography.headlineMedium)
 
         OutlinedTextField(
             value = email,
@@ -43,57 +57,41 @@ fun SignUpScreen() {
             modifier = Modifier.fillMaxWidth()
         )
 
+        if (errorMessage != null) {
+            Text(
+                text = errorMessage!!,
+                color = MaterialTheme.colorScheme.error,
+                style = MaterialTheme.typography.bodyMedium
+            )
+        }
+
         Button(
             onClick = {
                 CoroutineScope(Dispatchers.IO).launch {
-                    val mutation = """
-                        mutation {
-                          createUser(createUserInput: {
-                            email: "$email",
-                            password: "$password"
-                          }) {
-                            _id
-                            email
-                            pseudo
-                            bio
-                          }
-                        }
-                    """.trimIndent()
+                    val response = RetrofitInstance.authApi.login(LoginRequest(email.trim(), password))
+                    if (response.isSuccessful) {
+                        TokenProvider.token = response.body()?.token
+                        Log.d("API", "Token reçu : ${TokenProvider.token}")
 
-                    val request = GraphQLRequest(query = mutation)
-
-                    val response = RetrofitInstance.graphqlApi.executeGraphQL<Map<String, Any>>(
-                        token = "",
-                        request = request
-                    )
-
-                    withContext(Dispatchers.Main) {
-                        if (response.isSuccessful && response.body()?.data != null) {
-                            val user = response.body()?.data?.get("createUser") as? Map<*, *>
-                            val userEmail = user?.get("email") as? String
-                            val userPseudo = user?.get("pseudo") as? String
-                            message = "✅ Account created! Welcome $userPseudo ($userEmail)"
-
-                            // Redirection vers la page de login avec préremplissage
-                            val intent = Intent(context, LoginActivity::class.java).apply {
-                                putExtra("email", email)
-                                putExtra("password", password)
-                            }
+                        withContext(Dispatchers.Main) {
+                            errorMessage = null
+                            val intent = Intent(context, ContactsActivity::class.java)
                             context.startActivity(intent)
-                        } else {
-                            message = "❌ Error creating account: invalid email or password is not secure enough"
-                            message = "❌ Error: ${response.errorBody()?.string() ?: response.message()}"
+
+                        }
+                    } else {
+                        message = "❌ Error creating account: invalid email or password is not secure enough"
+
+                        Log.e("auth","❌ Erreur de connexion : ${response.code()}")
+                        withContext(Dispatchers.Main) {
+                            errorMessage = "Email ou mot de passe incorrect."
                         }
                     }
                 }
             },
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text("Sign Up")
-        }
-
-        message?.let {
-            Text(text = it, color = MaterialTheme.colorScheme.primary)
+            Text("GO!")
         }
     }
 }

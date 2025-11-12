@@ -25,26 +25,20 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.submarine.auth.SignUpScreen
+import com.example.submarine.auth.Signup
 import com.example.submarine.ui.theme.SubmarineTheme // Assurez-vous que votre thème est bien configuré
+import com.example.submarine.conversation.ConversationActivity
+import com.example.submarine.contacts.ContactsActivity
 
-class MainActivity : ComponentActivity() {
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
-        setContent {
-            SubmarineTheme {
-                // On applique un fond sur toute la surface pour un look plus pro
-                Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
-                    LoginScreen()
-                }
-            }
-        }
-    }
-}
+
+
+
+
+
+
 
 @Composable
-fun LoginScreen() {
+fun HomeScreen() {
     val context = LocalContext.current
 
     // Utilisation d'un dégradé pour le fond
@@ -122,15 +116,33 @@ fun LoginScreen() {
         }
 
         // --- Note de bas de page (optionnel) ---
-        Text(
-            text = "Explorez les profondeurs de la communication.",
+
+        Row(
             modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .padding(bottom = 32.dp),
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
-            textAlign = TextAlign.Center
-        )
+                .align(Alignment.BottomCenter) // Aligne la rangée en bas de la Box
+                .fillMaxWidth()
+                .padding(bottom = 16.dp),
+            horizontalArrangement = Arrangement.SpaceEvenly,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            val context = LocalContext.current // Le contexte doit être redéfini ici ou passé en paramètre
+            // Bouton pour la liste de contacts
+            TextButton(onClick = {
+                val intent = Intent(context, ContactsActivity::class.java)
+                context.startActivity(intent)
+            }) {
+                Text("Liste Contacts", fontSize = 12.sp)
+            }
+
+            // Bouton pour la liste de conversations
+            TextButton(onClick = {
+                val intent = Intent(context, ConversationActivity::class.java)
+                context.startActivity(intent)
+            }) {
+                Text("Conversations", fontSize = 12.sp)
+            }
+
+        }
     }
 }
 
@@ -162,6 +174,7 @@ fun AppHeader() {
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.onSurface
         )
+
     }
 }
 
@@ -170,7 +183,7 @@ fun AppHeader() {
 fun LoginScreenPreview() {
     SubmarineTheme {
         Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
-            LoginScreen()
+            HomeScreen()
         }
     }
 }

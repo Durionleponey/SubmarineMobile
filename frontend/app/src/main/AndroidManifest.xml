@@ -41,7 +41,6 @@
         <!-- 🗨️ Conversation / Chat -->
         <activity android:name=".conversation.ConversationActivity" />
 
-        <activity android:name=".auth.SignUpActivity" />
 
 
         <!-- 👥 Contacts -->

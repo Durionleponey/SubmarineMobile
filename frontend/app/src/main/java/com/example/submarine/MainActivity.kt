@@ -66,6 +66,12 @@ fun MainScreen() {
                 Text("Voir mes contacts")
             }
 
+            Button(onClick = {
+                val intent = Intent(context, )
+                context.startActivity(intent)
+            }) {
+                Text("Administrateur")
+            }
 
 
         }

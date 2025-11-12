@@ -50,6 +50,10 @@
             android:exported="false"
             android:label="Ajouter un contact"
             android:theme="@style/Theme.Submarine" />
+
+        <activity  android:name=".admin.AdminActivity"
+            android:exported="false"
+            android:label="Administration" />
     </application>
 
     <!-- 🌐 Autorisations réseau -->

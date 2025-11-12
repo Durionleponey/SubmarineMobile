@@ -71,6 +71,11 @@
 
         <!-- ➕ Voir les demandes d'amis -->
         <activity android:name=".listeContact.PendingRequestsActivity" />
+
+        <!-- ⚙️ admin -->
+        <activity  android:name=".admin.AdminActivity"
+            android:exported="false"
+            android:label="Administration" />
     </application>
 
 

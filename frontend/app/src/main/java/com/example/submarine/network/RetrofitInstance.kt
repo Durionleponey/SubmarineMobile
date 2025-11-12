@@ -9,7 +9,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 object RetrofitInstance {
 
     // 🧩 Adresse de ton backend (Android Emulator → localhost)
-    private const val BASE_URL = "http://-/"
+    private const val BASE_URL = "http://10.0.2.2:4000/"
 
     // 🔐 Ajoute automatiquement le token JWT dans chaque requête si présent
     private val authInterceptor = Interceptor { chain ->

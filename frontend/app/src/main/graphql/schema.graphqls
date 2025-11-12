@@ -33,6 +33,16 @@ type Chat {
     lastMessage: Message
 }
 
+# 🧩 Nouveau type pour les relations d’amitié
+type Friend {
+    _id: ID!
+    sender: User!
+    receiver: User!
+    status: String!
+    createdAt: DateTime!
+    updatedAt: DateTime!
+}
+
 type Query {
     users(search: String!): [User!]!
     user(id: String!): User!
@@ -42,6 +52,10 @@ type Query {
     chat(_id: String!): Chat!
     getMessages(chatId: String!): [Message!]!
     getMessageViewers(messageId: String!, chatId: String!): [String!]!
+
+    # 🧩 Queries pour les amis
+    pendingRequests: [Friend!]!
+    friendsList: [Friend!]!
 }
 
 type Mutation {
@@ -54,6 +68,11 @@ type Mutation {
     removeChat(id: Int!): Chat!
     createMessage(createMessageInput: CreateMessageInput!): Message!
     viewMessage(messageId: String, chatId: String!): String!
+
+    # 🧩 Mutations pour les amis
+    sendFriendRequest(receiverId: String!): Friend!
+    acceptFriendRequest(id: String!): Friend!
+    rejectFriendRequest(id: String!): Friend!
 }
 
 input CreateUserInput {

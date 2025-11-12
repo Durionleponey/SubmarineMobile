@@ -8,8 +8,12 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.launch
-import androidx.compose.runtime.rememberCoroutineScope
 import com.example.submarine.network.TokenProvider
+import com.example.submarine.graphql.SendFriendRequestMutation
+import com.example.submarine.listeContact.GraphQLClient
+import com.apollographql.apollo3.api.ApolloResponse
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import java.io.IOException
 import retrofit2.HttpException
 
@@ -20,6 +24,7 @@ fun AddContactScreen(onBack: () -> Unit) {
     var searchResults by remember { mutableStateOf(listOf<String>()) }
     var isLoading by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
+    var successMessage by remember { mutableStateOf<String?>(null) }
 
     val scope = rememberCoroutineScope()
 
@@ -50,6 +55,7 @@ fun AddContactScreen(onBack: () -> Unit) {
 
             Spacer(modifier = Modifier.height(16.dp))
 
+            // 🔍 Bouton de recherche
             Button(
                 onClick = {
                     scope.launch {
@@ -61,6 +67,7 @@ fun AddContactScreen(onBack: () -> Unit) {
                         try {
                             isLoading = true
                             errorMessage = null
+                            successMessage = null
                             searchResults = emptyList()
 
                             val token = TokenProvider.token
@@ -69,7 +76,6 @@ fun AddContactScreen(onBack: () -> Unit) {
                                 return@launch
                             }
 
-                            // ✅ Appel à ton API NestJS avec le token en mémoire
                             val results = UserApi.searchUsers(token, searchQuery)
                             if (results.isEmpty()) {
                                 errorMessage = "Aucun utilisateur trouvé."
@@ -99,6 +105,7 @@ fun AddContactScreen(onBack: () -> Unit) {
 
             Spacer(modifier = Modifier.height(16.dp))
 
+            // 🔴 Erreurs
             if (errorMessage != null) {
                 Text(
                     text = errorMessage!!,
@@ -107,8 +114,18 @@ fun AddContactScreen(onBack: () -> Unit) {
                 )
             }
 
+            // 🟢 Succès
+            if (successMessage != null) {
+                Text(
+                    text = successMessage!!,
+                    color = MaterialTheme.colorScheme.primary,
+                    style = MaterialTheme.typography.bodyMedium
+                )
+            }
+
             Spacer(modifier = Modifier.height(8.dp))
 
+            // 🧑 Liste des utilisateurs trouvés
             searchResults.forEach { pseudo ->
                 Card(
                     modifier = Modifier
@@ -116,11 +133,50 @@ fun AddContactScreen(onBack: () -> Unit) {
                         .padding(vertical = 4.dp),
                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant)
                 ) {
-                    Text(
-                        text = pseudo,
-                        modifier = Modifier.padding(16.dp),
-                        style = MaterialTheme.typography.bodyLarge
-                    )
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        Text(pseudo, style = MaterialTheme.typography.bodyLarge)
+
+                        Button(
+                            onClick = {
+                                scope.launch {
+                                    val token = TokenProvider.token
+                                    if (token.isNullOrEmpty()) {
+                                        errorMessage = "Utilisateur non connecté."
+                                        return@launch
+                                    }
+
+                                    try {
+                                        val client = GraphQLClient.client.newBuilder()
+                                            .addHttpHeader("Authorization", "Bearer $token")
+                                            .build()
+
+                                        val mutation = SendFriendRequestMutation(pseudo) // ⚠️ remplacer par ID réel
+                                        val response: ApolloResponse<SendFriendRequestMutation.Data> =
+                                            withContext(Dispatchers.IO) {
+                                                client.mutation(mutation).execute()
+                                            }
+
+                                        val status = response.data?.sendFriendRequest?.status
+                                        if (status != null) {
+                                            successMessage = "Demande envoyée ($status)"
+                                        } else {
+                                            errorMessage =
+                                                response.errors?.firstOrNull()?.message ?: "Erreur inconnue."
+                                        }
+                                    } catch (e: Exception) {
+                                        errorMessage = "Erreur : ${e.message}"
+                                    }
+                                }
+                            }
+                        ) {
+                            Text("Ajouter")
+                        }
+                    }
                 }
             }
         }

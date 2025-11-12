@@ -1,6 +1,0 @@
-query SearchUser($search: String!) {
-    users(search: $search) {
-        _id
-        pseudo
-    }
-}

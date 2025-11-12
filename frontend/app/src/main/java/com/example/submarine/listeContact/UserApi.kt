@@ -13,6 +13,7 @@ data class UserDto(
     val pseudo: String
 )
 
+
 interface UserApiService {
     @GET("users/search")
     suspend fun searchUsers(
@@ -20,6 +21,7 @@ interface UserApiService {
         @Query("pseudo") pseudo: String
     ): List<UserDto>
 }
+
 
 object UserApi {
     private val logging = HttpLoggingInterceptor().apply {

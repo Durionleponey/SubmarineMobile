@@ -18,7 +18,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.submarine.auth.LoginActivity
-import com.example.submarine.contacts.ContactsActivity
+import com.example.submarine.listeContact.ContactsActivity
 import com.example.submarine.conversation.ConversationActivity
 import com.example.submarine.ui.theme.SubmarineTheme
 

@@ -44,7 +44,7 @@
 
 
         <!-- 👥 Contacts -->
-        <activity android:name=".contacts.ContactsActivity" />
+        <activity android:name=".listeContact.ContactsActivity" />
 
         <!-- ➕ Ajouter un contact -->
         <activity

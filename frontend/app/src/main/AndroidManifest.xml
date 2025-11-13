@@ -33,6 +33,9 @@
             android:exported="true"
             android:theme="@style/Theme.Submarine" />
 
+        <activity android:name=".auth.SignUpActivity" />
+
+
         <!-- 🟣 Édition de bio -->
         <activity
             android:name=".bio.EditBioActivity"

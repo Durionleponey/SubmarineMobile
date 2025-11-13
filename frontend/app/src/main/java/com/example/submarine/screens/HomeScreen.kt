@@ -25,7 +25,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.submarine.auth.Signup
+import com.example.submarine.auth.LoginActivity
+import com.example.submarine.auth.SignUpActivity
 import com.example.submarine.ui.theme.SubmarineTheme // Assurez-vous que votre thème est bien configuré
 import com.example.submarine.conversation.ConversationActivity
 import com.example.submarine.contacts.ContactsActivity
@@ -79,7 +80,7 @@ fun HomeScreen() {
             // Bouton "Se Connecter"
             Button(
                 onClick = {
-                    val intent = Intent(context, Signup::class.java) // Pointe vers Signup pour l'instant
+                    val intent = Intent(context, LoginActivity::class.java) // Pointe vers Signup pour l'instant
                     context.startActivity(intent)
                 },
                 modifier = Modifier
@@ -98,7 +99,7 @@ fun HomeScreen() {
             // Bouton "S'inscrire"
             OutlinedButton(
                 onClick = {
-                    val intent = Intent(context, Signup::class.java)
+                    val intent = Intent(context, SignUpActivity::class.java)
                     context.startActivity(intent)
                 },
                 modifier = Modifier

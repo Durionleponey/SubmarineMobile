@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.apollo)
 }
 
 
@@ -41,6 +42,14 @@ android {
     buildToolsVersion = "35.0.0"
 }
 
+
+apollo {
+    service("service") {
+        packageName.set("com.example.submarine.graphql")
+        srcDir(file("src/main/graphql"))
+    }
+}
+
 dependencies {
     implementation("androidx.appcompat:appcompat:1.6.1")
     implementation("com.google.android.material:material:1.9.0")
@@ -67,4 +76,10 @@ dependencies {
     implementation("androidx.compose.material3:material3")
     implementation("androidx.compose.material:material-icons-core:1.7.8")
     implementation("androidx.compose.material:material-icons-extended:1.7.8")
+
+
+    implementation(libs.apollo.adapters)
+    implementation(libs.apollo.runtime)
+    implementation(libs.apollo.api)
+
 }

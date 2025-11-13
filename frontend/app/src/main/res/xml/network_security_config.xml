@@ -3,4 +3,6 @@
     <domain-config cleartextTrafficPermitted="true">
         <domain includeSubdomains="true">10.0.2.2</domain>
     </domain-config>
+    <base-config cleartextTrafficPermitted="false" />
+    <!-- froce le HTTPS pour les autres domaines que le local -->
 </network-security-config>

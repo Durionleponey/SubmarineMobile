@@ -1,6 +1,7 @@
 package com.example.submarine.auth
 
 import android.content.Intent
+import android.util.Log
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -73,7 +74,7 @@ fun SignUpScreen() {
                             val userEmail = user?.get("email") as? String
                             val userPseudo = user?.get("pseudo") as? String
                             message = "✅ Account created! Welcome $userPseudo ($userEmail)"
-
+                            Log.d("auth"," Account created! Welcome $userPseudo ($userEmail)")
                             // Redirection vers la page de login avec préremplissage
                             val intent = Intent(context, LoginActivity::class.java).apply {
                                 putExtra("email", email)
@@ -81,7 +82,10 @@ fun SignUpScreen() {
                             }
                             context.startActivity(intent)
                         } else {
-                            message = "❌ Error creating account: invalid email or password is not secure enough"
+                            Log.e("auth","❌ Erreur de connexion : ${response.code()}")
+                            withContext(Dispatchers.Main) {
+                                message = "❌ Error creating account: invalid email or password is not secure enough"
+                            }
                         }
                     }
                 }

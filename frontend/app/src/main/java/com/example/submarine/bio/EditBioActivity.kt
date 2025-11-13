@@ -114,7 +114,7 @@ fun EditBioScreen(
 fun EditBioScreenPreview() {
     SubmarineTheme {
         EditBioScreen(
-            username = "Jean Dupont",
+            username = "Preview Dupont",
             bio = "Voici ma bio actuelle",
             onBioChange = {},
             onSave = {}

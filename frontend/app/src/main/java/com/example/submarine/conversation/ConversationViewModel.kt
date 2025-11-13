@@ -25,7 +25,7 @@ class ConversationViewModel : ViewModel() {
             val userPseudo = userPseudoRecup.fetchUser(userId)
 
             Log.d("ConversationViewModel", "userPseudo = $userPseudo")
-            _userPseudo.value = userPseudo ?: "user inconnu"
+            _userPseudo.value = userPseudo ?: "User inconnu"
 
         }
     }

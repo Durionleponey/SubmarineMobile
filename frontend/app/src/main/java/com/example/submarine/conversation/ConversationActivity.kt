@@ -43,7 +43,7 @@ class ConversationActivity : ComponentActivity() {
             SubmarineTheme {
                 val pseudo by viewModel.userPseudo.collectAsState()
                 ConversationScreen(
-                    contactName = pseudo?: "",
+                    contactName = pseudo?: "User test",
                     onNavigateBack = {
                         finish()
                     }

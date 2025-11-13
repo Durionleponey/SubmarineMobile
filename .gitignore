@@ -16,3 +16,4 @@ local.properties
 /backend/node_modules
 /frontend/gradle
 /backend/dist
+/backend/db/data/

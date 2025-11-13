@@ -13,6 +13,8 @@ import { AuthModule } from './auth/auth.module';
 import { ChatModule } from './chat/chat.module';
 import {PubSubModule} from "./common/pubsub/pubsub.module";
 import {AuthService} from "./auth/auth.service";
+import { FriendsModule } from './friends/friends.module';
+
 
 
 @Module({
@@ -62,7 +64,8 @@ import {AuthService} from "./auth/auth.service";
       }),
       AuthModule,
       ChatModule,
-      PubSubModule
+      PubSubModule,
+      FriendsModule
   ],
   controllers: [AppController],
   providers: [AppService],

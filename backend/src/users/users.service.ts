@@ -29,6 +29,7 @@ export class UsersService {
       password: await this.hashPassword(createUserInput.password),
       pseudo,
       bio:"",
+      friends: []
     });
   }
 
@@ -112,5 +113,12 @@ export class UsersService {
   async getBio(_id: string) {
     return this.userRepository.findOne({ _id: _id });
   }
+
+  async findByPseudo(pseudo: string) {
+    return this.userRepository.find({
+      pseudo: { $regex: new RegExp(pseudo, 'i') },
+    });
+  }
+
 
 }

@@ -4,6 +4,7 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -20,11 +21,10 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.submarine.graphql.GetFriendsListQuery
+import com.example.submarine.network.TokenProvider
 import com.example.submarine.ui.theme.SubmarineTheme
 import kotlinx.coroutines.launch
-import androidx.compose.animation.core.animateFloatAsState
-import com.example.submarine.listeContact.AddContactActivity
-
 
 class ContactsActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -54,30 +54,30 @@ fun ContactsScreen(
 
     var searchQuery by remember { mutableStateOf("") }
 
-    val contacts = remember {
-        mutableStateListOf(
-            Contact("Martin", "Dupont", "martin_dpt", "stage dans la poche!"),
-            Contact("Alice", "Lambert", "alice_waves", "J'adore le monde sous-marin."),
-            Contact("Bob", "Jones", "bobby_j", "Joyeux anniversaire bébé."),
-            Contact("Lebron", "King James", "KingJames", "Je suis la définition de l'expression 'le travail paye''"),
-            Contact("Kevin", "Durand", "kd_35", "Sad ajd.."),
-        )
-    }
+    // Liste d'amis venant du backend
+    var contacts by remember { mutableStateOf<List<GetFriendsListQuery.FriendsList>>(emptyList()) }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
 
-    val customNicknames = remember { mutableStateMapOf<Contact, String>() }
-
-    var selectedContact by remember { mutableStateOf<Contact?>(null) }
+    var selectedContact by remember { mutableStateOf<GetFriendsListQuery.FriendsList?>(null) }
     var showActionsDialog by remember { mutableStateOf(false) }
-
-    var showEditDialog by remember { mutableStateOf(false) }
-    var newPseudo by remember { mutableStateOf("") }
-
-    // ✅ Pour la bio
     var showBioDialog by remember { mutableStateOf(false) }
 
+    val token = TokenProvider.token
+
+    // Chargement des amis au lancement
+    LaunchedEffect(Unit) {
+        if (!token.isNullOrEmpty()) {
+            try {
+                contacts = FriendsApi.getFriendsList(token!!)
+            } catch (e: Exception) {
+                errorMessage = e.message ?: "Erreur lors du chargement"
+            }
+        }
+    }
+
+    // Filtre recherche
     val filtered = contacts.filter { c ->
-        val displayName = customNicknames[c] ?: "${c.prenom} ${c.nom}"
-        (displayName + " " + c.pseudo).contains(searchQuery, ignoreCase = true)
+        (c.pseudo + " " + (c.email ?: "")).contains(searchQuery, ignoreCase = true)
     }
 
     Scaffold(
@@ -103,26 +103,35 @@ fun ContactsScreen(
             OutlinedTextField(
                 value = searchQuery,
                 onValueChange = { searchQuery = it },
-                label = { Text("Rechercher un contact") },
+                label = { Text("Rechercher un ami") },
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(8.dp)
             )
+
+            if (errorMessage != null) {
+                Text(
+                    text = errorMessage!!,
+                    color = MaterialTheme.colorScheme.error,
+                    modifier = Modifier.padding(8.dp)
+                )
+            }
 
             LazyColumn(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(8.dp)
             ) {
-                items(filtered, key = { "${it.prenom}_${it.nom}_${it.pseudo}" }) { contact ->
-                    val displayName = customNicknames[contact] ?: "${contact.prenom} ${contact.nom}"
+                // 🔥 PAS DE key = { ... } → plus de crash d'ID dupliqué
+                items(filtered) { contact ->
 
                     ContactRow(
-                        name = displayName,
-                        onClick = {},
+                        name = contact.pseudo,
+                        onClick = {
+                            // plus tard : ouvrir un chat par ex.
+                        },
                         onLongPress = {
                             selectedContact = contact
-                            newPseudo = customNicknames[contact] ?: displayName
                             showActionsDialog = true
                         }
                     )
@@ -131,16 +140,16 @@ fun ContactsScreen(
         }
     }
 
-    /* ----- MENU LONG PRESS ----- */
+    // ----- MENU LONG PRESS -----
     if (showActionsDialog && selectedContact != null) {
         val contact = selectedContact!!
+
         AlertDialog(
             onDismissRequest = { showActionsDialog = false },
-            title = { Text("Options pour ${customNicknames[contact] ?: "${contact.prenom} ${contact.nom}"}") },
+            title = { Text("Options pour ${contact.pseudo}") },
             text = {
                 Column {
 
-                    // ✅ Voir la bio
                     TextButton(
                         onClick = {
                             showActionsDialog = false
@@ -149,49 +158,15 @@ fun ContactsScreen(
                         modifier = Modifier.fillMaxWidth()
                     ) { Text("Voir la bio") }
 
-                    // Modifier pseudo
-                    TextButton(
-                        onClick = {
-                            showActionsDialog = false
-                            showEditDialog = true
-                        },
-                        modifier = Modifier.fillMaxWidth()
-                    ) { Text("Définir le pseudo") }
-
-                    // Créer un groupe (fake)
                     TextButton(
                         onClick = {
                             showActionsDialog = false
                             scope.launch {
-                                snackbarHostState.showSnackbar("Fonction groupe pas encore disponible")
+                                snackbarHostState.showSnackbar("Option pas encore disponible")
                             }
                         },
                         modifier = Modifier.fillMaxWidth()
                     ) { Text("Créer un groupe") }
-
-                    // Sourdine (fake)
-                    TextButton(
-                        onClick = {
-                            showActionsDialog = false
-                            scope.launch {
-                                snackbarHostState.showSnackbar("Fonctionnalité de sourdine pas encore disponible")
-                            }
-                        },
-                        modifier = Modifier.fillMaxWidth()
-                    ) { Text("Mettre en sourdine") }
-
-                    // Supprimer
-                    TextButton(
-                        onClick = {
-                            showActionsDialog = false
-                            contacts.remove(contact)
-                            customNicknames.remove(contact)
-                            scope.launch {
-                                snackbarHostState.showSnackbar("Contact supprimé de la liste")
-                            }
-                        },
-                        modifier = Modifier.fillMaxWidth()
-                    ) { Text("Supprimer le contact") }
                 }
             },
             confirmButton = {},
@@ -199,49 +174,17 @@ fun ContactsScreen(
         )
     }
 
-    /* ----- POPUP BIO ----- */
+    // ----- POPUP BIO -----
     if (showBioDialog && selectedContact != null) {
         val contact = selectedContact!!
         AlertDialog(
             onDismissRequest = { showBioDialog = false },
-            title = { Text("Bio de ${contact.prenom}") },
+            title = { Text("Bio de ${contact.pseudo}") },
             text = {
-                Text(contact.bio, fontSize = 16.sp)
+                Text(contact.bio ?: "Aucune bio", fontSize = 16.sp)
             },
             confirmButton = {
-                TextButton(onClick = { showBioDialog = false }) {
-                    Text("Fermer")
-                }
-            }
-        )
-    }
-
-    /* ----- DIALOG EDIT PSEUDO ----- */
-    if (showEditDialog && selectedContact != null) {
-        val contact = selectedContact!!
-        AlertDialog(
-            onDismissRequest = { showEditDialog = false },
-            title = { Text("Modifier le pseudo") },
-            text = {
-                OutlinedTextField(
-                    value = newPseudo,
-                    onValueChange = { newPseudo = it },
-                    singleLine = true,
-                    label = { Text("Surnom affiché") },
-                    modifier = Modifier.fillMaxWidth()
-                )
-            },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        customNicknames[contact] =
-                            newPseudo.trim().ifEmpty { "${contact.prenom} ${contact.nom}" }
-                        showEditDialog = false
-                    }
-                ) { Text("Enregistrer") }
-            },
-            dismissButton = {
-                TextButton(onClick = { showEditDialog = false }) { Text("Annuler") }
+                TextButton(onClick = { showBioDialog = false }) { Text("Fermer") }
             }
         )
     }
@@ -256,7 +199,6 @@ private fun ContactRow(
     val haptic = LocalHapticFeedback.current
     var isPressed by remember { mutableStateOf(false) }
 
-    // ✅ Animation scale
     val scale by animateFloatAsState(
         targetValue = if (isPressed) 1.03f else 1f,
         label = "press-scale"

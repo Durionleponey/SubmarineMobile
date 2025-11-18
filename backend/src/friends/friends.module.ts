@@ -1,16 +1,18 @@
 import { Module } from '@nestjs/common';
-import { MongooseModule } from '@nestjs/mongoose';
 import { FriendsService } from './friends.service';
 import { FriendsResolver } from './friends.resolver';
+import { MongooseModule } from '@nestjs/mongoose';
 import { Friend, FriendSchema } from './entities/friend.entity';
-import { UsersModule } from '../users/users.module';
 
 @Module({
   imports: [
-    MongooseModule.forFeature([{ name: Friend.name, schema: FriendSchema }]),
-    UsersModule,
+    MongooseModule.forFeature([
+      { name: Friend.name, schema: FriendSchema },
+    ]),
   ],
-  providers: [FriendsService, FriendsResolver],
-  exports: [FriendsService],
+  providers: [
+    FriendsService,
+    FriendsResolver,
+  ],
 })
 export class FriendsModule {}

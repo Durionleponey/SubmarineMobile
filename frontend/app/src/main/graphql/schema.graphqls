@@ -1,11 +1,15 @@
 # Indicates exactly one field must be supplied and this field must not be `null`.
 directive @oneOf on INPUT_OBJECT
 
+scalar DateTime
+
 type User {
     _id: ID!
     pseudo: String!
     email: String!
+    bio : String!
 }
+
 
 type Message {
     _id: ID!
@@ -21,8 +25,6 @@ type Message {
     city: String
 }
 
-# A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
-scalar DateTime
 
 type Chat {
     _id: ID!
@@ -33,7 +35,7 @@ type Chat {
     lastMessage: Message
 }
 
-# 🧩 Nouveau type pour les relations d’amitié
+
 type Friend {
     _id: ID!
     sender: User!
@@ -43,33 +45,40 @@ type Friend {
     updatedAt: DateTime!
 }
 
+
 type Query {
     users(search: String!): [User!]!
     user(id: String!): User!
     userMail(email: String!): User!
     me: User!
+
     chatss: [Chat!]!
     chat(_id: String!): Chat!
+
     getMessages(chatId: String!): [Message!]!
     getMessageViewers(messageId: String!, chatId: String!): [String!]!
 
-    # 🧩 Queries pour les amis
+    # --- FRIENDS ---
     pendingRequests: [Friend!]!
-    friendsList: [Friend!]!
+    friendsList: [User!]!
 }
+
+
 
 type Mutation {
     createUser(createUserInput: CreateUserInput!): User!
     updateUser(updateUserInput: UpdateUserInput!): User!
     removeUser: User!
+
     createChat(createChatInput: CreateChatInput!): Chat!
     leaveAllChat: Int!
     addUserToChat(email: String!, chatId: String!): String!
     removeChat(id: Int!): Chat!
+
     createMessage(createMessageInput: CreateMessageInput!): Message!
     viewMessage(messageId: String, chatId: String!): String!
 
-    # 🧩 Mutations pour les amis
+    # --- FRIENDS ---
     sendFriendRequest(receiverId: String!): Friend!
     acceptFriendRequest(id: String!): Friend!
     rejectFriendRequest(id: String!): Friend!

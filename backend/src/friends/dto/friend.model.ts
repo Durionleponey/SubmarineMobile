@@ -1,23 +1,24 @@
 import { ObjectType, Field, ID } from '@nestjs/graphql';
+import { User } from '../../users/entities/user.entity';
 
 @ObjectType()
 export class Friend {
   @Field(() => ID)
   _id: string;
 
-  // On expose juste les IDs au lieu d'objets User
-  @Field(() => ID)
-  sender: string;
+  @Field(() => User)
+  sender: User;
 
-  @Field(() => ID)
-  receiver: string;
+  @Field(() => User)
+  receiver: User;
 
   @Field()
   status: string;
 
-  @Field()
+  @Field(() => Date)
   createdAt: Date;
 
-  @Field()
+  @Field(() => Date)
   updatedAt: Date;
 }
+

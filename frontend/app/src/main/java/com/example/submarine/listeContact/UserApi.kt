@@ -13,7 +13,6 @@ data class UserDto(
     val pseudo: String
 )
 
-
 interface UserApiService {
     @GET("users/search")
     suspend fun searchUsers(
@@ -21,7 +20,6 @@ interface UserApiService {
         @Query("pseudo") pseudo: String
     ): List<UserDto>
 }
-
 
 object UserApi {
     private val logging = HttpLoggingInterceptor().apply {
@@ -33,15 +31,14 @@ object UserApi {
         .build()
 
     private val retrofit = Retrofit.Builder()
-        .baseUrl("http://10.0.2.2:4000") // ⚠️ adapte ton URL (avec /api/ si global prefix)
+        .baseUrl("http://10.0.2.2:4000")
         .client(client)
         .addConverterFactory(GsonConverterFactory.create())
         .build()
 
     private val service = retrofit.create(UserApiService::class.java)
 
-    suspend fun searchUsers(token: String, pseudo: String): List<String> {
-        val users = service.searchUsers("Bearer $token", pseudo)
-        return users.map { it.pseudo }
+    suspend fun searchUsers(token: String, pseudo: String): List<UserDto> {
+        return service.searchUsers("Bearer $token", pseudo)
     }
 }

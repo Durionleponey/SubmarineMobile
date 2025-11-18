@@ -1,0 +1,6 @@
+mutation RejectFriendRequest($id: String!) {
+    rejectFriendRequest(id: $id) {
+        _id
+        status
+    }
+}

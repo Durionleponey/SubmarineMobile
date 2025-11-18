@@ -1,32 +1,35 @@
 package com.example.submarine.listeContact
 
+import android.content.Intent
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import kotlinx.coroutines.launch
-import com.example.submarine.network.TokenProvider
-import com.example.submarine.graphql.SendFriendRequestMutation
-import com.example.submarine.listeContact.GraphQLClient
 import com.apollographql.apollo3.api.ApolloResponse
+import com.example.submarine.graphql.SendFriendRequestMutation
+import com.example.submarine.network.TokenProvider
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.io.IOException
 import retrofit2.HttpException
+import java.io.IOException
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddContactScreen(onBack: () -> Unit) {
     var searchQuery by remember { mutableStateOf("") }
-    var searchResults by remember { mutableStateOf(listOf<String>()) }
+    var searchResults by remember { mutableStateOf(listOf<UserDto>()) }
     var isLoading by remember { mutableStateOf(false) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
     var successMessage by remember { mutableStateOf<String?>(null) }
 
     val scope = rememberCoroutineScope()
+    val context = LocalContext.current
 
     Scaffold(
         topBar = {
@@ -35,6 +38,14 @@ fun AddContactScreen(onBack: () -> Unit) {
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "Retour")
+                    }
+                },
+                actions = {
+                    IconButton(onClick = {
+                        val intent = Intent(context, PendingRequestsActivity::class.java)
+                        context.startActivity(intent)
+                    }) {
+                        Icon(Icons.Default.Person, contentDescription = "Demandes d'amis")
                     }
                 }
             )
@@ -55,7 +66,6 @@ fun AddContactScreen(onBack: () -> Unit) {
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // 🔍 Bouton de recherche
             Button(
                 onClick = {
                     scope.launch {
@@ -83,13 +93,9 @@ fun AddContactScreen(onBack: () -> Unit) {
                                 searchResults = results
                             }
                         } catch (e: HttpException) {
-                            errorMessage = when (e.code()) {
-                                401 -> "Non autorisé — token invalide ou expiré."
-                                403 -> "Accès refusé."
-                                else -> "Erreur du serveur (${e.code()})."
-                            }
+                            errorMessage = "Erreur serveur : ${e.code()}"
                         } catch (e: IOException) {
-                            errorMessage = "Erreur réseau — impossible de joindre le serveur."
+                            errorMessage = "Erreur réseau — serveur inaccessible."
                         } catch (e: Exception) {
                             errorMessage = "Erreur : ${e.message}"
                         } finally {
@@ -105,28 +111,16 @@ fun AddContactScreen(onBack: () -> Unit) {
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // 🔴 Erreurs
             if (errorMessage != null) {
-                Text(
-                    text = errorMessage!!,
-                    color = MaterialTheme.colorScheme.error,
-                    style = MaterialTheme.typography.bodyMedium
-                )
+                Text(errorMessage!!, color = MaterialTheme.colorScheme.error)
             }
-
-            // 🟢 Succès
             if (successMessage != null) {
-                Text(
-                    text = successMessage!!,
-                    color = MaterialTheme.colorScheme.primary,
-                    style = MaterialTheme.typography.bodyMedium
-                )
+                Text(successMessage!!, color = MaterialTheme.colorScheme.primary)
             }
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // 🧑 Liste des utilisateurs trouvés
-            searchResults.forEach { pseudo ->
+            searchResults.forEach { user ->
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -139,7 +133,7 @@ fun AddContactScreen(onBack: () -> Unit) {
                             .padding(16.dp),
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        Text(pseudo, style = MaterialTheme.typography.bodyLarge)
+                        Text(user.pseudo, style = MaterialTheme.typography.bodyLarge)
 
                         Button(
                             onClick = {
@@ -155,18 +149,20 @@ fun AddContactScreen(onBack: () -> Unit) {
                                             .addHttpHeader("Authorization", "Bearer $token")
                                             .build()
 
-                                        val mutation = SendFriendRequestMutation(pseudo) // ⚠️ remplacer par ID réel
-                                        val response: ApolloResponse<SendFriendRequestMutation.Data> =
-                                            withContext(Dispatchers.IO) {
-                                                client.mutation(mutation).execute()
-                                            }
+                                        // ✅ On envoie l’ID, pas le pseudo
+                                        val mutation = SendFriendRequestMutation(user._id)
+
+                                        val response = withContext(Dispatchers.IO) {
+                                            client.mutation(mutation).execute()
+                                        }
 
                                         val status = response.data?.sendFriendRequest?.status
                                         if (status != null) {
                                             successMessage = "Demande envoyée ($status)"
                                         } else {
                                             errorMessage =
-                                                response.errors?.firstOrNull()?.message ?: "Erreur inconnue."
+                                                response.errors?.firstOrNull()?.message
+                                                    ?: "Erreur inconnue."
                                         }
                                     } catch (e: Exception) {
                                         errorMessage = "Erreur : ${e.message}"
@@ -179,6 +175,8 @@ fun AddContactScreen(onBack: () -> Unit) {
                     }
                 }
             }
+
         }
+
     }
-}
+    }

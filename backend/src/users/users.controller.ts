@@ -27,4 +27,5 @@ export class UsersController {
     // Retourne simplement les infos du token (payload)
     return req.user;
   }
+
 }

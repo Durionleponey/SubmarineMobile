@@ -1,7 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Types } from 'mongoose';
 import { AbstractEntity } from '../../common/database/abstact.entity';
-import { Field, ObjectType, ID } from '@nestjs/graphql';
+import { Field, ObjectType } from '@nestjs/graphql';
 
 @Schema({ _id: true, versionKey: false })
 @ObjectType()
@@ -22,8 +21,8 @@ export class User extends AbstractEntity {
     @Field({ nullable: true })
     bio: string;
 
-    @Prop({ type: [{ type: Types.ObjectId, ref: 'User' }], default: [] })
-    @Field(() => [ID], { nullable: 'itemsAndList' })
+    @Prop({ type: [String], default: [] })  // <-- IMPORTANT
+    @Field(() => [String])
     friends: string[];
 }
 

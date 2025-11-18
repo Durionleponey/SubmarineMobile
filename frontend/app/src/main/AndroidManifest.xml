@@ -52,7 +52,12 @@
             android:exported="false"
             android:label="Ajouter un contact"
             android:theme="@style/Theme.Submarine" />
+
+        <!-- ➕ Voir les demandes d'amis -->
+        <activity android:name=".listeContact.PendingRequestsActivity" />
     </application>
+
+
 
     <!-- 🌐 Autorisations réseau -->
 

@@ -7,6 +7,14 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
+
+sealed class ChatState {
+    object Idle : ChatState()
+    object Creating : ChatState()
+    data class CreationSuccess(val chatId: String) : ChatState()
+    data class Error(val message: String) : ChatState()
+}
+
 class ConversationViewModel : ViewModel() {
 
     private val userPseudoRecup = UserPseudoRecup()

@@ -63,6 +63,7 @@ dependencies {
     implementation(libs.androidx.compose.material3)
 
     // Tests
+    //implementation(libs.androidx.espresso.core)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -87,6 +88,7 @@ dependencies {
     implementation(libs.apollo.adapters)
     implementation(libs.apollo.runtime)
     implementation(libs.apollo.api)
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.1")
 
     // Outils Kotlin (Ajoutés depuis le conflit, nécessaires pour le nouveau code)
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1")

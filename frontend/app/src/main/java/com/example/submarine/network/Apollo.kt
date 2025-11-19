@@ -2,26 +2,79 @@ package com.example.submarine.network
 
 import android.util.Log
 import com.apollographql.apollo3.ApolloClient
+import com.apollographql.apollo3.api.http.HttpRequest
+import com.apollographql.apollo3.api.http.HttpResponse
+import com.apollographql.apollo3.network.http.HttpInterceptor
+import com.apollographql.apollo3.network.http.HttpInterceptorChain
 import com.apollographql.apollo3.network.http.HttpNetworkTransport
+import com.apollographql.apollo3.network.ws.GraphQLWsProtocol
 import com.apollographql.apollo3.network.ws.WebSocketNetworkTransport
-import com.apollographql.apollo3.network.http.DefaultHttpEngine
+
+private const val APOLLO_TAG = "Apollo"
+private class AuthorizationInterceptor : HttpInterceptor {
+    override suspend fun intercept(
+        request: HttpRequest,
+        chain: HttpInterceptorChain
+    ): HttpResponse {
+        val token = TokenProvider.token
+
+        if (token == null) {
+            Log.w(APOLLO_TAG, "Interception http, token non trouvé")
+        }else{
+            Log.d(APOLLO_TAG, "Interception http, token trouvé")
+        }
+
+        val newRequest = if (token != null) {
+            request.newBuilder().addHeader("Authorization", "Bearer $token").build()
+        } else {
+            request
+        }
+        return chain.proceed(newRequest)
+    }
+}
 
 object Apollo {
     val apolloClient: ApolloClient by lazy {
-        Log.d("Apollo", "Creating Apollo Client")
-
+        Log.d(APOLLO_TAG, "Creating Apollo Client")
 
         val servHttp = "http://10.0.2.2:4000/graphql"
         val servWebSocket = "ws://10.0.2.2:4000/graphql"
-        ApolloClient.Builder()
-            .serverUrl(servHttp)
-            .subscriptionNetworkTransport(
-                WebSocketNetworkTransport.Builder()
-                    .serverUrl(servWebSocket)
-                    .build()
-            )
 
+        Log.d(APOLLO_TAG, "URL HTTP $servHttp")
+        Log.d(APOLLO_TAG, "URL WS $servWebSocket")
+
+        val httpNetworkTransport = HttpNetworkTransport.Builder()
+            .serverUrl(servHttp)
+            .addInterceptor(AuthorizationInterceptor())
             .build()
 
+        val webSocketNetworkTransport = WebSocketNetworkTransport.Builder()
+            .serverUrl(servWebSocket)
+            .protocol(
+                protocolFactory = GraphQLWsProtocol.Factory(
+                    connectionPayload = {
+                        val token =TokenProvider.token
+                        if(token != null){
+                            Log.d(APOLLO_TAG, "Interception WS, token trouvé")
+                            mapOf("Authorization" to "Bearer $token")
+                        }else{
+                            Log.w(APOLLO_TAG, "Interception WS, token non trouvé")
+                            emptyMap()
+                        }
+                    }
+                )
+            )
+            .build()
+        //niveau chifrement , couches
+        //RGPD
+        //cadre local
+        /**      email: "marie@example.com"
+        password: "StrongPass123!"*/
+
+
+        ApolloClient.Builder()
+            .networkTransport(httpNetworkTransport)
+            .subscriptionNetworkTransport(webSocketNetworkTransport)
+            .build()
     }
 }

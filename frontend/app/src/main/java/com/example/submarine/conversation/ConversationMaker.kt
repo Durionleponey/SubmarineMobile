@@ -1,46 +1,59 @@
 package com.example.submarine.conversation
 
 import android.util.Log
-import com.example.submarine.graphql.CreateTestGroupMutation
-import com.example.submarine.network.Apollo.apolloClient
 import com.apollographql.apollo3.api.Optional
+import com.example.submarine.graphql.CreateTestGroupMutation // Assurez-vous que le nom du fichier généré est correct
+import com.example.submarine.network.Apollo
 
-/**
- * creation d'une nouvelle session chat
- *
- * @param userIds liste des contacts dans la conv , peut etre juste un
- * @param isPrivate boolean pour dire si la conv est entre deux pers seulement
- *
- */
+object ChatService {
+    private const val TAG = "ChatService"
 
-class ChatSessionStarter (userIds: List<String>, isPrivate: Boolean, name: String? = null) {
+    /**
+     * Crée une nouvelle conversation (chat).
+     * @param userIds La liste des IDs des utilisateurs à inclure.
+     * @param isPrivate Vrai si c'est une conversation privée (généralement entre 2 personnes).
+     * @param name Le nom du groupe (optionnel, principalement pour les conversations de groupe).
+     * @return Un Result contenant le chat créé ou une exception.
+     */
+    suspend fun createChat(
+        userIds: List<String>,
+        isPrivate: Boolean,
+        name: String? = null
+    ): Result<CreateTestGroupMutation.CreateChat?> {
+        Log.d(TAG, "Tentative de création de chat avec les utilisateurs: $userIds. Privée: $isPrivate")
 
     suspend fun makeChat(userIds: List<String>?, isPrivate: Boolean, name: String? = null): Result<CreateTestGroupMutation.CreateChat?> {
 
         Log.d("makeChat", "makeChat avec: $userIds et privée $isPrivate")
         try {
-            val response = apolloClient
-                .mutation(CreateTestGroupMutation(
+            val chatName = Optional.presentIfNotNull(name)
 
-                    userIds = Optional.present(userIds),
-                    isPrivate = isPrivate,
-                    name = Optional.present(name)
-                )
-            ).execute()
+            val response = Apollo.apolloClient
+                .mutation(
+                    CreateTestGroupMutation(
+                        userIds = Optional.present(userIds),
+                        isPrivate = isPrivate,
+                        name = chatName
+                    )
+                ).execute()
 
             if (response.hasErrors()) {
-                Log.d("makeChat", "makeChat hasErrors: ${response.errors}")
-                return Result.failure(Exception("makeChat hasErrors: ${response.errors}"))
+                Log.e(TAG, "Erreur GraphQL lors de la création du chat: ${response.errors}")
+                return Result.failure(Exception("Erreur GraphQL: ${response.errors?.firstOrNull()?.message}"))
+            }
 
-            }else {
-                Log.i("makeChat", "makeChat success: ${response.data?.createChat?._id}")
-                return Result.success(response.data?.createChat)
+            val createdChat = response.data?.createChat
+            if (createdChat != null) {
+                Log.i(TAG, "Chat créé avec succès. ID: ${createdChat._id}")
+                return Result.success(createdChat)
+            } else {
+                Log.w(TAG, "La création du chat n'a retourné aucune donnée, mais pas d'erreur GraphQL.")
+                return Result.failure(Exception("Les données du chat créé sont nulles."))
             }
 
         } catch (e: Exception) {
-            Log.d("makeChat", "makeChat catch")
+            Log.e(TAG, "Exception lors de la création du chat", e)
             return Result.failure(e)
         }
-
     }
 }

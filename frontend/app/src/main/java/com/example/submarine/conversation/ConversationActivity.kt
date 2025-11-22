@@ -12,7 +12,6 @@ import androidx.activity.viewModels
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import com.apollographql.apollo3.mpp.currentThreadId
-import com.example.submarine.conversation.UserService
 
 
 class ConversationActivity : ComponentActivity() {
@@ -29,7 +28,6 @@ class ConversationActivity : ComponentActivity() {
         )
         Log.d(TAG, "FLAG_SECURE activé.")
 
-        val currentId = intent.getStringExtra("userId") // recup de l'id qui l'a initié mais ici test
         val userId = "6910ae154e5e95f212c42612"
 
 
@@ -52,8 +50,8 @@ class ConversationActivity : ComponentActivity() {
                 val creationState by viewModel.creationState.collectAsState()
                 val subState by viewModel.subscriptionState.collectAsState()
 
-                LaunchedEffect(currentId, userId) {
-                    val participants = listOf(userId, currentId!!)
+                LaunchedEffect(true) {
+                    val participants = listOf(userId)
                     Log.d(TAG, "Lancement de la création du chat avec: $participants")
 
                     viewModel.createChat(

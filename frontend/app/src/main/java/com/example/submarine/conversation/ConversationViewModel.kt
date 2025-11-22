@@ -38,24 +38,9 @@ class ConversationViewModel : ViewModel() {
     private val _messages = MutableStateFlow<List<SubscribeToMessagesSubscription.MessageCreated>>(emptyList())
     val messages = _messages.asStateFlow()
 
-    private val _currentId = MutableStateFlow<String?>(null)
-    val currentUserId = _currentId.asStateFlow()
-
     private var subscriptionJob: Job? = null
 
 
-    init {
-        viewModelScope.launch {
-            Log.d(TAG, "Bloc init: Lancement de la récupération de l'ID de l'utilisateur actuel...")
-            val myId = UserService.getMyId()
-            if (myId != null) {
-                _currentId.value = myId
-                Log.i(TAG, "ID de l'utilisateur actuel initialisé: $myId")
-            } else {
-                Log.e(TAG, "Impossible de récupérer l'ID de l'utilisateur actuel.")
-            }
-        }
-    }
 
     /**
      * Crée le chat puis s'abonne à ses messages

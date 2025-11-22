@@ -8,6 +8,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
@@ -30,6 +31,8 @@ import com.example.submarine.auth.SignUpActivity
 import com.example.submarine.ui.theme.SubmarineTheme // Assurez-vous que votre thème est bien configuré
 import com.example.submarine.conversation.ConversationActivity
 import com.example.submarine.contacts.ContactsActivity
+import androidx.compose.ui.res.painterResource
+import com.example.submarine.R
 
 
 
@@ -116,7 +119,7 @@ fun HomeScreen() {
             }
         }
 
-        // --- Note de bas de page (optionnel) ---
+        // --- Note de bas de page ---
 
         Row(
             modifier = Modifier
@@ -153,22 +156,13 @@ fun AppHeader() {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        // Forme simple en guise de logo
-        Box(
+        Image(
+            painter = painterResource(id = R.drawable.submarine),
+            contentDescription = "Logo",
             modifier = Modifier
-                .size(80.dp)
-                .clip(CircleShape)
-                .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.15f)),
-            contentAlignment = Alignment.Center
-        ) {
-            Text(
-                text = "S",
-                fontSize = 40.sp,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.primary
-            )
-        }
-        // Titre de l'application
+                .size(100.dp)
+
+        )
         Text(
             text = "Submarine",
             style = MaterialTheme.typography.headlineLarge,

@@ -15,12 +15,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.example.submarine.conversation.ChatState
+import com.example.submarine.conversation.Subscribe
+import com.example.submarine.conversation.SubscriptionState
 import com.example.submarine.ui.theme.SubmarineTheme
 import com.example.submarine.conversation.composants.MessageBubble
 import com.example.submarine.conversation.composants.IconUser
 import com.example.submarine.conversation.composants.Media
 import com.example.submarine.conversation.composants.PhotoSend
 import com.example.submarine.conversation.composants.SendButton
+import com.example.submarine.graphql.SubscribeToMessagesSubscription
 
 
 data class Message(
@@ -31,7 +35,13 @@ data class Message(
 @Composable
 fun ConversationScreen(
     contactName: String,
-    onNavigateBack: () -> Unit
+    messages: List<SubscribeToMessagesSubscription.MessageCreated>,
+    onNavigateBack: () -> Unit,
+    creationState: ChatState,
+    subscriptionState: SubscriptionState,
+    userId: String
+
+
 ) {
     val messagesList = remember {
         mutableStateListOf(
@@ -83,8 +93,10 @@ fun ConversationScreen(
                 contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
                 reverseLayout = true
             ) {
-                items(messagesList.asReversed()) { message ->
-                    MessageBubble(message = message)
+                items(messages.asReversed()) { message ->
+                    val isSentByMe = message.userId == userId
+
+                    MessageBubble(message = message.content, isSentByMe = isSentByMe)
                 }
             }
 
@@ -138,8 +150,13 @@ fun ConversationScreen(
 fun ConversationScreenPreview() {
     SubmarineTheme {
         ConversationScreen(
-            contactName = "John Doe",
-            onNavigateBack = {}
+            contactName = "Ash San",
+            messages = emptyList(),
+            creationState = ChatState.Idle,
+            subscriptionState = SubscriptionState.Disconnected,
+            onNavigateBack = {},
+            userId = "1_test"
+
         )
     }
 }

@@ -2,7 +2,7 @@ package com.example.submarine.conversation
 
 import android.util.Log
 import com.apollographql.apollo3.api.Optional
-import com.example.submarine.graphql.CreateTestGroupMutation // Assurez-vous que le nom du fichier généré est correct
+import com.example.submarine.graphql.CreateTestGroupMutation
 import com.example.submarine.network.Apollo
 
 object ChatService {
@@ -20,40 +20,51 @@ object ChatService {
         isPrivate: Boolean,
         name: String? = null
     ): Result<CreateTestGroupMutation.CreateChat?> {
-        Log.d(TAG, "Tentative de création de chat avec les utilisateurs: $userIds. Privée: $isPrivate")
+        Log.d(
+            TAG,
+            "Tentative de création de chat avec les utilisateurs: $userIds. Privée: $isPrivate"
+        )
 
-    suspend fun makeChat(userIds: List<String>?, isPrivate: Boolean, name: String? = null): Result<CreateTestGroupMutation.CreateChat?> {
+        Log.d(TAG, "Paramètre userIds reçu: $userIds")
+        Log.d(TAG, "Paramètre isPrivate reçu: $isPrivate")
+        Log.d(TAG, "Paramètre name reçu: $name")
 
-        Log.d("makeChat", "makeChat avec: $userIds et privée $isPrivate")
+
+
         try {
-            val chatName = Optional.presentIfNotNull(name)
+                val chatName = Optional.presentIfNotNull(name)
+                val userIdsOptional = Optional.present(userIds)
 
-            val response = Apollo.apolloClient
-                .mutation(
-                    CreateTestGroupMutation(
-                        userIds = Optional.present(userIds),
-                        isPrivate = isPrivate,
-                        name = chatName
+                val response = Apollo.apolloClient
+                    .mutation(
+                        CreateTestGroupMutation(
+                            userIds = userIdsOptional,
+                            isPrivate = isPrivate,
+                            name = chatName
+                        )
+                    ).execute()
+
+                if (response.hasErrors()) {
+                    Log.e(TAG, "Erreur GraphQL lors de la création du chat: ${response.errors}")
+                    return Result.failure(Exception("Erreur GraphQL: ${response.errors?.firstOrNull()?.message}"))
+                }
+
+                val createdChat = response.data?.createChat
+                if (createdChat != null) {
+                    Log.i(TAG, "Chat créé avec succès. ID: ${createdChat._id}")
+                    return Result.success(createdChat)
+                } else {
+                    Log.w(
+                        TAG,
+                        "La création du chat n'a retourné aucune donnée, mais pas d'erreur GraphQL."
                     )
-                ).execute()
+                    return Result.failure(Exception("Les données du chat créé sont nulles."))
+                }
 
-            if (response.hasErrors()) {
-                Log.e(TAG, "Erreur GraphQL lors de la création du chat: ${response.errors}")
-                return Result.failure(Exception("Erreur GraphQL: ${response.errors?.firstOrNull()?.message}"))
+            } catch (e: Exception) {
+                Log.e(TAG, "Exception lors de la création du chat", e)
+                return Result.failure(e)
             }
-
-            val createdChat = response.data?.createChat
-            if (createdChat != null) {
-                Log.i(TAG, "Chat créé avec succès. ID: ${createdChat._id}")
-                return Result.success(createdChat)
-            } else {
-                Log.w(TAG, "La création du chat n'a retourné aucune donnée, mais pas d'erreur GraphQL.")
-                return Result.failure(Exception("Les données du chat créé sont nulles."))
-            }
-
-        } catch (e: Exception) {
-            Log.e(TAG, "Exception lors de la création du chat", e)
-            return Result.failure(e)
         }
     }
-}
+

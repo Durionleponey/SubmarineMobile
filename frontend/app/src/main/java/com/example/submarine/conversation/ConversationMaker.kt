@@ -4,6 +4,8 @@ import android.util.Log
 import com.apollographql.apollo3.api.Optional
 import com.example.submarine.graphql.CreateTestGroupMutation
 import com.example.submarine.network.Apollo
+import com.example.submarine.graphql.CreateMessageMutation // <-- Importer la nouvelle mutation
+import com.example.submarine.graphql.type.CreateMessageInput // <-- Importer le type d'input
 
 object ChatService {
     private const val TAG = "ChatService"
@@ -66,5 +68,45 @@ object ChatService {
                 return Result.failure(e)
             }
         }
+
+
+    suspend fun sendMessage(
+        content: String,
+        chatId: String
+    ): Result<CreateMessageMutation.CreateMessage?> {
+        Log.d(TAG, "Tentative de sendMessage avec le contenu: $content et le chatId: $chatId")
+        try {
+            val createMessageInput = CreateMessageInput(
+                content = content,
+                chatId = chatId
+            )
+
+            val response = Apollo.apolloClient
+                .mutation(CreateMessageMutation(createMessageInput))
+                .execute()
+
+            if (response.hasErrors()) {
+                val errorMessage = response.errors?.joinToString { it.message } ?: "Unknown error"
+                Log.e(TAG, "Erreur GraphQL lors de la création du message: $errorMessage")
+                return Result.failure(Exception("Erreur GraphQL: $errorMessage"))
+            }
+
+            val sentMessage = response.data?.createMessage
+            if (sentMessage != null) {
+                Log.i(TAG, "Message envoyé avec succès. ID: ${sentMessage._id}")
+                return Result.success(sentMessage)
+            }else {
+                Log.w(
+                    TAG,
+                    "La création du message n'a retourné aucune donnée, mais pas d'erreur GraphQL."
+                )
+                return Result.failure(Exception("Les données du message créé sont nulles."))
+            }
+
+        }catch (e: Exception) {
+            Log.e(TAG, "Exception lors de la création du message", e)
+            return Result.failure(e)
+        }
     }
+}
 

@@ -40,6 +40,8 @@ class ConversationViewModel : ViewModel() {
 
     private var subscriptionJob: Job? = null
 
+    private val _activeChatId = MutableStateFlow<String?>(null)
+    val activeChatId = _activeChatId.asStateFlow()
 
 
     /**
@@ -64,6 +66,7 @@ class ConversationViewModel : ViewModel() {
                 val chatId = chat?._id
                 if (chatId != null) {
                     Log.i(TAG, "Chat created with ID: $chatId")
+                    _activeChatId.value = chatId
                     _creationState.value = ChatState.CreationSuccess(chatId)
                     subscribeToChat(chatId)
 
@@ -91,15 +94,41 @@ class ConversationViewModel : ViewModel() {
 
         subscriptionJob = viewModelScope.launch {
             Subscribe.subscribeToConversation(chatId)
-                .collect { newMessages ->
+                .collect { newMessage ->
                     if(_subscriptionState.value !is SubscriptionState.Connected) {
                         _subscriptionState.value = SubscriptionState.Connected
                         Log.i(TAG, "Subscribed to chat with ID: $chatId")
                     }
                     _messages.update { currentMessages ->
-                        currentMessages + newMessages
+                        currentMessages + newMessage
                     }
                 }
+        }
+    }
+
+    /**
+     * Fonction appelée par le UI
+     */
+
+    fun sendMessage(message: String) {
+        val chatId = _activeChatId.value
+        if (chatId == null) {
+            Log.w(TAG, "sendMessage() called with no active chat")
+            return
+        }
+
+        if (message.isBlank()) {
+            Log.w(TAG, "sendMessage() called with empty message")
+            return
+        }
+
+        viewModelScope.launch {
+            val result = ChatService.sendMessage(message, chatId)
+            result.onSuccess { sentMessage ->
+                Log.i(TAG, "Message sent: $sentMessage")
+            }.onFailure { e ->
+                Log.e(TAG, "Message sending failed", e)
+            }
         }
     }
 

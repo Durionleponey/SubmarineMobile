@@ -39,7 +39,8 @@ fun ConversationScreen(
     onNavigateBack: () -> Unit,
     creationState: ChatState,
     subscriptionState: SubscriptionState,
-    userId: String
+    otherUserId: String,
+    onSentMessage: (String) -> Unit
 
 
 ) {
@@ -94,7 +95,7 @@ fun ConversationScreen(
                 reverseLayout = true
             ) {
                 items(messages.asReversed()) { message ->
-                    val isSentByMe = message.userId == userId
+                    val isSentByMe = message.userId == otherUserId
 
                     MessageBubble(message = message.content, isSentByMe = isSentByMe)
                 }
@@ -129,7 +130,8 @@ fun ConversationScreen(
                         isEnabled = textState.isNotBlank(),
                         onClick = {
                             if (textState.isNotBlank()) {
-                                messagesList.add(Message(textState, true))
+                                //messagesList.add(Message(textState, true))
+                                onSentMessage(textState)
                                 textState = ""
                             }
                         }
@@ -155,7 +157,8 @@ fun ConversationScreenPreview() {
             creationState = ChatState.Idle,
             subscriptionState = SubscriptionState.Disconnected,
             onNavigateBack = {},
-            userId = "1_test"
+            otherUserId = "1_test",
+            onSentMessage = {}
 
         )
     }

@@ -50,7 +50,7 @@ class ConversationActivity : ComponentActivity() {
                 val creationState by viewModel.creationState.collectAsState()
                 val subState by viewModel.subscriptionState.collectAsState()
 
-                LaunchedEffect(true) {
+                LaunchedEffect(key1 = userId) {
                     val participants = listOf(userId)
                     Log.d(TAG, "Lancement de la création du chat avec: $participants")
 
@@ -67,7 +67,10 @@ class ConversationActivity : ComponentActivity() {
                     onNavigateBack = {
                         finish()
                     },
-                    userId = userId,
+                    otherUserId = userId,
+                    onSentMessage = { messageContent ->
+                        viewModel.sendMessage(messageContent)
+                    }
                 )
             }
         }

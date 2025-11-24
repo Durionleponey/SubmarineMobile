@@ -10,6 +10,7 @@ import androidx.compose.ui.Modifier
 import com.example.submarine.ui.theme.SubmarineTheme
 import com.example.submarine.screens.HomeScreen
 
+import com.example.submarine.admin.AdminActivity
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -27,4 +28,6 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
+
 }
+

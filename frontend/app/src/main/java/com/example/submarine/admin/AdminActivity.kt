@@ -18,23 +18,16 @@ class AdminActivity : ComponentActivity() {
 import androidx.activity.compose.setContent
 import com.example.submarine.ui.theme.SubmarineTheme
 
-internal class {
-    internal inner class AdminActivity
+class AdminActivity : ComponentActivity() {
 
-    fun ComponentActivity() {
-        val `fun`: override?
-        onCreate(savedInstanceState)
-        if (Bundle)
-            run {
-                super.onCreate(savedInstanceState)
-                setContent
-                run {
-                    SubmarineTheme
-                    run {
-                        TableauDeBordScreen()
-                    }
-                }
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        setContent {
+            SubmarineTheme {
+                TableauDeBordScreen()
             }
+        }
     }
     **/
 }

@@ -17,6 +17,7 @@ import com.example.submarine.contacts.ContactsActivity
 import com.example.submarine.conversation.ConversationActivity
 //import com.example.submarine.auth.Signup
 import com.example.submarine.ui.theme.SubmarineTheme
+import com.example.submarine.admin.AdminActivity
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -67,7 +68,7 @@ fun MainScreen() {
             }
 
             Button(onClick = {
-                val intent = Intent(context, )
+                val intent = Intent(context,AdminActivity::class.java )
                 context.startActivity(intent)
             }) {
                 Text("Administrateur")

@@ -1,175 +1,112 @@
 package com.example.submarine.auth
 
-import android.app.Activity
 import android.content.Intent
-import android.os.Bundle
-import android.util.Log
-import android.widget.Toast
 import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Button
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
-import com.example.submarine.MainActivity
-import com.example.submarine.ui.theme.SubmarineTheme
-import kotlinx.coroutines.launch
-import okhttp3.*
-import okhttp3.MediaType.Companion.toMediaTypeOrNull
-import okhttp3.RequestBody.Companion.toRequestBody
-import org.json.JSONObject
-import java.io.IOException
+import com.example.submarine.contacts.ContactsActivity
+import com.example.submarine.network.LoginRequest
+import com.example.submarine.network.RetrofitInstance
+import com.example.submarine.network.TokenProvider
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-// La classe de l'activité reste inchangée
-class LoginActivity : ComponentActivity() {
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContent {
-            SubmarineTheme {
-                LoginScreen(
-                    onLoginSuccess = {
-                        // Rediriger vers l'activité principale
-                        val intent = Intent(this, MainActivity::class.java)
-                        startActivity(intent)
-                        finish() // Empêche l'utilisateur de revenir à l'écran de connexion
-                    }
-                )
-            }
-        }
-    }
-}
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun LoginScreen(onLoginSuccess: () -> Unit) {
-    var email by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
-    var isLoading by remember { mutableStateOf(false) }
-
+fun LoginScreen() {
     val context = LocalContext.current
-    val coroutineScope = rememberCoroutineScope()
-    val sessionManager: SessionManager = remember { SessionManager(context) }
-    val client = remember { OkHttpClient() }
+    val activity = context as? ComponentActivity
+    val intent = activity?.intent
 
+    val prefillEmail = intent?.getStringExtra("email") ?: ""
+    val prefillPassword = intent?.getStringExtra("password") ?: ""
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text("Connexion") },
-                navigationIcon = {
-                    IconButton(onClick = {
-                        // Ferme l'activité actuelle et revient à la précédente (WelcomeActivity)
-                        (context as? Activity)?.finish()
-                    }) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Retour"
-                        )
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.background
-                )
+    var email by remember { mutableStateOf(prefillEmail) }
+    var password by remember { mutableStateOf(prefillPassword) }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(24.dp),
+        verticalArrangement = Arrangement.spacedBy(24.dp)
+    ) {
+        Text(text = "Login", style = MaterialTheme.typography.headlineMedium)
+
+        OutlinedTextField(
+            value = email,
+            onValueChange = { email = it },
+            label = { Text("Email") },
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        OutlinedTextField(
+            value = password,
+            onValueChange = { password = it },
+            label = { Text("Password") },
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        if (errorMessage != null) {
+            Text(
+                text = errorMessage!!,
+                color = MaterialTheme.colorScheme.error,
+                style = MaterialTheme.typography.bodyMedium
             )
         }
-    ) { innerPadding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding) // Applique le padding de la Scaffold
-                .padding(horizontal = 32.dp), // Garde votre padding horizontal
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
 
+        Button(
+            onClick = {
+                CoroutineScope(Dispatchers.IO).launch {
+                    val response = RetrofitInstance.authApi.login(LoginRequest(email, password))
+                    if (response.isSuccessful) {
+                        TokenProvider.token = response.body()?.token
+                        println("✅ Token reçu : ${TokenProvider.token}")
 
-            OutlinedTextField(
-                value = email,
-                onValueChange = { email = it },
-                label = { Text("Email") },
-                modifier = Modifier.fillMaxWidth(),
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email),
-                singleLine = true
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-
-            OutlinedTextField(
-                value = password,
-                onValueChange = { password = it },
-                label = { Text("Mot de passe") },
-                modifier = Modifier.fillMaxWidth(),
-                visualTransformation = PasswordVisualTransformation(),
-                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password),
-                singleLine = true
-            )
-            Spacer(modifier = Modifier.height(32.dp))
-
-            Button(
-                onClick = {
-                    if (email.isBlank() || password.isBlank()) {
-                        Toast.makeText(context, "Veuillez remplir tous les champs.", Toast.LENGTH_SHORT).show()
-                        return@Button
-                    }
-
-                    isLoading = true
-                    coroutineScope.launch {
-                        try {
-                            val token = withContext(Dispatchers.IO) {
-                                val url = "http://10.0.2.2:3000/auth/login"
-                                val jsonBody = JSONObject().apply {
-                                    put("email", email)
-                                    put("password", password)
-                                }.toString()
-                                val requestBody = jsonBody.toRequestBody("application/json".toMediaTypeOrNull())
-                                val request = Request.Builder().url(url).post(requestBody).build()
-
-                                client.newCall(request).execute().use { response ->
-                                    if (!response.isSuccessful) {
-                                        throw IOException("Code de réponse inattendu: ${response.code}")
-                                    }
-                                    val responseBody = response.body?.string()
-                                    responseBody?.let { JSONObject(it).optString("access_token") }
-                                }
-                            }
-
-                            if (!token.isNullOrEmpty()) {
-                                Log.d("LOGIN_SUCCESS", "Token reçu et sauvegardé.")
-                                sessionManager.saveAuthToken(token)
-                                onLoginSuccess()
-                            } else {
-                                Log.e("LOGIN_ERROR", "Token manquant dans la réponse.")
-                                Toast.makeText(context, "Email ou mot de passe incorrect.", Toast.LENGTH_LONG).show()
-                            }
-
-                        } catch (e: Exception) {
-                            Log.e("LOGIN_FAILURE", "Erreur de connexion réseau", e)
-                            Toast.makeText(context, "Erreur de connexion. Vérifiez votre réseau.", Toast.LENGTH_LONG).show()
-                        } finally {
-                            isLoading = false
+                        withContext(Dispatchers.Main) {
+                            errorMessage = null
+                            val intent = Intent(context, ContactsActivity::class.java)
+                            context.startActivity(intent)
+                        }
+                    } else {
+                        println("❌ Erreur lors de la connexion : ${response.errorBody()?.string()}")
+                        withContext(Dispatchers.Main) {
+                            errorMessage = "Email ou mot de passe incorrect."
                         }
                     }
-                },
-                modifier = Modifier.fillMaxWidth(),
-                enabled = !isLoading
-            ) {
-                if (isLoading) {
-                    CircularProgressIndicator(modifier = Modifier.size(24.dp), color = MaterialTheme.colorScheme.onPrimary)
-                } else {
-                    Text("Se connecter")
                 }
-            }
+            },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("Login")
+        }
+
+        OutlinedButton(
+            onClick = {
+                val intent = Intent(context, SignUpActivity::class.java)
+                context.startActivity(intent)
+            },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("Create a new account")
         }
     }
 }

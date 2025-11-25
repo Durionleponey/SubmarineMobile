@@ -2,7 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
-    id("com.apollographql.apollo3")
+    alias(libs.plugins.apollo)
 }
 
 
@@ -42,6 +42,14 @@ android {
     buildToolsVersion = "35.0.0"
 }
 
+
+apollo {
+    service("service") {
+        packageName.set("com.example.submarine.graphql")
+        srcDir(file("src/main/graphql"))
+    }
+}
+
 dependencies {
     implementation("androidx.appcompat:appcompat:1.6.1")
     implementation("com.google.android.material:material:1.9.0")
@@ -60,21 +68,18 @@ dependencies {
     androidTestImplementation(libs.androidx.compose.ui.test.junit4)
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
-    implementation("androidx.navigation:navigation-compose:2.9.5")
+    implementation("com.squareup.retrofit2:retrofit:2.11.0")
+    implementation("com.squareup.retrofit2:converter-gson:2.11.0")
+    implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
 
     implementation("androidx.navigation:navigation-compose:2.9.5")
     implementation("androidx.compose.material3:material3")
     implementation("androidx.compose.material:material-icons-core:1.7.8")
     implementation("androidx.compose.material:material-icons-extended:1.7.8")
-    //Apollo pour les appels API
-    implementation("com.apollographql.apollo3:apollo-runtime:3.8.6")
-    implementation("com.squareup.okhttp3:okhttp:4.12.0")
 
-}
 
-apollo {
-    service("service") { // "service" est le nom par défaut, vous pouvez le garder
-        // Indique à Apollo de générer les classes dans ce package
-        packageName.set("com.example.submarine.graphql")
-    }
+    implementation(libs.apollo.adapters)
+    implementation(libs.apollo.runtime)
+    implementation(libs.apollo.api)
+
 }

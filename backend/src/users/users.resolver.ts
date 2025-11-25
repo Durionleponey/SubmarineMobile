@@ -8,6 +8,7 @@ import {GqlAuthGuard} from "../auth/guards/gql-auth.guard";
 import {CurrentUser} from "../auth/current-user.decorator";
 import {TokenPayload} from "../auth/token-payload.interface";
 import * as sea from "node:sea";
+import {UpdateUserBio} from "./dto/update-user-input";
 
 @Resolver(() => User)
 export class UsersResolver {
@@ -19,14 +20,14 @@ export class UsersResolver {
   }
 
   @Query(() => [User], { name: 'users' })
-  //@UseGuards(GqlAuthGuard)
-  findAll(@Args('search', { type: () => String! }) search: string) {
+  @UseGuards(GqlAuthGuard)
+  findAll(@Args('search', { type: () => String!}) search: string) {
     return this.usersService.findAll(search);
   }
 
 
   @Query(() => User, { name: 'user' })
-  //@UseGuards(GqlAuthGuard)//test
+  @UseGuards(GqlAuthGuard)//test a reactiver quand AUTHENTIFICATION marchera
   findOne(@Args('id', { type: () => String }) id: string) {
     return this.usersService.findOne(id);
   }
@@ -39,7 +40,7 @@ export class UsersResolver {
   }
 
   @Mutation(() => User)
-  //@UseGuards(GqlAuthGuard)
+  @UseGuards(GqlAuthGuard)
   updateUser(
       @Args('updateUserInput') updateUserInput: UpdateUserInput,
       @CurrentUser() user: TokenPayload,
@@ -47,17 +48,36 @@ export class UsersResolver {
     return this.usersService.update(user._id, updateUserInput);
   }
 
+  @Mutation(() => User)
+  @UseGuards(GqlAuthGuard)
+  updateBio(
+      @Args('updateUserBio') updateUserBio: UpdateUserBio,
+      @CurrentUser() user: TokenPayload,
+  ) {
+    return this.usersService.updateBio(user._id,  updateUserBio );
+  }
+
 
   @Mutation(() => User)
-  //@UseGuards(GqlAuthGuard)
+  @UseGuards(GqlAuthGuard)
   removeUser(
       //@Args('id') id: string,
       @CurrentUser() user: TokenPayload) {
     return this.usersService.remove(user._id);
   }
+  
+  @Query(() => String, { name: 'getBio' })
+  @UseGuards(GqlAuthGuard)
+  async getBio(@CurrentUser() user: TokenPayload) {
+    const foundUser = await this.usersService.findOne(user._id);
+    return foundUser.bio ?? ""; // retourne la bio actuelle ou une chaîne vide
+  }
+  
+
+
 
   @Query(() => User, { name: 'me' })
-  //@UseGuards(GqlAuthGuard)
+  @UseGuards(GqlAuthGuard)
   getMe(@CurrentUser() user: TokenPayload) {//getMe will return the current login user idk how it's work but it's work
     return user;
   }

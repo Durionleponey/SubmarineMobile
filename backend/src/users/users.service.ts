@@ -4,6 +4,7 @@ import { UpdateUserInput } from './dto/update-user.input';
 import {UsersRepository} from "./users.repository";
 import * as bcrypt from 'bcryptjs'
 import {uniqueNamesGenerator, adjectives, colors, animals} from 'unique-names-generator';
+import {UpdateUserBio} from "./dto/update-user-input";
 
 @Injectable()
 export class UsersService {
@@ -27,6 +28,7 @@ export class UsersService {
       ...createUserInput,
       password: await this.hashPassword(createUserInput.password),
       pseudo,
+      bio:"",
     });
   }
 
@@ -96,4 +98,19 @@ export class UsersService {
     }
     return user;
   }
+  async updateBio(_id: string, UpdateUserBio: UpdateUserBio) {
+    if (UpdateUserBio.bio && UpdateUserBio.bio.length > 150) {
+      throw new Error('Bio must not exceed 150 characters');
+    }
+    return this.userRepository.findOneAndUpdate({ _id: _id }, {
+      $set: {
+        ...UpdateUserBio, // set update only the UserInputed field
+      }
+    });
+  }
+
+  async getBio(_id: string) {
+    return this.userRepository.findOne({ _id: _id });
+  }
+
 }

@@ -1,0 +1,11 @@
+mutation CreateTestGroup($userIds: [String!],$isPrivate: Boolean!, $name: String) {
+  createChat(createChatInput: {
+    isPrivate: $isPrivate,
+    userIds: $userIds
+    name: $name
+  }) {
+    _id
+    name
+    userIds
+  }
+}

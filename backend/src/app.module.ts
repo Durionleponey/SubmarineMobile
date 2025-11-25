@@ -36,7 +36,8 @@ import {AuthService} from "./auth/auth.service";
                           try {
                               const request: Request = context.extra.request;
                               //console.log('✨✨✨',request);
-                              const user = authService.verifyWs(request);
+                              const user = authService.verifyWs(request as any);
+
                               context.user = user;
                               //console.log('✨✨✨', user, '🥰🥰🥰');
                           } catch (err) {

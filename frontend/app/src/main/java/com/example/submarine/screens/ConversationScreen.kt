@@ -24,6 +24,7 @@ import com.example.submarine.conversation.composants.IconUser
 import com.example.submarine.conversation.composants.Media
 import com.example.submarine.conversation.composants.PhotoSend
 import com.example.submarine.conversation.composants.SendButton
+import com.example.submarine.graphql.GetMessagesQuery
 import com.example.submarine.graphql.SubscribeToMessagesSubscription
 
 
@@ -35,7 +36,7 @@ data class Message(
 @Composable
 fun ConversationScreen(
     contactName: String,
-    messages: List<SubscribeToMessagesSubscription.MessageCreated>,
+    messages: List<GetMessagesQuery.GetMessage>,
     onNavigateBack: () -> Unit,
     creationState: ChatState,
     subscriptionState: SubscriptionState,

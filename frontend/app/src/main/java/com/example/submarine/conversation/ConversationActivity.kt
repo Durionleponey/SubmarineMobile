@@ -64,9 +64,7 @@ class ConversationActivity : ComponentActivity() {
                     messages = message,
                     creationState = creationState,
                     subscriptionState = subState,
-                    onNavigateBack = {
-                        finish()
-                    },
+                    onNavigateBack = {finish()},
                     otherUserId = userId,
                     onSentMessage = { messageContent ->
                         viewModel.sendMessage(messageContent)

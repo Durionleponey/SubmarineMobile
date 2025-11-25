@@ -4,8 +4,10 @@ import android.util.Log
 import com.apollographql.apollo3.api.Optional
 import com.example.submarine.graphql.CreateTestGroupMutation
 import com.example.submarine.network.Apollo
-import com.example.submarine.graphql.CreateMessageMutation // <-- Importer la nouvelle mutation
-import com.example.submarine.graphql.type.CreateMessageInput // <-- Importer le type d'input
+import com.example.submarine.graphql.CreateMessageMutation
+import com.example.submarine.graphql.type.CreateMessageInput
+import com.example.submarine.graphql.GetMessagesQuery
+import com.apollographql.apollo3.exception.ApolloException
 
 object ChatService {
     private const val TAG = "ChatService"
@@ -105,6 +107,43 @@ object ChatService {
 
         }catch (e: Exception) {
             Log.e(TAG, "Exception lors de la création du message", e)
+            return Result.failure(e)
+        }
+
+    }
+
+    /**
+     * Fonction pour récupérer les messages d'une conv entamée et existante
+     *
+     * @param chatId L'ID du chat pour lequel on souhaite récupérer les messages.
+     * @return Un Result contenant la liste des messages récupérés ou une exception.
+     */
+
+    suspend fun getMessages(chatId: String): Result<List<GetMessagesQuery.GetMessage>> {
+        Log.d(TAG, "Tentative de récupérer les messages pour le chatId: $chatId")
+        try {
+            val response = Apollo.apolloClient
+                .query(GetMessagesQuery(chatId = chatId))
+                .execute()
+
+            if (response.hasErrors()) {
+                val errorMessage = response.errors?.joinToString { it.message } ?: "Unknown error"
+                Log.e(TAG, "Erreur GraphQL lors de la récupération des messages: $errorMessage")
+                return Result.failure(Exception("Erreur GraphQL: $errorMessage"))
+            }
+
+            val messages = response.data?.getMessages
+            if(messages != null){
+                Log.i(TAG, "Récupération des messages réussie. Nombre de messages: ${messages.size}")
+                return Result.success(messages)
+            }else{
+                Log.i(TAG, "Aucune donnée de message trouvée ${chatId}")
+                return Result.success(emptyList())
+
+            }
+
+        }catch(e: ApolloException){
+            Log.e(TAG, "Exception lors de la récupération des messages", e)
             return Result.failure(e)
         }
     }

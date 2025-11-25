@@ -3,26 +3,30 @@ package com.example.submarine.conversation
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.submarine.graphql.GetMessagesQuery
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import com.example.submarine.graphql.SubscribeToMessagesSubscription
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.update
+import com.example.submarine.conversation.Message
+import kotlinx.coroutines.flow.StateFlow
+import kotlin.collections.emptyList
 
 
 sealed class ChatState {
     object Idle : ChatState()
     object Creating : ChatState()
     data class CreationSuccess(val chatId: String) : ChatState()
-    data class Error(val message: String) : ChatState()
+    data class Error(val errMessages: String) : ChatState()
 }
 
 sealed class SubscriptionState{
     object Disconnected : SubscriptionState()
     object Connecting : SubscriptionState()
     object Connected : SubscriptionState()
-    data class Error(val message: String) : SubscriptionState()
+    data class Error(val messages: String) : SubscriptionState()
 }
 
 class ConversationViewModel : ViewModel() {
@@ -35,7 +39,7 @@ class ConversationViewModel : ViewModel() {
     private val _subscriptionState = MutableStateFlow<SubscriptionState>(SubscriptionState.Disconnected)
     val subscriptionState = _subscriptionState.asStateFlow()
 
-    private val _messages = MutableStateFlow<List<SubscribeToMessagesSubscription.MessageCreated>>(emptyList())
+    private val _messages = MutableStateFlow<List<GetMessagesQuery.GetMessage>>(emptyList())
     val messages = _messages.asStateFlow()
 
     private var subscriptionJob: Job? = null
@@ -68,6 +72,7 @@ class ConversationViewModel : ViewModel() {
                     Log.i(TAG, "Chat created with ID: $chatId")
                     _activeChatId.value = chatId
                     _creationState.value = ChatState.CreationSuccess(chatId)
+                    loadMessages(chatId)
                     subscribeToChat(chatId)
 
                 } else {
@@ -86,22 +91,25 @@ class ConversationViewModel : ViewModel() {
      *
      * @param chatId
      */
-    private fun subscribeToChat(chatId: String) {
+    private fun subscribeToChat(chatId: String = "6925c293e8af95a96a319b6c") {
         subscriptionJob?.cancel()
-        _messages.value = emptyList()
 
         _subscriptionState.value = SubscriptionState.Connecting
 
         subscriptionJob = viewModelScope.launch {
             Subscribe.subscribeToConversation(chatId)
-                .collect { newMessage ->
+                .collect { newMessageFromSubscription ->
                     if(_subscriptionState.value !is SubscriptionState.Connected) {
                         _subscriptionState.value = SubscriptionState.Connected
                         Log.i(TAG, "Subscribed to chat with ID: $chatId")
                     }
-                    _messages.update { currentMessages ->
-                        currentMessages + newMessage
-                    }
+                    val convertedMessage = GetMessagesQuery.GetMessage(
+                        _id = newMessageFromSubscription._id,
+                        content = newMessageFromSubscription.content,
+                        userId = newMessageFromSubscription.userId,
+                    )
+
+                    _messages.update { currentMessages -> currentMessages + convertedMessage }
                 }
         }
     }
@@ -110,20 +118,20 @@ class ConversationViewModel : ViewModel() {
      * Fonction appelée par le UI
      */
 
-    fun sendMessage(message: String) {
+    fun sendMessage(messageContent: String) {
         val chatId = _activeChatId.value
         if (chatId == null) {
             Log.w(TAG, "sendMessage() called with no active chat")
             return
         }
 
-        if (message.isBlank()) {
+        if (messageContent.isBlank()) {
             Log.w(TAG, "sendMessage() called with empty message")
             return
         }
 
         viewModelScope.launch {
-            val result = ChatService.sendMessage(message, chatId)
+            val result = ChatService.sendMessage(messageContent, chatId)
             result.onSuccess { sentMessage ->
                 Log.i(TAG, "Message sent: $sentMessage")
             }.onFailure { e ->
@@ -167,6 +175,28 @@ class ConversationViewModel : ViewModel() {
 
         }
     }
+
+    /**
+     * Fonction pour afficher l'historique des messages du chat
+     * @param chatId id du chat
+     */
+
+    private fun loadMessages(chatId: String = "6925c293e8af95a96a319b6c") {
+        Log.d(TAG, "loadMessages() called")
+        viewModelScope.launch {
+            val result = ChatService.getMessages(chatId)
+            result.onSuccess { messagesHist ->
+                Log.i(TAG, "Messages loaded: $messagesHist")
+                _messages.value = messagesHist
+            }.onFailure { e ->
+                Log.e(TAG, "Message loading failed", e)
+                _creationState.value = ChatState.Error("Message loading failed: ${e.message}")
+
+            }
+        }
+
+    }
+
 
 
 }

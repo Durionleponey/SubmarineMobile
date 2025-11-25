@@ -30,7 +30,7 @@ import com.example.submarine.auth.LoginActivity
 import com.example.submarine.auth.SignUpActivity
 import com.example.submarine.ui.theme.SubmarineTheme // Assurez-vous que votre thème est bien configuré
 import com.example.submarine.conversation.ConversationActivity
-import com.example.submarine.contacts.ContactsActivity
+import com.example.submarine.listeContact.ContactsActivity
 import androidx.compose.ui.res.painterResource
 import com.example.submarine.R
 

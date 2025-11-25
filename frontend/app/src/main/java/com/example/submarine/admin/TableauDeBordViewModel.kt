@@ -32,11 +32,8 @@ class TableauDeBordViewModel : ViewModel() {
     }
 
     fun supprimerUtilisateur(userId: Int) {
-        // `update` est la manière sécurisée de modifier l'état.
         _uiState.update { currentState ->
-            // On crée une nouvelle liste qui contient tous les utilisateurs SAUF celui avec l'ID correspondant.
             val nouvelleListe = currentState.users.filter { user -> user.id != userId }
-            // On retourne le nouvel état avec la liste mise à jour.
             currentState.copy(users = nouvelleListe)
         }
     }

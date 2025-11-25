@@ -13,9 +13,7 @@ import com.example.submarine.ui.theme.SubmarineTheme
 @Composable
 fun AdminHomeScreen(
     onNavigateToUsers: () -> Unit,
-    // On ajoutera les autres navigations ici plus tard
-    // onNavigateToDeletedAccounts: () -> Unit,
-    // onNavigateToStats: () -> Unit
+    onNavigateToStats: () -> Unit
 ) {
     Scaffold(
         topBar = {
@@ -43,22 +41,22 @@ fun AdminHomeScreen(
                 Text("Gestion des Utilisateurs")
             }
 
-            // Bouton pour les comptes supprimés (désactivé pour l'instant)
+            // Bouton pour les comptes supprimés
             Button(
                 onClick = { /* TODO */ },
-                enabled = false, // On le désactive en attendant de créer l'écran
+                enabled = false,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text("Comptes Supprimés (Bientôt)")
+                Text("Comptes Supprimés")
             }
 
-            // Bouton pour les statistiques (désactivé pour l'instant)
+            // Bouton pour les statistiques
             Button(
-                onClick = { /* TODO */ },
-                enabled = false, // On le désactive aussi
+                onClick = onNavigateToStats,
+                enabled = true,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text("Statistiques (Bientôt)")
+                Text("Statistiques")
             }
         }
     }
@@ -69,7 +67,8 @@ fun AdminHomeScreen(
 fun AdminHomeScreenPreview() {
     SubmarineTheme {
         AdminHomeScreen(
-            onNavigateToUsers = {} // Pour la preview, l'action du clic ne fait rien
+            onNavigateToUsers = {},
+            onNavigateToStats = {}
         )
     }
 }

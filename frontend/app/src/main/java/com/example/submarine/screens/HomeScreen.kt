@@ -1,13 +1,11 @@
 package com.example.submarine.screens
 
-import androidx.compose.foundation.BorderStroke
-
-
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -21,25 +19,19 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.submarine.R
 import com.example.submarine.auth.LoginActivity
 import com.example.submarine.auth.SignUpActivity
-import com.example.submarine.ui.theme.SubmarineTheme // Assurez-vous que votre thème est bien configuré
-import com.example.submarine.conversation.ConversationActivity
+import com.example.submarine.bio.EditBioActivity // <--- IMPORT AJOUTÉ
 import com.example.submarine.contacts.ContactsActivity
-import androidx.compose.ui.res.painterResource
-import com.example.submarine.R
-
-
-
-
-
-
-
+import com.example.submarine.conversation.ConversationActivity
+import com.example.submarine.ui.theme.SubmarineTheme
 
 @Composable
 fun HomeScreen() {
@@ -83,7 +75,7 @@ fun HomeScreen() {
             // Bouton "Se Connecter"
             Button(
                 onClick = {
-                    val intent = Intent(context, LoginActivity::class.java) // Pointe vers Signup pour l'instant
+                    val intent = Intent(context, LoginActivity::class.java)
                     context.startActivity(intent)
                 },
                 modifier = Modifier
@@ -119,33 +111,39 @@ fun HomeScreen() {
             }
         }
 
-        // --- Note de bas de page ---
+        // --- Note de bas de page (Navigation rapide) ---
 
         Row(
             modifier = Modifier
-                .align(Alignment.BottomCenter) // Aligne la rangée en bas de la Box
+                .align(Alignment.BottomCenter)
                 .fillMaxWidth()
                 .padding(bottom = 16.dp),
-            horizontalArrangement = Arrangement.SpaceEvenly,
+            horizontalArrangement = Arrangement.SpaceEvenly, // Espacement équitable
             verticalAlignment = Alignment.CenterVertically
         ) {
-            val context = LocalContext.current // Le contexte doit être redéfini ici ou passé en paramètre
-            // Bouton pour la liste de contacts
+            // Bouton Contacts
             TextButton(onClick = {
                 val intent = Intent(context, ContactsActivity::class.java)
                 context.startActivity(intent)
             }) {
-                Text("Liste Contacts", fontSize = 12.sp)
+                Text("Contacts", fontSize = 12.sp)
             }
 
-            // Bouton pour la liste de conversations
+            // Bouton Bio (AJOUTÉ ICI) 👇
+            TextButton(onClick = {
+                val intent = Intent(context, EditBioActivity::class.java)
+                context.startActivity(intent)
+            }) {
+                Text("Ma Bio", fontSize = 12.sp)
+            }
+
+            // Bouton Conversations
             TextButton(onClick = {
                 val intent = Intent(context, ConversationActivity::class.java)
                 context.startActivity(intent)
             }) {
-                Text("Conversations", fontSize = 12.sp)
+                Text("Chats", fontSize = 12.sp)
             }
-
         }
     }
 }
@@ -159,9 +157,7 @@ fun AppHeader() {
         Image(
             painter = painterResource(id = R.drawable.submarine),
             contentDescription = "Logo",
-            modifier = Modifier
-                .size(100.dp)
-
+            modifier = Modifier.size(100.dp)
         )
         Text(
             text = "Submarine",
@@ -169,7 +165,6 @@ fun AppHeader() {
             fontWeight = FontWeight.Bold,
             color = MaterialTheme.colorScheme.onSurface
         )
-
     }
 }
 

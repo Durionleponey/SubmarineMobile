@@ -1,7 +1,5 @@
 package com.example.submarine.network
 
-
-
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET
@@ -17,4 +15,8 @@ interface AuthApiService {
 
     @GET("auth/profile")
     suspend fun getProfile(): Response<UserResponse>
+
+    // 👇 C'est la nouvelle ligne à ajouter
+    @POST("auth/logout")
+    suspend fun logout(): Response<Void>
 }

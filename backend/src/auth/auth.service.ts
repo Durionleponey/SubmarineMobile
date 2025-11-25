@@ -48,7 +48,7 @@ export class AuthService {
     });
   }
 
-  verifyWs(request: Request): TokenPayload {
+  verifyWsWeb(request: Request): TokenPayload {
     // @ts-ignore
     const cookies: string[] = request.headers.cookie.split('; ');
     const authCookie = cookies.find((cookie) =>
@@ -61,5 +61,20 @@ export class AuthService {
 
     const jwt = authCookie.split('Authentification=')[1];
     return this.jwtService.verify(jwt);
+  }
+
+    verifyWs(connectionParams: any): TokenPayload {
+    const authHeader = connectionParams.Authorization || connectionParams.authorization;
+
+    if (!authHeader) {
+      throw new UnauthorizedException('No authorization header found in WebSocket payload');
+    }
+    const [bearer, token] = authHeader.split(' ');
+
+    if (bearer !== 'Bearer' || !token) {
+        throw new UnauthorizedException('Invalid authorization header format');
+    }
+
+    return this.jwtService.verify(token);
   }
 }

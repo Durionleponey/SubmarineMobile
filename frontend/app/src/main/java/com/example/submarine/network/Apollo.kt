@@ -54,9 +54,13 @@ object Apollo {
                 protocolFactory = GraphQLWsProtocol.Factory(
                     connectionPayload = {
                         val token =TokenProvider.token
-                        if(token != null){
-                            Log.d(APOLLO_TAG, "Interception WS, token trouvé")
-                            mapOf("Authorization" to "Bearer $token")
+                        Log.d(APOLLO_TAG, "[WS PAYLOAD] - Le token récupéré est: '$token'")
+                        if(token != null && token.isNotEmpty()){
+                            val  payload = mapOf(
+                                "Authorization" to "Bearer $token"
+                            )
+                            Log.d(APOLLO_TAG, "Interception WS, token trouvé ${payload}")
+                            payload
                         }else{
                             Log.w(APOLLO_TAG, "Interception WS, token non trouvé")
                             emptyMap()

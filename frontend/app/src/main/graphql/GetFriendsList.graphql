@@ -1,0 +1,8 @@
+query GetFriendsList {
+    friendsList {
+        _id
+        pseudo
+        email
+        bio
+    }
+}

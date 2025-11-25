@@ -2,7 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
-    alias(libs.plugins.apollo)
+    alias(libs.plugins.apollo) // <--- On garde uniquement celle-ci
 }
 
 
@@ -76,10 +76,28 @@ dependencies {
     implementation("androidx.compose.material3:material3")
     implementation("androidx.compose.material:material-icons-core:1.7.8")
     implementation("androidx.compose.material:material-icons-extended:1.7.8")
+<<<<<<< HEAD
 
 
     implementation(libs.apollo.adapters)
     implementation(libs.apollo.runtime)
     implementation(libs.apollo.api)
 
+=======
+    implementation("com.apollographql.apollo3:apollo-runtime:3.8.2")
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.1")
+    implementation("androidx.datastore:datastore-preferences:1.1.1")
+
+
+}
+
+apollo {
+    service("service") {
+        packageName.set("com.example.submarine.graphql")
+        // Répertoire où se trouvent tes fichiers .graphql
+        srcDir("src/main/graphql")
+    }
+>>>>>>> cd0fec674533ab14c6b318f7856be311e49a8047
 }

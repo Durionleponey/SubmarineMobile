@@ -20,7 +20,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import com.example.submarine.contacts.ContactsActivity
+import com.example.submarine.listeContact.ContactsActivity
 import com.example.submarine.network.LoginRequest
 import com.example.submarine.network.RetrofitInstance
 import com.example.submarine.network.TokenProvider

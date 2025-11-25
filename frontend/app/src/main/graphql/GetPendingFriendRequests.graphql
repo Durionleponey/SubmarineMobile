@@ -1,0 +1,16 @@
+query GetPendingFriendRequests {
+    pendingRequests {
+        _id
+        status
+        sender {
+            _id
+            pseudo
+            email
+        }
+        receiver {
+            _id
+            pseudo
+            email
+        }
+    }
+}

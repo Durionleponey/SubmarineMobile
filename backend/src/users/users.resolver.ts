@@ -72,8 +72,6 @@ export class UsersResolver {
     const foundUser = await this.usersService.findOne(user._id);
     return foundUser.bio ?? ""; // retourne la bio actuelle ou une chaîne vide
   }
-  
-
 
 
   @Query(() => User, { name: 'me' })
@@ -81,6 +79,14 @@ export class UsersResolver {
   getMe(@CurrentUser() user: TokenPayload) {//getMe will return the current login user idk how it's work but it's work
     return user;
   }
+
+  @Query(() => [User], { name: 'searchUsers' })
+    async searchUsers(
+      @Args('pseudo', { type: () => String }) pseudo: string,
+    ): Promise<User[]> {
+      return this.usersService.findByPseudo(pseudo);
+    }
+
 /*
   @Mutation(() => User)
   @UseGuards(GqlAuthGuard, AdminGuard)

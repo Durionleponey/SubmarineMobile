@@ -25,7 +25,7 @@ class AdminActivity : ComponentActivity() {
 
         setContent {
             SubmarineTheme {
-                TableauDeBordScreen()
+                AdminNavigation()
             }
         }
     }

@@ -8,11 +8,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 
+import com.example.submarine.ui.theme.SubmarineTheme
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AdminHomeScreen(
     onNavigateToUsers: () -> Unit,
     onNavigateToStats: () -> Unit
+    // On ajoutera les autres navigations ici plus tard
+    // onNavigateToDeletedAccounts: () -> Unit,
+    // onNavigateToStats: () -> Unit
 ) {
     Scaffold(
         topBar = {

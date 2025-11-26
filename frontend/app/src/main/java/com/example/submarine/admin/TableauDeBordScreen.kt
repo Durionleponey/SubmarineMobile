@@ -90,7 +90,6 @@ fun TableauDeBordScreen(
                 }
             )
         }
-        if (state.users.isEmpty()) {
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -107,6 +106,7 @@ fun TableauDeBordScreen(
             ) {
                 items(
                     items = state.users,
+                    items = utilisateursActifs,
                     key = { user -> user.id }
                 ) { user ->
                     UtilisateurListItem(

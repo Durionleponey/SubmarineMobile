@@ -90,13 +90,14 @@ fun TableauDeBordScreen(
                 }
             )
         }
+        if (utilisateursActifs.isEmpty()) {
             Box(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(innerPadding),
                 contentAlignment = Alignment.Center
             ) {
-                Text("Tous les utilisateurs ont été supprimés.")
+                Text("Aucun utilisateur actif.")
             }
         } else {
             LazyColumn(
@@ -105,7 +106,6 @@ fun TableauDeBordScreen(
                     .padding(innerPadding)
             ) {
                 items(
-                    items = state.users,
                     items = utilisateursActifs,
                     key = { user -> user.id }
                 ) { user ->

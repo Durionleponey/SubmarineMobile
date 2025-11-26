@@ -9,11 +9,17 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.submarine.ui.theme.SubmarineTheme
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun StatistiquesScreen(
-    nombreUtilisateurs: Int
+    nombreUtilisateurs: Int,
+    onNavigateBack: () -> Unit
 ) {
     Scaffold(
         topBar = {
@@ -22,7 +28,16 @@ fun StatistiquesScreen(
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.primary,
                     titleContentColor = MaterialTheme.colorScheme.onPrimary
-                )
+                ),
+                navigationIcon = {
+                    IconButton(onClick = onNavigateBack) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Retour",
+                            tint = MaterialTheme.colorScheme.onPrimary
+                        )
+                    }
+                }
             )
         }
     ) { innerPadding ->
@@ -54,6 +69,6 @@ fun StatistiquesScreen(
 @Composable
 fun StatistiquesScreenPreview() {
     SubmarineTheme {
-        StatistiquesScreen(nombreUtilisateurs = 5)
+        StatistiquesScreen(nombreUtilisateurs = 5, onNavigateBack = {})
     }
 }

@@ -38,10 +38,16 @@ fun AdminNavigation() {
 
         // Définition de l'écran de la liste des utilisateurs
         composable(AdminRoutes.USER_LIST) {
-            TableauDeBordScreen(viewModel = viewModel)
+            TableauDeBordScreen(
+                viewModel = viewModel,
+                onNavigateBack = { navController.navigateUp() }
+            )
         }
         composable(AdminRoutes.STATS) {
-            StatistiquesScreen(nombreUtilisateurs = uiState.users.size)
+            StatistiquesScreen(
+                nombreUtilisateurs = uiState.users.size,
+                onNavigateBack = { navController.navigateUp() }
+            )
         }
 
     }

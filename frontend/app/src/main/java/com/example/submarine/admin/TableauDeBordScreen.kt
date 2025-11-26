@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.*
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -24,11 +25,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.submarine.admin.composants.UtilisateurListItem
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TableauDeBordScreen(
-    viewModel: TableauDeBordViewModel = viewModel()
+    viewModel: TableauDeBordViewModel = viewModel(),
+    onNavigateBack: () -> Unit
 ) {
     val state by viewModel.uiState.collectAsState()
     var showDialog by remember { mutableStateOf(false) }
@@ -36,11 +42,20 @@ fun TableauDeBordScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Tableau de Bord") },
+                title = { Text("Gestion des Utilisateurs") },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.primary,
                     titleContentColor = MaterialTheme.colorScheme.onPrimary
-                )
+                ),
+                navigationIcon = {
+                    IconButton(onClick = onNavigateBack) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Retour",
+                            tint = MaterialTheme.colorScheme.onPrimary
+                        )
+                    }
+                }
             )
         }
     ) { innerPadding ->
@@ -111,5 +126,5 @@ fun TableauDeBordScreen(
 @Preview(showBackground = true)
 @Composable
 fun TableauDeBordScreenPreview() {
-    TableauDeBordScreen()
+    TableauDeBordScreen(onNavigateBack = {})
 }

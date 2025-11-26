@@ -1,26 +1,31 @@
 package com.example.submarine.admin
 
+import androidx.activity.result.launch
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
+
 
 data class AdminUser(
     val id: Int,
     val name: String
 )
-
-data class TableauDeBordUiState(
-    val users: List<AdminUser> = emptyList()
+data class AdminState(
+    val users: List<AdminUser> = emptyList(),
+    val isLoading: Boolean = false,
+    val error: String? = null
 )
 
 class TableauDeBordViewModel : ViewModel() {
-    private val _uiState = MutableStateFlow(TableauDeBordUiState())
-    val uiState: StateFlow<TableauDeBordUiState> = _uiState.asStateFlow()
+    private val _uiState = MutableStateFlow(AdminState())
+    val uiState: StateFlow<AdminState> = _uiState.asStateFlow()
 
     init {
-        _uiState.value = TableauDeBordUiState(
+        _uiState.value = AdminState(
             users = listOf(
                 AdminUser(id = 1, name = "Alice"),
                 AdminUser(id = 2, name = "Bob"),
@@ -35,6 +40,7 @@ class TableauDeBordViewModel : ViewModel() {
         _uiState.update { currentState ->
             val nouvelleListe = currentState.users.filter { user -> user.id != userId }
             currentState.copy(users = nouvelleListe)
-        }
     }
+    }
+
 }

@@ -8,6 +8,7 @@ import com.example.submarine.graphql.CreateMessageMutation
 import com.example.submarine.graphql.type.CreateMessageInput
 import com.example.submarine.graphql.GetMessagesQuery
 import com.apollographql.apollo3.exception.ApolloException
+import com.example.submarine.graphql.GetMyIdQuery
 
 object ChatService {
     private const val TAG = "ChatService"
@@ -123,7 +124,7 @@ object ChatService {
         Log.d(TAG, "Tentative de récupérer les messages pour le chatId: $chatId")
         try {
             val response = Apollo.apolloClient
-                .query(GetMessagesQuery(chatId = chatId))
+                .query(GetMessagesQuery(chatId = "6926b9e9ff95dca3d46db64b"))
                 .execute()
 
             if (response.hasErrors()) {
@@ -145,6 +146,26 @@ object ChatService {
         }catch(e: ApolloException){
             Log.e(TAG, "Exception lors de la récupération des messages", e)
             return Result.failure(e)
+        }
+    }
+}
+
+object UserService {
+
+    suspend fun getMyId(): String? {
+        try {
+            Log.d("Apollo", "Récupération de mon ID...")
+            val response = Apollo.apolloClient.query(GetMyIdQuery()).execute()
+
+            if (response.hasErrors()) {
+                Log.e("Apollo", "Erreur GetMyId: ${response.errors}")
+                return null
+            }
+
+            return response.data?.me?._id
+        } catch (e: Exception) {
+            Log.e("Apollo", "Exception GetMyId", e)
+            return null
         }
     }
 }

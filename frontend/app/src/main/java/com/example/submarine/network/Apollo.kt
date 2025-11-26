@@ -8,6 +8,7 @@ import com.apollographql.apollo3.network.http.HttpInterceptor
 import com.apollographql.apollo3.network.http.HttpInterceptorChain
 import com.apollographql.apollo3.network.http.HttpNetworkTransport
 import com.apollographql.apollo3.network.ws.GraphQLWsProtocol
+import com.apollographql.apollo3.network.ws.SubscriptionWsProtocol
 import com.apollographql.apollo3.network.ws.WebSocketNetworkTransport
 
 private const val APOLLO_TAG = "Apollo"
@@ -48,10 +49,12 @@ object Apollo {
             .addInterceptor(AuthorizationInterceptor())
             .build()
 
+
+
         val webSocketNetworkTransport = WebSocketNetworkTransport.Builder()
             .serverUrl(servWebSocket)
             .protocol(
-                protocolFactory = GraphQLWsProtocol.Factory(
+                protocolFactory = SubscriptionWsProtocol.Factory(
                     connectionPayload = {
                         val token =TokenProvider.token
                         Log.d(APOLLO_TAG, "[WS PAYLOAD] - Le token récupéré est: '$token'")

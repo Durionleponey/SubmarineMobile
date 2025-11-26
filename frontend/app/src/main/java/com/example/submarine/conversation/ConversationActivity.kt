@@ -11,7 +11,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.activity.viewModels
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import com.apollographql.apollo3.mpp.currentThreadId
 
 
 class ConversationActivity : ComponentActivity() {
@@ -46,26 +45,24 @@ class ConversationActivity : ComponentActivity() {
             SubmarineTheme {
                 val pseudo by viewModel.userPseudo.collectAsState()
 
-                val message by viewModel.messages.collectAsState()
-                val creationState by viewModel.creationState.collectAsState()
-                val subState by viewModel.subscriptionState.collectAsState()
+                val messages by viewModel.messages.collectAsState()
+                //val creationState by viewModel.creationState.collectAsState()
+               // val subState by viewModel.subscriptionState.collectAsState()
 
                 LaunchedEffect(key1 = userId) {
                     val participants = listOf(userId)
                     Log.d(TAG, "Lancement de la création du chat avec: $participants")
 
-                    viewModel.createChat(
+                    viewModel.createOrGetChat(
                         userIds = participants,
                         isPrivate = true
                     )
                 }
                 ConversationScreen(
                     contactName = pseudo?: "User test",
-                    messages = message,
-                    creationState = creationState,
-                    subscriptionState = subState,
+                    messages = messages,
                     onNavigateBack = {finish()},
-                    otherUserId = userId,
+                    currentUserId = userId,
                     onSentMessage = { messageContent ->
                         viewModel.sendMessage(messageContent)
                     }

@@ -15,9 +15,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.example.submarine.conversation.ChatState
-import com.example.submarine.conversation.Subscribe
-import com.example.submarine.conversation.SubscriptionState
+import com.example.submarine.conversation.composants.ChatState
+import com.example.submarine.conversation.composants.SubscriptionState
 import com.example.submarine.ui.theme.SubmarineTheme
 import com.example.submarine.conversation.composants.MessageBubble
 import com.example.submarine.conversation.composants.IconUser
@@ -25,7 +24,6 @@ import com.example.submarine.conversation.composants.Media
 import com.example.submarine.conversation.composants.PhotoSend
 import com.example.submarine.conversation.composants.SendButton
 import com.example.submarine.graphql.GetMessagesQuery
-import com.example.submarine.graphql.SubscribeToMessagesSubscription
 
 
 data class Message(
@@ -38,9 +36,9 @@ fun ConversationScreen(
     contactName: String,
     messages: List<GetMessagesQuery.GetMessage>,
     onNavigateBack: () -> Unit,
-    creationState: ChatState,
-    subscriptionState: SubscriptionState,
-    otherUserId: String,
+    //creationState: com.example.submarine.conversation.ChatState,
+   // subscriptionState: com.example.submarine.conversation.SubscriptionState,
+    currentUserId: String,
     onSentMessage: (String) -> Unit
 
 
@@ -96,7 +94,7 @@ fun ConversationScreen(
                 reverseLayout = true
             ) {
                 items(messages.asReversed()) { message ->
-                    val isSentByMe = message.userId == otherUserId
+                    val isSentByMe = message.userId == currentUserId
 
                     MessageBubble(message = message.content, isSentByMe = isSentByMe)
                 }
@@ -155,10 +153,8 @@ fun ConversationScreenPreview() {
         ConversationScreen(
             contactName = "Ash San",
             messages = emptyList(),
-            creationState = ChatState.Idle,
-            subscriptionState = SubscriptionState.Disconnected,
             onNavigateBack = {},
-            otherUserId = "1_test",
+            currentUserId = "1_test",
             onSentMessage = {}
 
         )

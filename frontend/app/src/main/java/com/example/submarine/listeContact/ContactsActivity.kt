@@ -132,7 +132,6 @@ fun ContactsScreen(
         }
     }
 
-    /* ----- MENU LONG PRESS ----- */
     if (showActionsDialog && selectedContact != null) {
         val contact = selectedContact!!
         AlertDialog(
@@ -200,7 +199,7 @@ fun ContactsScreen(
         )
     }
 
-    /* ----- POPUP BIO ----- */
+
     if (showBioDialog && selectedContact != null) {
         val contact = selectedContact!!
         AlertDialog(
@@ -217,7 +216,7 @@ fun ContactsScreen(
         )
     }
 
-    /* ----- DIALOG EDIT PSEUDO ----- */
+
     if (showEditDialog && selectedContact != null) {
         val contact = selectedContact!!
         AlertDialog(

@@ -18,8 +18,8 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.submarine.auth.LoginActivity
-import com.example.submarine.auth.Signup
-import com.example.submarine.contacts.ContactsActivity
+import com.example.submarine.auth.SignUpActivity
+import com.example.submarine.listeContact.ContactActivity
 import com.example.submarine.conversation.ConversationActivity
 import com.example.submarine.ui.theme.SubmarineTheme
 
@@ -82,7 +82,7 @@ fun WelcomeScreen() {
             Spacer(modifier = Modifier.height(8.dp))
             OutlinedButton(
                 onClick = {
-                    context.startActivity(Intent(context, Signup::class.java))
+                    context.startActivity(Intent(context, SignUpActivity::class.java))
                 },
                 modifier = Modifier.fillMaxWidth()
             ) {
@@ -103,13 +103,27 @@ fun WelcomeScreen() {
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
             ) {
                 Button(
-                    onClick = { context.startActivity(Intent(context, ConversationActivity::class.java)) },
+                    onClick = {
+                        context.startActivity(
+                            Intent(
+                                context,
+                                ConversationActivity::class.java
+                            )
+                        )
+                    },
                     modifier = Modifier.weight(1f)
                 ) {
                     Text("Conversations")
                 }
                 Button(
-                    onClick = { context.startActivity(Intent(context, ContactsActivity::class.java)) },
+                    onClick = {
+                        context.startActivity(
+                            Intent(
+                                context,
+                                ContactActivity::class.java
+                            )
+                        )
+                    },
                     modifier = Modifier.weight(1f)
                 ) {
                     Text("Contacts")

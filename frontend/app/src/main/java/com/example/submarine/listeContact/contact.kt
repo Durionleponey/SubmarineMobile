@@ -1,5 +1,5 @@
 package com.example.submarine.model
-/* aaaaaah */
+
 data class Contact(
     val prenom: String,
     val nom: String,

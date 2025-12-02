@@ -53,7 +53,7 @@ class ConversationActivity : ComponentActivity() {
 
                     viewModel.myUserId = userId
 
-                    val participants = listOf(contactId)
+                    val participants = listOf(userId,contactId)
                     Log.d(TAG, "Lancement de la création du chat avec: $participants")
 
                     viewModel.createOrGetChat(

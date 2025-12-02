@@ -56,54 +56,63 @@ class ConversationViewModel : ViewModel() {
     /**
      * POINT D'ENTRÉE : Appelé par l'UI à l'ouverture de l'écran
      */
-    fun initConversation(contactId: String) {
-        viewModelScope.launch {
-            if (myUserId == null) {
-                val fetchedId = UserService.getMyId()
-                if (fetchedId == null) {
-                  //  _creationState.value = ChatState.Error("Impossible de récupérer votre profil utilisateur.")
-                    return@launch
-                }
-                myUserId = fetchedId
-                Log.i(TAG, "Mon ID est : $myUserId")
-            }
 
-            chargePseudo(contactId)
 
-            val participants = listOf(myUserId!!, contactId)
-            createOrGetChat(participants, isPrivate = true)
-        }
-    }
+// Dans ConversationViewModel.kt
 
     fun createOrGetChat(userIds: List<String>, isPrivate: Boolean, name: String? = null) {
-        //if (_creationState.value is ChatState.Creating) return
-
         viewModelScope.launch {
-           // _creationState.value = ChatState.Creating
 
-            val result = ChatService.createChat(userIds, isPrivate, name)
+            // 1. On récupère la liste des conversations existantes
+            val resultList = ChatService.getAllMyChats()
 
-            result.onSuccess { chat ->
-                val chatId = chat?._id
-                if (chatId != null) {
-                    Log.i(TAG, "Chat actif ID: $chatId")
+            resultList.onSuccess { chatList ->
+                // 2. On cherche si la conversation existe déjà
+                val found = chatList.find { chat ->
+                    val chatParticipants = chat.userIds
 
+                    if (chatParticipants != null && chat.isPrivate == isPrivate) {
+                        // On vérifie que la liste contient tous les participants et a la même taille
+                        chatParticipants.containsAll(userIds) && chatParticipants.size == userIds.size
+                    } else {
+                        false
+                    }
+                }
+
+                // 3. LOGIQUE QUI MANQUAIT : On agit selon le résultat
+                if (found != null) {
+                    // CAS A : ON A TROUVÉ LA CONVERSATION
+                    Log.i(TAG, "Conversation existante trouvée ID: ${found._id}")
+                    val chatId = found._id
                     _activeChatId.value = chatId
-                    //_creationState.value = ChatState.CreationSuccess(chatId)
-
                     loadMessages(chatId)
                     subscribeToChat(chatId)
-
                 } else {
-                    //_creationState.value = ChatState.Error("Erreur: Chat ID is null")
+                    // CAS B : ON N'A RIEN TROUVÉ -> ON CRÉE
+                    Log.i(TAG, "Aucune conversation trouvée. Création d'une nouvelle...")
+
+                    // Appel au backend pour créer
+                    val creationResult = ChatService.createChat(userIds, isPrivate, name)
+
+                    creationResult.onSuccess { createdChat ->
+                        val newChatId = createdChat?._id
+                        if (newChatId != null) {
+                            Log.i(TAG, "Nouvelle conversation créée ID: $newChatId")
+                            _activeChatId.value = newChatId
+                            loadMessages(newChatId)
+                            subscribeToChat(newChatId)
+                        }
+                    }.onFailure { e ->
+                        Log.e(TAG, "Erreur lors de la création du chat", e)
+                    }
                 }
             }.onFailure { e ->
-                Log.e(TAG, "Erreur création/récupération chat", e)
-                //_creationState.value = ChatState.Error(e.message ?: "Erreur inconnue")
+                Log.e(TAG, "Impossible de récupérer la liste des chats", e)
+                // En cas d'échec de récupération, par sécurité, on peut tenter de créer
+                // ou afficher une erreur. Ici on log juste l'erreur.
             }
         }
     }
-
     private fun subscribeToChat(chatId: String) {
         subscriptionJob?.cancel()
         //_subscriptionState.value = SubscriptionState.Connecting

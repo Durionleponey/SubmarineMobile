@@ -9,6 +9,7 @@ import com.example.submarine.graphql.type.CreateMessageInput
 import com.example.submarine.graphql.GetMessagesQuery
 import com.apollographql.apollo3.exception.ApolloException
 import com.example.submarine.graphql.GetMyIdQuery
+import com.example.submarine.graphql.GetMyConversationsQuery
 
 object ChatService {
     private const val TAG = "ChatService"
@@ -145,6 +146,29 @@ object ChatService {
 
         }catch(e: ApolloException){
             Log.e(TAG, "Exception lors de la récupération des messages", e)
+            return Result.failure(e)
+        }
+    }
+    // Dans ConversationMaker.kt
+
+    suspend fun getAllMyChats(): Result<List<GetMyConversationsQuery.Chatss>> {
+        Log.d(TAG, "Récupération de toutes les conversations via chatss...")
+        try {
+            // On appelle la query qu'on vient de créer
+            val response = Apollo.apolloClient.query(GetMyConversationsQuery()).execute()
+
+            if (response.hasErrors()) {
+                Log.e(TAG, "Erreur GraphQL: ${response.errors}")
+                return Result.failure(Exception("Erreur GraphQL"))
+            }
+
+            // Attention : Apollo reprend le nom du champ, donc ici .chatss
+            val chats = response.data?.chatss ?: emptyList()
+
+            return Result.success(chats)
+
+        } catch (e: Exception) {
+            Log.e(TAG, "Exception récupération chats", e)
             return Result.failure(e)
         }
     }

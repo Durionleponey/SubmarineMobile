@@ -1,10 +1,11 @@
-import {Injectable, UnauthorizedException} from '@nestjs/common';
+import {Injectable, UnauthorizedException,BadRequestException} from '@nestjs/common';
 import { CreateUserInput } from './dto/create-user.input';
 import { UpdateUserInput } from './dto/update-user.input';
 import {UsersRepository} from "./users.repository";
 import * as bcrypt from 'bcryptjs'
 import {uniqueNamesGenerator, adjectives, colors, animals} from 'unique-names-generator';
 import {UpdateUserBio} from "./dto/update-user-input";
+import {updateUserPseudo} from "./dto/update-user-pseudo";
 
 @Injectable()
 export class UsersService {
@@ -109,6 +110,48 @@ export class UsersService {
       }
     });
   }
+
+  async updatePseudo(_id: string, updateUserPseudo: updateUserPseudo) {
+    
+    // 1. Vérification de la longueur
+    if (updateUserPseudo.pseudo && updateUserPseudo.pseudo.length > 25) {
+      throw new BadRequestException('Le pseudo ne doit pas dépasser 25 caractères');
+    }
+
+    // 2. Vérification de l'unicité (AVEC TRY/CATCH)
+    try {
+        const existingUser = await this.userRepository.findOne({ 
+            pseudo: updateUserPseudo.pseudo 
+        });
+
+        // Si on arrive ici, c'est qu'un utilisateur a été trouvé.
+        // On vérifie que ce n'est pas nous-même
+        if (existingUser && existingUser._id.toString() !== _id.toString()) {
+            throw new BadRequestException('Ce pseudo est déjà pris.');
+        }
+
+    } catch (error) {
+        // C'est ici que la magie opère :
+        // Si l'erreur est "Document not found", c'est une BONNE nouvelle : le pseudo est libre !
+        // Si c'est une autre erreur (ex: Base de données éteinte), on la relance.
+        if (error.response?.statusCode !== 404 && error.message !== 'Document not found.') {
+            throw error;
+        }
+        // Sinon, on ignore l'erreur et on continue vers la mise à jour
+    }
+
+    // 3. Mise à jour
+    return this.userRepository.findOneAndUpdate(
+      { _id: _id }, 
+      {
+        $set: {
+          ...updateUserPseudo, 
+        }
+      }
+    );
+  }
+
+
 
   async getBio(_id: string) {
     return this.userRepository.findOne({ _id: _id });

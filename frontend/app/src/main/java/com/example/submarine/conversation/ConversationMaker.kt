@@ -124,7 +124,7 @@ object ChatService {
         Log.d(TAG, "Tentative de récupérer les messages pour le chatId: $chatId")
         try {
             val response = Apollo.apolloClient
-                .query(GetMessagesQuery(chatId = "6926b9e9ff95dca3d46db64b"))
+                .query(GetMessagesQuery(chatId = chatId))
                 .execute()
 
             if (response.hasErrors()) {

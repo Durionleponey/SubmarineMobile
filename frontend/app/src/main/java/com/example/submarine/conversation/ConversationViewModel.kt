@@ -46,7 +46,7 @@ class ConversationViewModel : ViewModel() {
     val activeChatId = _activeChatId.asStateFlow()
 
     private var subscriptionJob: Job? = null
-    private var myUserId: String? = null
+    var myUserId: String? = null
 
     // Pour gérer les pseudos
     private val userPseudoRecup = UserPseudoRecup()
@@ -136,35 +136,71 @@ class ConversationViewModel : ViewModel() {
         }
     }
 
+
     private fun loadMessages(chatId: String) {
         viewModelScope.launch {
             val result = ChatService.getMessages(chatId)
             result.onSuccess { messagesHist ->
-                _messages.value = messagesHist
+                _messages.update { currentList ->
+                    val currentIds = currentList.map { it._id }.toSet()
+
+                    val newMessages = messagesHist.filter { it._id !in currentIds }
+
+                    currentList + newMessages
+                }
             }.onFailure { e ->
                 Log.e(TAG, "Echec chargement historique", e)
             }
         }
     }
 
-    fun sendMessage(messageContent: String) {
+
+// ConversationViewModel.kt
+
+    // Ajoutez le paramètre senderId
+// Dans ConversationViewModel.kt
+
+    fun sendMessage(messageContent: String, senderId: String) {
         val chatId = _activeChatId.value
+
         if (chatId != null && messageContent.isNotBlank()) {
             viewModelScope.launch {
 
                 val result = ChatService.sendMessage(messageContent, chatId)
-                result.onSuccess {
+                result.onSuccess { sentMessage ->
                     Log.i(TAG, "Message envoyé avec succès")
+
+                    // CORRECTION : On ne redéfinit pas senderId avec myUserId.
+                    // On utilise le 'senderId' passé en paramètre de la fonction si sentMessage.userId est null.
+
+                    if (sentMessage != null) {
+
+                        // On détermine l'ID à utiliser pour l'affichage
+                        val finalUserId = sentMessage.userId ?: senderId
+
+                        val newMessageForUI = GetMessagesQuery.GetMessage(
+                            _id = sentMessage._id,
+                            content = sentMessage.content,
+                            userId = finalUserId
+                        )
+
+                        _messages.update { currentList ->
+                            // On évite les doublons si le WebSocket a déjà reçu le message entre temps
+                            if (currentList.any { it._id == newMessageForUI._id }) {
+                                currentList
+                            } else {
+                                currentList + newMessageForUI
+                            }
+                        }
+                    }
                 }.onFailure { e ->
                     Log.e(TAG, "Echec envoi message", e)
-
                 }
             }
         } else {
-            Log.w(TAG, "Tentative d'envoi sans ChatID ou message vide")
+            Log.w(TAG, "Tentative d'envoi échouée. ChatID: $chatId, SenderID: $senderId")
         }
-    }
-    fun chargePseudo(userId: String) {
+    }    fun chargePseudo(userId: String) {
         viewModelScope.launch {
             val pseudo = userPseudoRecup.fetchUser(userId)
             _userPseudo.value = pseudo ?: "Utilisateur inconnu"

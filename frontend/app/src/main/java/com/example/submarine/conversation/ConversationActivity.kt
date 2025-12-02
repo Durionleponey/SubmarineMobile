@@ -27,17 +27,17 @@ class ConversationActivity : ComponentActivity() {
         )
         Log.d(TAG, "FLAG_SECURE activé.")
 
-        val userId = "6910ae154e5e95f212c42612"
+        val contactId = "6910ae154e5e95f212c42612"
+        val userId = "6913411dce7e0315c88b7533"
 
 
-
-        if (userId == null){
+        if (contactId == null){
             Log.e(TAG, "L'ID de l'utilisateur n'a pas été transmis.")
             finish()
             return
         }else{
-            Log.d(TAG, "L'ID de l'utilisateur est : $userId ")
-            viewModel.chargePseudo(userId)
+            Log.d(TAG, "L'ID de l'utilisateur est : $contactId ")
+            viewModel.chargePseudo(contactId)
 
         }
 
@@ -49,8 +49,11 @@ class ConversationActivity : ComponentActivity() {
                 //val creationState by viewModel.creationState.collectAsState()
                // val subState by viewModel.subscriptionState.collectAsState()
 
-                LaunchedEffect(key1 = userId) {
-                    val participants = listOf(userId)
+                LaunchedEffect(key1 = contactId) {
+
+                    viewModel.myUserId = userId
+
+                    val participants = listOf(contactId)
                     Log.d(TAG, "Lancement de la création du chat avec: $participants")
 
                     viewModel.createOrGetChat(
@@ -62,9 +65,9 @@ class ConversationActivity : ComponentActivity() {
                     contactName = pseudo?: "User test",
                     messages = messages,
                     onNavigateBack = {finish()},
-                    currentUserId = userId,
+                    currentUserId = viewModel.myUserId ?: userId,
                     onSentMessage = { messageContent ->
-                        viewModel.sendMessage(messageContent)
+                        viewModel.sendMessage(messageContent, userId)
                     }
                 )
             }

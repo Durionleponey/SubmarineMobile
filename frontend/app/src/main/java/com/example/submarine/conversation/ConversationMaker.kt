@@ -10,6 +10,7 @@ import com.example.submarine.graphql.GetMessagesQuery
 import com.apollographql.apollo3.exception.ApolloException
 import com.example.submarine.graphql.GetMyIdQuery
 import com.example.submarine.graphql.GetMyConversationsQuery
+import com.example.submarine.graphql.GetUserPublicKeyQuery
 
 object ChatService {
     private const val TAG = "ChatService"
@@ -189,6 +190,20 @@ object UserService {
             return response.data?.me?._id
         } catch (e: Exception) {
             Log.e("Apollo", "Exception GetMyId", e)
+            return null
+        }
+    }
+    // Dans UserService (ConversationMaker.kt)
+
+    suspend fun getPublicKey(userId: String): String? {
+        try {
+            val response = Apollo.apolloClient
+                .query(GetUserPublicKeyQuery(userId = userId))
+                .execute()
+
+            return response.data?.user?.publicKey
+        } catch (e: Exception) {
+            Log.e("Crypto", "Erreur récupération clé publique", e)
             return null
         }
     }

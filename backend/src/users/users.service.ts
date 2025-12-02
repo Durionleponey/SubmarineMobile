@@ -30,7 +30,8 @@ export class UsersService {
       password: await this.hashPassword(createUserInput.password),
       pseudo,
       bio:"",
-      friends: []
+      friends: [],
+      publicKey:""
     });
   }
 

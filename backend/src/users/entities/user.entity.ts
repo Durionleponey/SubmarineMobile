@@ -24,6 +24,12 @@ export class User extends AbstractEntity {
     @Prop({ type: [String], default: [] })  // <-- IMPORTANT
     @Field(() => [String])
     friends: string[];
+
+    //---- E2EE
+
+    @Prop()
+    @Field({nullable: true})
+    publicKey: string;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

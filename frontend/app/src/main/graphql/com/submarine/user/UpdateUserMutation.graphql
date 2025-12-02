@@ -1,0 +1,7 @@
+mutation UpdateMyPublicKey($publicKey: String!) {
+  updateUser(updateUserInput: { publicKey: $publicKey }) {
+    _id
+    pseudo
+    publicKey
+  }
+}

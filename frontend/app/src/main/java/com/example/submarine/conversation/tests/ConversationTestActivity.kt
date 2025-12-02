@@ -172,7 +172,7 @@ fun TestChatScreen(
             onNavigateBack = onBack,
             currentUserId = myUserId,
             onSentMessage = { messageContent ->
-                viewModel.sendMessage(messageContent, myUserId)
+                viewModel.sendMessage(messageContent, myUserId, contactId)
             }
         )
     }

@@ -1,0 +1,5 @@
+query GetUserPublicKey($userId: String!) {
+  user(id: $userId) {
+    publicKey
+  }
+}

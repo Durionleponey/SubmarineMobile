@@ -152,14 +152,48 @@ class ConversationViewModel : ViewModel() {
     private fun loadMessages(chatId: String) {
         viewModelScope.launch {
             val result = ChatService.getMessages(chatId)
+
             result.onSuccess { messagesHist ->
+
+                // 1. TRAITEMENT : On déchiffre les messages reçus
+                val processedMessages = messagesHist.map { msg ->
+
+                    val contentToDisplay = if (msg.userId != myUserId) {
+                        // CAS A : Message reçu (de l'autre) -> ON DÉCHIFFRE
+                        try {
+                            CryptoManager.decrypt(msg.content)
+                        } catch (e: Exception) {
+                            "Message illisible"
+                        }
+                    } else {
+                        // CAS B : Message envoyé (par moi) venant du serveur
+                        // Comme il est chiffré pour l'autre, on ne peut pas le relire ici.
+                        // On met un texte par défaut.
+                        // (Si on vient de l'envoyer, la version locale en clair prendra le dessus grâce au code plus bas)
+                        "Message envoyé (Contenu sécurisé)"
+                    }
+
+                    // On recrée un objet message avec le texte clair
+                    GetMessagesQuery.GetMessage(
+                        _id = msg._id,
+                        content = contentToDisplay,
+                        userId = msg.userId
+                    )
+                }
+
+                // 2. MISE À JOUR : On fusionne avec la liste actuelle
                 _messages.update { currentList ->
+                    // On récupère les IDs des messages qu'on a déjà affichés (probablement en clair via sendMessage)
                     val currentIds = currentList.map { it._id }.toSet()
 
-                    val newMessages = messagesHist.filter { it._id !in currentIds }
+                    // On ne garde que les messages de l'historique qu'on n'a PAS encore
+                    val newMessages = processedMessages.filter { it._id !in currentIds }
 
+                    // On ajoute les nouveaux à la suite (ou au début selon votre tri)
+                    // Ici on suppose que la liste est chronologique
                     currentList + newMessages
                 }
+
             }.onFailure { e ->
                 Log.e(TAG, "Echec chargement historique", e)
             }
@@ -167,37 +201,52 @@ class ConversationViewModel : ViewModel() {
     }
 
 
-// ConversationViewModel.kt
-
-    // Ajoutez le paramètre senderId
-// Dans ConversationViewModel.kt
-
-    fun sendMessage(messageContent: String, senderId: String) {
+    fun sendMessage(messageContent: String, senderId: String, contactId: String) {
         val chatId = _activeChatId.value
 
         if (chatId != null && messageContent.isNotBlank()) {
             viewModelScope.launch {
 
-                val result = ChatService.sendMessage(messageContent, chatId)
-                result.onSuccess { sentMessage ->
-                    Log.i(TAG, "Message envoyé avec succès")
+                // --- ÉTAPE 1 : CRYPTOGRAPHIE ---
+                // On récupère la clé publique du destinataire pour chiffrer le message rien que pour lui.
+                val recipientPublicKeyStr = UserService.getPublicKey(contactId)
 
-                    // CORRECTION : On ne redéfinit pas senderId avec myUserId.
-                    // On utilise le 'senderId' passé en paramètre de la fonction si sentMessage.userId est null.
+                if (recipientPublicKeyStr == null) {
+                    Log.e(TAG, "ERREUR : Impossible de trouver la clé publique pour $contactId. Envoi annulé.")
+                    return@launch
+                }
+
+                // On chiffre le message
+                val encryptedContent = try {
+                    val recipientKey = CryptoManager.stringToPublicKey(recipientPublicKeyStr)
+                    CryptoManager.encrypt(messageContent, recipientKey)
+                } catch (e: Exception) {
+                    Log.e(TAG, "ERREUR : Echec lors du chiffrement du message", e)
+                    return@launch
+                }
+
+                // --- ÉTAPE 2 : ENVOI AU SERVEUR ---
+                // On envoie le charabia chiffré (encryptedContent)
+                val result = ChatService.sendMessage(encryptedContent, chatId)
+
+                result.onSuccess { sentMessage ->
+                    Log.i(TAG, "Message chiffré envoyé avec succès au serveur")
 
                     if (sentMessage != null) {
 
-                        // On détermine l'ID à utiliser pour l'affichage
+                        // --- ÉTAPE 3 : MISE À JOUR UI LOCALE ---
+
                         val finalUserId = sentMessage.userId ?: senderId
+
 
                         val newMessageForUI = GetMessagesQuery.GetMessage(
                             _id = sentMessage._id,
-                            content = sentMessage.content,
+                            content = messageContent, // <--- ICI : On force l'affichage en clair
                             userId = finalUserId
                         )
 
                         _messages.update { currentList ->
-                            // On évite les doublons si le WebSocket a déjà reçu le message entre temps
+                            // On évite les doublons si le WebSocket a été plus rapide que la réponse HTTP
                             if (currentList.any { it._id == newMessageForUI._id }) {
                                 currentList
                             } else {
@@ -210,14 +259,16 @@ class ConversationViewModel : ViewModel() {
                 }
             }
         } else {
-            Log.w(TAG, "Tentative d'envoi échouée. ChatID: $chatId, SenderID: $senderId")
+            Log.w(TAG, "Tentative d'envoi échouée. ChatID: $chatId")
         }
-    }    fun chargePseudo(userId: String) {
+    }
+    fun chargePseudo(userId: String) {
         viewModelScope.launch {
             val pseudo = userPseudoRecup.fetchUser(userId)
             _userPseudo.value = pseudo ?: "Utilisateur inconnu"
         }
-    }
+}
+
 
     override fun onCleared() {
         Log.d(TAG, "ViewModel onCleared. Nettoyage.")

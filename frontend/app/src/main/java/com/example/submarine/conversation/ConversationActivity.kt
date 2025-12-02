@@ -89,6 +89,16 @@ class ConversationActivity : ComponentActivity() {
                         }
                     )
                 }
+
+                ConversationScreen(
+                    contactName = pseudo?: "User test",
+                    messages = messages,
+                    onNavigateBack = {finish()},
+                    currentUserId = viewModel.myUserId ?: userId,
+                    onSentMessage = { messageContent ->
+                        viewModel.sendMessage(messageContent, userId, contactId )
+                    }
+                )
             }
         }
     }

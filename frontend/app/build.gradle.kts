@@ -87,6 +87,7 @@ dependencies {
     implementation(libs.apollo.adapters)
     implementation(libs.apollo.runtime)
     implementation(libs.apollo.api)
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.1")
 
     // Outils Kotlin (Ajoutés depuis le conflit, nécessaires pour le nouveau code)
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1")

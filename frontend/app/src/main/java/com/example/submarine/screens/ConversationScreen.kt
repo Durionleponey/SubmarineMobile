@@ -21,6 +21,7 @@ import com.example.submarine.conversation.composants.IconUser
 import com.example.submarine.conversation.composants.Media
 import com.example.submarine.conversation.composants.PhotoSend
 import com.example.submarine.conversation.composants.SendButton
+import com.example.submarine.graphql.GetMessagesQuery
 
 
 data class Message(
@@ -31,7 +32,14 @@ data class Message(
 @Composable
 fun ConversationScreen(
     contactName: String,
-    onNavigateBack: () -> Unit
+    messages: List<GetMessagesQuery.GetMessage>,
+    onNavigateBack: () -> Unit,
+    //creationState: com.example.submarine.conversation.ChatState,
+   // subscriptionState: com.example.submarine.conversation.SubscriptionState,
+    currentUserId: String,
+    onSentMessage: (String) -> Unit
+
+
 ) {
     val messagesList = remember {
         mutableStateListOf(
@@ -83,8 +91,10 @@ fun ConversationScreen(
                 contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
                 reverseLayout = true
             ) {
-                items(messagesList.asReversed()) { message ->
-                    MessageBubble(message = message)
+                items(messages.asReversed()) { message ->
+                    val isSentByMe = message.userId == currentUserId
+
+                    MessageBubble(message = message.content, isSentByMe = isSentByMe)
                 }
             }
 
@@ -117,7 +127,8 @@ fun ConversationScreen(
                         isEnabled = textState.isNotBlank(),
                         onClick = {
                             if (textState.isNotBlank()) {
-                                messagesList.add(Message(textState, true))
+                                //messagesList.add(Message(textState, true))
+                                onSentMessage(textState)
                                 textState = ""
                             }
                         }
@@ -138,8 +149,12 @@ fun ConversationScreen(
 fun ConversationScreenPreview() {
     SubmarineTheme {
         ConversationScreen(
-            contactName = "John Doe",
-            onNavigateBack = {}
+            contactName = "Ash San",
+            messages = emptyList(),
+            onNavigateBack = {},
+            currentUserId = "1_test",
+            onSentMessage = {}
+
         )
     }
 }

@@ -18,21 +18,24 @@ import com.example.submarine.screens.Message
 import com.example.submarine.ui.theme.SubmarineTheme
 
 @Composable
-fun MessageBubble(message: Message) {
+fun MessageBubble(
+    message: String,
+    isSentByMe: Boolean
+) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 4.dp),
-        horizontalArrangement = if (message.isSentByMe) Arrangement.End else Arrangement.Start
+        horizontalArrangement = if (isSentByMe) Arrangement.End else Arrangement.Start
     ) {
         Box(
             modifier = Modifier
                 .clip(RoundedCornerShape(16.dp))
-                .background(if (message.isSentByMe) Color.DarkGray else Color.LightGray)
+                .background(if (isSentByMe) Color.DarkGray else Color.LightGray)
         ) {
             Text(
-                text = message.text,
-                color = if (message.isSentByMe) Color.White else Color.Black,
+                text = message,
+                color = if (isSentByMe) Color.White else Color.Black,
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 10.dp)
             )
         }
@@ -45,7 +48,8 @@ fun MessageBubble(message: Message) {
 fun PreviewMessageBubbleReceived() {
     SubmarineTheme {
         MessageBubble(
-            message = Message(text = "Salut ! Ceci est un message reçu.", isSentByMe = false)
+            message = "Salut ! Ceci est un message reçu.",
+            isSentByMe = false
         )
     }
 }
@@ -55,7 +59,8 @@ fun PreviewMessageBubbleReceived() {
 fun PreviewMessageBubbleSent() {
     SubmarineTheme {
         MessageBubble(
-            message = Message(text = "Bonjour ! Ceci est une réponse que j'ai envoyée.", isSentByMe = true)
+            message = "Salut ! Ceci est un message reçu.",
+            isSentByMe = true
         )
     }
 }

@@ -1,0 +1,11 @@
+subscription SubscribeToMessages($chatId: String!) {
+  messageCreated(chatId: $chatId) {
+    _id
+    content
+    createdAt
+    userId
+    userPseudo
+    latitude
+    longitude
+  }
+}

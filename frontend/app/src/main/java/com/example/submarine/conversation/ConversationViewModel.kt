@@ -39,6 +39,9 @@ class ConversationViewModel : ViewModel() {
     private val _subscriptionState = MutableStateFlow<SubscriptionState>(SubscriptionState.Disconnected)
     val subscriptionState = _subscriptionState.asStateFlow()
     */
+
+    private val _currentUserState = MutableStateFlow<String?>(null)
+    val currentUserState = _currentUserState.asStateFlow()
     private val _messages = MutableStateFlow<List<GetMessagesQuery.GetMessage>>(emptyList())
     val messages = _messages.asStateFlow()
 
@@ -220,5 +223,32 @@ class ConversationViewModel : ViewModel() {
         Log.d(TAG, "ViewModel onCleared. Nettoyage.")
         subscriptionJob?.cancel()
         super.onCleared()
+    }
+    fun loadCurrentUser() {
+        viewModelScope.launch {
+            /** 1. Récupération de l'ID via la requête GraphQL "me"
+            val myId = UserService.getMyId()
+
+            if (myId != null) {
+                myUserId = myId // Mise à jour de la variable de classe utilisée pour l'envoi
+                _currentUserState.value = myId
+                Log.d(TAG, "Utilisateur identifié avec succès : $myId")
+
+                // 2. (Optionnel) Si vous voulez aussi stocker son pseudo pour l'UI
+                val myPseudo = userPseudoRecup.fetchUser(myId)
+                Log.d(TAG, "Pseudo de l'utilisateur courant : $myPseudo")
+            } else {
+                Log.e(TAG, "Impossible d'identifier l'utilisateur courant (getMyId a retourné null)")
+            }*/
+
+            //val hardcodedId = "6913411dce7e0315c88b7533"
+            val hardcodedId = "6822121b8d11a148a94d6322"
+            //6913411dce7e0315c88b7533
+            // 6822121b8d11a148a94d6322
+
+            myUserId = hardcodedId
+            _currentUserState.value = hardcodedId
+            Log.w(TAG, " ID UTILISATEUR FORCÉ POUR TEST : $hardcodedId")
+        }
     }
 }

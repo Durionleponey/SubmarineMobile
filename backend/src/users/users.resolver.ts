@@ -9,6 +9,7 @@ import {CurrentUser} from "../auth/current-user.decorator";
 import {TokenPayload} from "../auth/token-payload.interface";
 import * as sea from "node:sea";
 import {UpdateUserBio} from "./dto/update-user-input";
+import {updateUserPseudo} from "./dto/update-user-pseudo";
 
 @Resolver(() => User)
 export class UsersResolver {
@@ -31,6 +32,12 @@ export class UsersResolver {
   findOne(@Args('id', { type: () => String }) id: string) {
     return this.usersService.findOne(id);
   }
+
+  @Query(() => User, { name: 'meAll' })
+@UseGuards(GqlAuthGuard)
+async getMeAll(@CurrentUser() user: TokenPayload) {
+  return this.usersService.findOne(user._id); 
+}
 
 
 
@@ -55,6 +62,15 @@ export class UsersResolver {
       @CurrentUser() user: TokenPayload,
   ) {
     return this.usersService.updateBio(user._id,  updateUserBio );
+  }
+
+  @Mutation(() => User)
+  @UseGuards(GqlAuthGuard)
+  updatePseudo(
+      @Args('updateUserPseudo') updateUserPseudo: updateUserPseudo,
+      @CurrentUser() user: TokenPayload,
+  ) {
+    return this.usersService.updatePseudo(user._id,updateUserPseudo );
   }
 
 

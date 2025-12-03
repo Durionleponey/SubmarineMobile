@@ -10,6 +10,7 @@ import kotlinx.coroutines.launch
 import com.example.submarine.graphql.GetPendingFriendRequestsQuery
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
+import com.example.submarine.listeContact.API.FriendsApi
 
 
 @OptIn(ExperimentalMaterial3Api::class)

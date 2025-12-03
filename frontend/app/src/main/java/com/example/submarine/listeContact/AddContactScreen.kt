@@ -10,8 +10,10 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import com.apollographql.apollo3.api.ApolloResponse
 import com.example.submarine.graphql.SendFriendRequestMutation
+import com.example.submarine.listeContact.API.GraphQLClient
+import com.example.submarine.listeContact.API.UserApi
+import com.example.submarine.listeContact.API.UserDto
 import com.example.submarine.network.TokenProvider
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch

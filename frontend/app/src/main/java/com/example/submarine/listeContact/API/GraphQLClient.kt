@@ -1,4 +1,4 @@
-package com.example.submarine.listeContact
+package com.example.submarine.listeContact.API
 
 import com.apollographql.apollo3.ApolloClient
 

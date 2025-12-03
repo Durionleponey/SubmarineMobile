@@ -9,7 +9,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.foundation.clickable // <--- L'IMPORT QUI MANQUAIT EST ICI
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -40,6 +40,9 @@ import androidx.lifecycle.LifecycleEventObserver
 import com.example.submarine.bio.EditBioActivity
 import com.example.submarine.conversation.ConversationActivity
 import com.example.submarine.graphql.GetFriendsListQuery
+import com.example.submarine.graphql.RemoveFriendMutation
+import com.example.submarine.listeContact.API.FriendsApi
+import com.example.submarine.network.Apollo
 import com.example.submarine.network.GraphQLRequest
 import com.example.submarine.network.RetrofitInstance
 import com.example.submarine.network.TokenProvider
@@ -95,12 +98,25 @@ fun ContactsScreen(
     // --- ÉTATS UTILISATEUR ---
     var myPseudo by remember { mutableStateOf("Chargement...") }
     var myBio by remember { mutableStateOf("") }
+    var showDeleteConfirmDialog by remember { mutableStateOf(false) }
     val token = TokenProvider.token
 
-    // États pour la modification du pseudo
+    // États pour la modification du pseudo utilisateur
     var showEditPseudoDialog by remember { mutableStateOf(false) }
     var newPseudoInput by remember { mutableStateOf("") }
     var isUpdatingPseudo by remember { mutableStateOf(false) }
+
+    // États pour la personnalisation des contacts
+    var showActionsDialog by remember { mutableStateOf(false) }
+    var showBioDialog by remember { mutableStateOf(false) }
+    var showEditContactNameDialog by remember { mutableStateOf(false) }
+    var contactNameInput by remember { mutableStateOf("") }
+
+    // --- LISTE AMIS ---
+    var searchQuery by remember { mutableStateOf("") }
+    var contacts by remember { mutableStateOf<List<GetFriendsListQuery.FriendsList>>(emptyList()) }
+    var errorMessage by remember { mutableStateOf<String?>(null) }
+    var selectedContact by remember { mutableStateOf<GetFriendsListQuery.FriendsList?>(null) }
 
     // --- FONCTION : CHARGER LE PROFIL ---
     fun fetchUserData() {
@@ -137,15 +153,13 @@ fun ContactsScreen(
         }
     }
 
-    // --- FONCTION : METTRE À JOUR LE PSEUDO (SÉCURISÉE) ---
+    // --- FONCTION : METTRE À JOUR LE PSEUDO UTILISATEUR ---
     fun updateMyPseudo(newPseudo: String) {
         if (token.isNullOrEmpty()) return
         isUpdatingPseudo = true
 
         scope.launch {
             try {
-                // 1. Utilisation de variables GraphQL pour la sécurité ($pseudoVal)
-                // Note : ${"$"} sert à échapper le signe $ en Kotlin
                 val query = """
                     mutation UpdateMyPseudo(${"$"}pseudoVal: String!) {
                       updatePseudo(updateUserPseudo: { pseudo: ${"$"}pseudoVal }) {
@@ -154,27 +168,21 @@ fun ContactsScreen(
                     }
                 """
 
-                // 2. On passe la valeur via une map de variables
                 val variables = mapOf("pseudoVal" to newPseudo)
-
                 val request = GraphQLRequest(query = query, variables = variables)
 
-                // Exécution
                 val response = RetrofitInstance.graphqlApi.executeGraphQL<Map<String, Any>>(
                     token = "Bearer $token",
                     request = request
                 )
 
-                // 3. Gestion des erreurs
                 val errors = response.body()?.errors
 
                 if (errors != null && errors.isNotEmpty()) {
                     val firstError = errors[0] as? Map<*, *>
                     val errorMsg = firstError?.get("message")?.toString() ?: "Erreur inconnue"
                     Toast.makeText(context, errorMsg, Toast.LENGTH_LONG).show()
-
                 } else if (response.isSuccessful && response.body()?.data != null) {
-                    // Succès
                     myPseudo = newPseudo
                     showEditPseudoDialog = false
                     Toast.makeText(context, "Pseudo modifié avec succès !", Toast.LENGTH_SHORT).show()
@@ -191,6 +199,32 @@ fun ContactsScreen(
         }
     }
 
+    // --- FONCTION : SUPPRIMER UN AMI ---
+    fun removeFriend(relationId: String) {
+        if (token.isNullOrEmpty()) return
+
+        scope.launch {
+            try {
+                val client = Apollo.apolloClient
+                val response = client.mutation(RemoveFriendMutation(relationId)).execute()
+
+                if (response.hasErrors()) {
+                    snackbarHostState.showSnackbar(response.errors!!.first().message)
+                    return@launch
+                }
+
+                contacts = contacts.filterNot { it.relationId == relationId }
+
+                showDeleteConfirmDialog = false
+                showActionsDialog = false
+                snackbarHostState.showSnackbar("Ami supprimé")
+
+            } catch (e: Exception) {
+                snackbarHostState.showSnackbar("Erreur réseau : ${e.message}")
+            }
+        }
+    }
+
     // --- CYCLE DE VIE ---
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
@@ -202,14 +236,6 @@ fun ContactsScreen(
         onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
     }
 
-    // --- LISTE AMIS ---
-    var searchQuery by remember { mutableStateOf("") }
-    var contacts by remember { mutableStateOf<List<GetFriendsListQuery.FriendsList>>(emptyList()) }
-    var errorMessage by remember { mutableStateOf<String?>(null) }
-    var selectedContact by remember { mutableStateOf<GetFriendsListQuery.FriendsList?>(null) }
-    var showActionsDialog by remember { mutableStateOf(false) }
-    var showBioDialog by remember { mutableStateOf(false) }
-
     LaunchedEffect(Unit) {
         if (!token.isNullOrEmpty()) {
             try {
@@ -220,8 +246,14 @@ fun ContactsScreen(
         }
     }
 
-    val filtered = contacts.filter { c ->
-        (c.pseudo + " " + (c.email ?: "")).contains(searchQuery, ignoreCase = true)
+    // --- LISTE FILTRÉE & NOM PERSONNALISÉ ---
+    val filtered = contacts.map { contact ->
+        val userId = contact.user._id
+        val customName = ContactPrefs.getCustomName(context, userId)
+        val displayName = customName ?: contact.user.pseudo
+        Triple(contact, displayName, customName)
+    }.filter { (contact, displayName, _) ->
+        (displayName + " " + (contact.user.email ?: "")).contains(searchQuery, ignoreCase = true)
     }
 
     // --- UI ---
@@ -246,11 +278,10 @@ fun ContactsScreen(
                     )
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    // --- ZONE PSEUDO MODIFIABLE (AVEC LE CLICKABLE) ---
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.Center,
-                        modifier = Modifier.clickable { // <--- C'est ici que ça bloquait
+                        modifier = Modifier.clickable {
                             newPseudoInput = myPseudo
                             showEditPseudoDialog = true
                         }
@@ -269,14 +300,12 @@ fun ContactsScreen(
                             tint = MaterialTheme.colorScheme.primary
                         )
                     }
-                    // -----------------------------
 
                     Spacer(modifier = Modifier.height(8.dp))
 
-                    // --- ZONE BIO ---
                     Row(
-                        verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(horizontal = 16.dp)
@@ -335,7 +364,6 @@ fun ContactsScreen(
             }
         }
     ) {
-        // --- ÉCRAN PRINCIPAL ---
         Scaffold(
             topBar = {
                 TopAppBar(
@@ -378,19 +406,21 @@ fun ContactsScreen(
                         .fillMaxSize()
                         .padding(8.dp)
                 ) {
-                    items(filtered) { contact ->
+                    items(filtered) { (contact, displayName, _) ->
                         ContactRow(
-                            name = contact.pseudo,
+                            name = displayName,
                             onClick = {
                                 val intent = Intent(context, ConversationActivity::class.java).apply {
-                                    putExtra("contactId", contact._id)
+                                    putExtra("contactId", contact.user._id)
                                 }
                                 context.startActivity(intent)
                             },
                             onLongPress = {
                                 selectedContact = contact
+                                Log.d("FRIEND_ITEM", "Contact = $contact")
                                 showActionsDialog = true
-                            }
+                            },
+                            isMuted = ContactPrefs.isMuted(context, contact.user._id)
                         )
                     }
                 }
@@ -398,7 +428,7 @@ fun ContactsScreen(
         }
     }
 
-    // --- POPUP: MODIFICATION PSEUDO ---
+    // --- POPUP: MODIFICATION PSEUDO UTILISATEUR ---
     if (showEditPseudoDialog) {
         AlertDialog(
             onDismissRequest = { if (!isUpdatingPseudo) showEditPseudoDialog = false },
@@ -443,29 +473,135 @@ fun ContactsScreen(
         )
     }
 
-    // --- AUTRES POPUPS (ACTIONS CONTACT) ---
+    // --- POPUP: ACTIONS CONTACT ---
     if (showActionsDialog && selectedContact != null) {
         val contact = selectedContact!!
         AlertDialog(
             onDismissRequest = { showActionsDialog = false },
-            title = { Text("Options pour ${contact.pseudo}") },
+            title = { Text("Options pour ${contact.user.pseudo}") },
             text = {
                 Column {
-                    TextButton(onClick = { showActionsDialog = false; showBioDialog = true }) { Text("Voir la bio") }
-                    TextButton(onClick = { showActionsDialog = false; scope.launch { snackbarHostState.showSnackbar("Non dispo") } }) { Text("Créer un groupe") }
+                    TextButton(
+                        onClick = {
+                            showActionsDialog = false
+                            showBioDialog = true
+                        }
+                    ) { Text("Voir la bio") }
+
+                    TextButton(
+                        onClick = {
+                            showActionsDialog = false
+                            scope.launch { snackbarHostState.showSnackbar("Fonction à venir") }
+                        }
+                    ) { Text("Créer un groupe") }
+
+                    // Renommer le contact
+                    TextButton(
+                        onClick = {
+                            showActionsDialog = false
+                            contactNameInput = ContactPrefs
+                                .getCustomName(context, contact.user._id)
+                                ?: contact.user.pseudo
+                            showEditContactNameDialog = true
+                        }
+                    ) { Text("Renommer ce contact") }
+
+                    TextButton(
+                        onClick = {
+                            showActionsDialog = false
+                            showDeleteConfirmDialog = true
+                        }
+                    ) {
+                        Text(
+                            "❌ Supprimer cet ami",
+                            color = MaterialTheme.colorScheme.error
+                        )
+                    }
                 }
             },
-            confirmButton = {}, dismissButton = {}
+            confirmButton = {},
+            dismissButton = {}
         )
     }
 
+    // --- POPUP: RENOMMER UN CONTACT ---
+    if (showEditContactNameDialog && selectedContact != null) {
+        val contact = selectedContact!!
+        val userId = contact.user._id
+
+        AlertDialog(
+            onDismissRequest = { showEditContactNameDialog = false },
+            title = { Text("Renommer ${contact.user.pseudo}") },
+            text = {
+                OutlinedTextField(
+                    value = contactNameInput,
+                    onValueChange = { contactNameInput = it },
+                    label = { Text("Nom personnalisé") },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        val finalName = contactNameInput.trim()
+                        ContactPrefs.setCustomName(
+                            context,
+                            userId,
+                            if (finalName == contact.user.pseudo) null else finalName
+                        )
+                        showEditContactNameDialog = false
+                    },
+                    enabled = contactNameInput.isNotBlank()
+                ) {
+                    Text("Enregistrer")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showEditContactNameDialog = false }) {
+                    Text("Annuler")
+                }
+            }
+        )
+    }
+
+    // --- POPUP: CONFIRMATION SUPPRESSION ---
+    if (showDeleteConfirmDialog && selectedContact != null) {
+        val contact = selectedContact!!
+        AlertDialog(
+            onDismissRequest = { showDeleteConfirmDialog = false },
+            title = { Text("Supprimer ${contact.user.pseudo} ?") },
+            text = { Text("Voulez-vous vraiment supprimer cet ami de votre liste ?") },
+            confirmButton = {
+                Button(
+                    onClick = { removeFriend(contact.relationId) },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.error
+                    )
+                ) {
+                    Text("Supprimer")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDeleteConfirmDialog = false }) {
+                    Text("Annuler")
+                }
+            }
+        )
+    }
+
+    // --- POPUP: BIO CONTACT ---
     if (showBioDialog && selectedContact != null) {
         val contact = selectedContact!!
         AlertDialog(
             onDismissRequest = { showBioDialog = false },
-            title = { Text("Bio de ${contact.pseudo}") },
-            text = { Text(contact.bio ?: "Aucune bio", fontSize = 16.sp) },
-            confirmButton = { TextButton(onClick = { showBioDialog = false }) { Text("Fermer") } }
+            title = { Text("Bio de ${contact.user.pseudo}") },
+            text = { Text(contact.user.bio ?: "Aucune bio", fontSize = 16.sp) },
+            confirmButton = {
+                TextButton(onClick = { showBioDialog = false }) {
+                    Text("Fermer")
+                }
+            }
         )
     }
 }
@@ -474,11 +610,15 @@ fun ContactsScreen(
 private fun ContactRow(
     name: String,
     onClick: () -> Unit,
-    onLongPress: () -> Unit
+    onLongPress: () -> Unit,
+    isMuted: Boolean
 ) {
     val haptic = LocalHapticFeedback.current
     var isPressed by remember { mutableStateOf(false) }
-    val scale by animateFloatAsState(targetValue = if (isPressed) 1.03f else 1f, label = "press-scale")
+    val scale by animateFloatAsState(
+        targetValue = if (isPressed) 1.03f else 1f,
+        label = "press-scale"
+    )
 
     Column(
         modifier = Modifier
@@ -486,11 +626,60 @@ private fun ContactRow(
             .scale(scale)
             .combinedClickable(
                 onClick = { isPressed = false; onClick() },
-                onLongClick = { isPressed = true; haptic.performHapticFeedback(HapticFeedbackType.LongPress); onLongPress(); isPressed = false }
+                onLongClick = {
+                    isPressed = true
+                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                    onLongPress()
+                    isPressed = false
+                }
             )
             .padding(16.dp)
     ) {
-        Text(text = name, fontSize = 20.sp, fontWeight = FontWeight.Bold)
+        Text(
+            text = name,
+            fontSize = 20.sp,
+            fontWeight = FontWeight.Bold,
+            color = if (isMuted)
+                MaterialTheme.colorScheme.onSurfaceVariant
+            else
+                MaterialTheme.colorScheme.onSurface
+        )
+        if (isMuted) {
+            Text(
+                text = "En sourdine",
+                fontSize = 12.sp,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
     }
     HorizontalDivider()
+}
+
+// --- PREFS POUR PERSONNALISER CONTACTS ---
+object ContactPrefs {
+    private const val PREFS_NAME = "contact_prefs"
+    private const val KEY_PREFIX_NAME = "contact_name_"
+    private const val KEY_PREFIX_MUTED = "contact_muted_"
+
+    private fun prefs(context: android.content.Context) =
+        context.getSharedPreferences(PREFS_NAME, android.content.Context.MODE_PRIVATE)
+
+    fun getCustomName(context: android.content.Context, userId: String): String? =
+        prefs(context).getString(KEY_PREFIX_NAME + userId, null)
+
+    fun setCustomName(context: android.content.Context, userId: String, name: String?) {
+        prefs(context).edit().apply {
+            if (name.isNullOrBlank()) remove(KEY_PREFIX_NAME + userId)
+            else putString(KEY_PREFIX_NAME + userId, name)
+        }.apply()
+    }
+
+    fun isMuted(context: android.content.Context, userId: String): Boolean =
+        prefs(context).getBoolean(KEY_PREFIX_MUTED + userId, false)
+
+    fun setMuted(context: android.content.Context, userId: String, muted: Boolean) {
+        prefs(context).edit()
+            .putBoolean(KEY_PREFIX_MUTED + userId, muted)
+            .apply()
+    }
 }

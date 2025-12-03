@@ -38,6 +38,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import com.example.submarine.bio.EditBioActivity
+import com.example.submarine.conversation.ConversationActivity
 import com.example.submarine.graphql.GetFriendsListQuery
 import com.example.submarine.network.GraphQLRequest
 import com.example.submarine.network.RetrofitInstance
@@ -380,7 +381,12 @@ fun ContactsScreen(
                     items(filtered) { contact ->
                         ContactRow(
                             name = contact.pseudo,
-                            onClick = { },
+                            onClick = {
+                                val intent = Intent(context, ConversationActivity::class.java).apply {
+                                    putExtra("contactId", contact._id)
+                                }
+                                context.startActivity(intent)
+                            },
                             onLongPress = {
                                 selectedContact = contact
                                 showActionsDialog = true

@@ -27,8 +27,10 @@ class ConversationActivity : ComponentActivity() {
         )
         Log.d(TAG, "FLAG_SECURE activé.")
 
-        val contactId = "6823332cd1fbee1ee69db562"//"6910ae154e5e95f212c42612"
-        val userId = "6822121b8d11a148a94d6322"//"6913411dce7e0315c88b7533"
+        val contactId = intent.getStringExtra("contactId")//"6823332cd1fbee1ee69db562"//"6910ae154e5e95f212c42612"
+        val userId = "6822121b8d11a148a94d6322"
+            // "6913411dce7e0315c88b7533"
+        //
 
 
         if (contactId == null){

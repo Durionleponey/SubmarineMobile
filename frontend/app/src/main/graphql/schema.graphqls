@@ -43,6 +43,11 @@ type Friend {
   updatedAt: DateTime!
 }
 
+type FriendItem {
+  relationId: ID!
+  user: User!   # l'ami
+}
+
 type Query {
   users(search: String!): [User!]!
   user(id: String!): User!
@@ -57,8 +62,10 @@ type Query {
 
   # --- QUERIES AMIS ---
   pendingRequests: [Friend!]!
-  friendsList: [User!]!
+  friendsList: [FriendItem!]!
+
 }
+
 
 type Mutation {
   createUser(createUserInput: CreateUserInput!): User!
@@ -77,6 +84,8 @@ type Mutation {
   sendFriendRequest(receiverId: String!): Friend!
   acceptFriendRequest(id: String!): Friend!
   rejectFriendRequest(id: String!): Friend!
+  removeFriend(id: ID!): Friend!
+
 }
 
 input CreateUserInput {

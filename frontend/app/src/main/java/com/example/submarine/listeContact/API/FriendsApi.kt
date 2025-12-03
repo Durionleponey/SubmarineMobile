@@ -1,10 +1,10 @@
-package com.example.submarine.listeContact
+package com.example.submarine.listeContact.API
 
-import com.apollographql.apollo3.api.ApolloResponse
 import com.example.submarine.graphql.AcceptFriendRequestMutation
-import com.example.submarine.graphql.RejectFriendRequestMutation
-import com.example.submarine.graphql.GetPendingFriendRequestsQuery
 import com.example.submarine.graphql.GetFriendsListQuery
+import com.example.submarine.graphql.GetPendingFriendRequestsQuery
+import com.example.submarine.graphql.RejectFriendRequestMutation
+import com.example.submarine.listeContact.API.GraphQLClient
 
 object FriendsApi {
 

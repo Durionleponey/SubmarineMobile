@@ -25,6 +25,7 @@ import com.example.submarine.conversation.ConversationActivity
 import com.example.submarine.listeContact.ContactsActivity
 import androidx.compose.ui.res.painterResource
 import com.example.submarine.R
+import com.example.submarine.admin.AdminActivity
 import com.example.submarine.conversation.tests.ConversationTestActivity
 
 
@@ -134,6 +135,12 @@ fun HomeScreen() {
 
             TextButton(onClick = {
                 val intent = Intent(context, ConversationTestActivity::class.java)
+                context.startActivity(intent)
+            }) {
+                Text("TEST Conversations", fontSize = 12.sp)
+            }
+            TextButton(onClick = {
+                val intent = Intent(context, AdminActivity::class.java)
                 context.startActivity(intent)
             }) {
                 Text("TEST Conversations", fontSize = 12.sp)

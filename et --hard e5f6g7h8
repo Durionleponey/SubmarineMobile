@@ -1,0 +1,98 @@
+[33ma89f26b[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mNew_tableauAdmin[m[33m, [m[1;31morigin/New_tableauAdmin[m[33m)[m Merge branch 'New_tableauAdmin' of https://github.com/Durionleponey/SubmarineMobile into New_tableauAdmin
+[33me9aa27b[m restauration
+[33mf5c4977[m ajout Statistique
+[33mf6a150b[m ajoute de navigation + message suppression user
+[33m582a7fd[m correction faite
+[33mef62950[m a corriger
+[33ma759f7d[m restauration
+[33m7c4e46d[m[33m ([m[1;31morigin/Développement[m[33m, [m[1;32mDéveloppement[m[33m)[m Merge pull request #53 from Durionleponey/RemoveFriend
+[33m2a5f3df[m[33m ([m[1;31morigin/RemoveFriend[m[33m)[m posibilité de supprimé un amis de sa liste d'amis, + rétablissement des fonctionnalitées de Dorian que j'avais cassé
+[33mcb92893[m [FIX] testing recup id
+[33mc4afe8c[m [ADD] contact vers  conv
+[33ma9437e6[m Merge pull request #49 from Durionleponey/vu_profil
+[33mc775637[m Merge pull request #48 from Durionleponey/graphql_conv
+[33m90c41fd[m[33m ([m[1;31morigin/graphql_conv[m[33m)[m [FIX] test id
+[33m3c0c30f[m[33m ([m[1;31morigin/vu_profil[m[33m)[m ajout d'un profil et  changement de pseudo et log out
+[33mfe328c7[m [ADD] RECEVOIR ET ENVOYER environnement de test fonctionnel
+[33mf208207[m [FIX] acolade miss
+[33m9aa23f3[m [FIX] recup de l'ancienne conversation , creation d'une seule conv
+[33m17e6573[m [FIX] subscribe working
+[33ma090d3f[m [FIX] web socket et récupération des messages
+[33m441b1db[m [ADD] WS verifiy for app
+[33md9a7fd7[m [FIX ] bug de recup messages , in progess
+[33m6ad1f89[m [ADD] graphql, view model et UI pour envoyer un message
+[33mb157132[m [FIX] of fix
+[33m6d49a08[m [FIX] creation chat
+[33mc169bc7[m [ADD]Subscription
+[33m5a82927[m [FIX] recup du token et correction de la connexion webSokets
+[33mee332c0[m quick fix
+[33m290b5cf[m suite creation d'un chat graphql
+[33mdad4428[m graphql creation conv
+[33m27d5390[m fix depandence
+[33m7dae023[m ajout Statistique
+[33maeaa94e[m add dependence
+[33m0f89163[m fix bug
+[33m7ed4b1a[m Résolution des conflits et fusion fonctionnalité Amis
+[33mcd0fec6[m[33m ([m[1;31morigin/listeContact[m[33m)[m implémentation d'ajout de contact par mail
+[33m68eddf3[m implémentation d'ajout de contact par mail
+[33m5af2c20[m ajoute de navigation + message suppression user
+[33mba6f9a7[m correction faite
+[33m11e05c9[m mise à jour logo
+[33mb45aff6[m US104 accepter demande d'amis + voir les demandes d'amis + vrai liste d'amis. encore des trucs a modifier et règler
+[33m2a28e92[m j'ai oublié les fichiers du backend
+[33m4c1eaf9[m Merge pull request #44 from Durionleponey/homePage
+[33m3bcd1e2[m[33m ([m[1;31morigin/homePage[m[33m)[m [FIX] rebase de la HomeScreen et corrections bugs
+[33m098a29b[m quick changes names
+[33m0df3fa2[m Home screen
+[33m3b3460e[m home screen page creation
+[33m2226544[m fix erreur
+[33m93445a4[m fix erreur
+[33m3f59f88[m ajout du sign in + rename de fichier pour que ce soit plus clair
+[33m6c0ee84[m quick fix
+[33m6f82376[m suite creation d'un chat graphql
+[33m50915ca[m graphql creation conv
+[33m43c1a2d[m backend inititation
+[33mbc604d0[m Ajouter un amis, plein de fichier différents
+[33m4cd1265[m barre de recherche pour chercher les utilisateurs dans la base de données (front et back)
+[33m5a0c29d[m a corriger
+[33m9966a6a[m ajout des files manquant
+[33m58ac536[m fix erreur
+[33m3eeb8d2[m fix erreur
+[33m5f559fd[m fix erreur
+[33m0802b68[m fix erreur
+[33mdc0d76e[m ajout du sign in + rename de fichier pour que ce soit plus clair
+[33mf90446a[m changement de nom pour rendre le travail plus comprehensible
+[33mc2c0b39[m redirection vers la bonne page + message d'erreur dans le login
+[33m742e1e9[m Merge pull request #40 from Durionleponey/modification-profil
+[33m8243468[m[33m ([m[1;31morigin/modification-profil[m[33m)[m Merge branch 'Développement' into modification-profil
+[33m8e4ce78[m connexion à son compte
+[33m9c0ee02[m Merge pull request #33 from Durionleponey/S2_affiche-conv-routes
+[33mb4d1fac[m Merge branch 'Développement' into S2_affiche-conv-routes
+[33m53a9f6e[m can acces to bio and modify it
+[33m4613b2e[m added bio and update bio
+[33m1826200[m réorganisation du conversation screen
+[33m69b61b0[m rajout des elements UI de conversation
+[33m6b1b737[m gitignore update
+[33mf091a19[m gitignore pour le back
+[33mc6be992[m amélioration du visuel de la liste de contact + ajout d'un bouton pour aller sur une autre page + barre de recherche et bouton pour envoyer des demande d'amis (Tout uniquement en front, le back viendra après)
+[33m036b6d9[m amélioration du visuel de la liste de contact + ajout d'un bouton pour aller sur une autre page
+[33m28017bd[m Update MainActivity.kt
+[33mf699196[m signup back
+[33m738c5bb[m Merge pull request #18 from Durionleponey/listeContact
+[33m2eda88f[m Merge branch 'affiche_conv' into Développement
+[33m6f13621[m Update .gitignore
+[33m25eab87[m[33m ([m[1;31morigin/affiche_conv[m[33m, [m[1;32maffiche_conv[m[33m)[m barre de saisie et UI
+[33m830838a[m suite barre contact et back
+[33ma65fb01[m Début conversation
+[33me639790[m ajout d'un bouton de retour à la page précédente
+[33m5a721e6[m ajout d'un bouton de retour à la page précédente
+[33mcbbc359[m creation d'une interface pour modifier sa bio
+[33mcad2cfd[m création d'une interface pour pouvoir changer sa bio
+[33m8bec955[m début de la liste des contacts, très basique sans lien pour l'instant avec le backend. Juste du frontend
+[33mc6770ae[m[33m ([m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m, [m[1;32mmain[m[33m)[m Merge remote-tracking branch 'origin/main'
+[33m6d1d390[m hello word + playing with activity + basic form
+[33m62a40d4[m Update README.md
+[33m6017608[m front adding android default app file
+[33me067af7[m Update README.md
+[33m332c2ad[m adding backend of original submarine
+[33m51fd146[m Initial commit

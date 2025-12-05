@@ -1,19 +1,15 @@
 package com.example.submarine
 
-import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
-import com.example.submarine.auth.Signup
 import com.example.submarine.ui.theme.SubmarineTheme
+import com.example.submarine.screens.HomeScreen
+
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -21,41 +17,14 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             SubmarineTheme {
-                MainScreen()
+                Surface(
+                    modifier = Modifier.fillMaxSize(),
+                    color = MaterialTheme.colorScheme.background
+                ) {
+                    // C'est lui qui gère tout maintenant
+                    HomeScreen()
+                }
             }
         }
-    }
-}
-
-@Composable
-fun MainScreen() {
-    val context = LocalContext.current
-
-    Scaffold(
-        modifier = Modifier.fillMaxSize()
-    ) { innerPadding ->
-        Column(
-            modifier = Modifier
-                .padding(innerPadding)
-                .padding(24.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            Text(text = "Submarine ⚠️⚠️⚠️")
-
-            Button(onClick = {
-                val intent = Intent(context, Signup::class.java)
-                context.startActivity(intent)
-            }) {
-                Text("go")
-            }
-        }
-    }
-}
-
-@Preview(showBackground = true)
-@Composable
-fun MainScreenPreview() {
-    SubmarineTheme {
-        MainScreen()
     }
 }

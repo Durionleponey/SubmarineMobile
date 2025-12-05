@@ -1,0 +1,6 @@
+mutation SendFriendRequest($receiverId: String!) {
+    sendFriendRequest(receiverId: $receiverId) {
+        _id
+        status
+    }
+}

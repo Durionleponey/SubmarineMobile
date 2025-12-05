@@ -1,0 +1,9 @@
+query GetMyConversations {
+  chatss {
+    _id
+    userId
+    userIds
+    isPrivate
+    name
+  }
+}

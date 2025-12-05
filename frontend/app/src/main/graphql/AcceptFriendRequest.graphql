@@ -1,0 +1,14 @@
+mutation AcceptFriendRequest($id: String!) {
+    acceptFriendRequest(id: $id) {
+        _id
+        status
+        sender {
+            _id
+            pseudo
+        }
+        receiver {
+            _id
+            pseudo
+        }
+    }
+}

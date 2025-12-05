@@ -152,7 +152,7 @@ fun HomeScreen() {
                 val intent = Intent(context, AdminActivity::class.java)
                 context.startActivity(intent)
             }) {
-                Text("TEST Conversations", fontSize = 12.sp)
+                Text("Admin", fontSize = 12.sp)
             }
 
         }

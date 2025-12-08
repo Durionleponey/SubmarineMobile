@@ -9,12 +9,11 @@ import com.example.submarine.BuildConfig
 
 object RetrofitInstance {
 
-    // ✅ CORRECTION IMPORTANTE :
-    // 1. On pointe vers la racine du serveur (pas /graphql).
-    // 2. On met OBLIGATOIREMENT un slash "/" à la fin.
+    // ✅ On pointe vers la racine du serveur (pas /graphql), avec un "/" final.
+    // ⚠️ BuildConfig.SERVER_IP doit exister (ex: "51.21.218.249")
     private const val BASE_URL = "http://${BuildConfig.SERVER_IP}:4000/"
 
-    // 🔐 Intercepteur pour le Token
+    // 🔐 Intercepteur JWT
     private val authInterceptor = Interceptor { chain ->
         val requestBuilder = chain.request().newBuilder()
         TokenProvider.token?.let { token ->
@@ -23,7 +22,7 @@ object RetrofitInstance {
         chain.proceed(requestBuilder.build())
     }
 
-    // 🧾 Logs
+    // 🧾 Logs réseau (Logcat)
     private val logging = HttpLoggingInterceptor().apply {
         level = HttpLoggingInterceptor.Level.BODY
     }
@@ -44,7 +43,7 @@ object RetrofitInstance {
             .create(AuthApiService::class.java)
     }
 
-    // 🔹 API GraphQL (via Retrofit, si nécessaire)
+    // 🔹 API GraphQL (si vous l’utilisez via Retrofit)
     val graphqlApi: GraphQLApiService by lazy {
         Retrofit.Builder()
             .baseUrl(BASE_URL)

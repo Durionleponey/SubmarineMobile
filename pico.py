@@ -1,8 +1,14 @@
-# main.py - Pico W - LCD1602 4-bit + bouton CLEAR + LED d'alerte
+# main.py - Pico W - LCD1602 4-bit + serveur HTTP pour Submarine + bouton reset
 from machine import Pin
-from time import sleep, ticks_ms
+from time import sleep
+import network
+import socket
 
-# ----------------- CONFIG PINs (adapte si nécessaire) -----------------
+# ----------------- CONFIG WIFI (⚠️ à adapter) -----------------
+WIFI_SSID = "Proximus-Home-EDC0"
+WIFI_PASSWORD = "w9x5k2b2f2jnj"
+
+# ----------------- CONFIG PINs -----------------
 # LCD 4-bit pins (RS, E, D4, D5, D6, D7)
 LCD_RS = 10
 LCD_E  = 11
@@ -12,10 +18,7 @@ LCD_D6 = 14
 LCD_D7 = 15
 
 LED_PIN = 2        # LED d'alerte
-BTN_PIN = 16       # Bouton reset (utiliser Pin.PULL_UP)
-
-# Intervalle d'alerte simulée (ms) - remplace par réception réseau en prod
-ALERT_INTERVAL_MS = 10000  # 10s
+BTN_PIN = 16       # Bouton "reset / probleme resolu"
 
 # ----------------- LCD 1602 (4-bit) utils -----------------
 class LCD1602:
@@ -31,7 +34,6 @@ class LCD1602:
         self.init_lcd()
 
     def _pulse(self):
-        # Enable pulse
         self.e.value(1)
         sleep(0.001)
         self.e.value(0)
@@ -44,7 +46,6 @@ class LCD1602:
 
     def _write_byte(self, byte, rs):
         self.rs.value(rs)
-        # high nibble then low nibble
         self._write_nibble(byte >> 4)
         self._write_nibble(byte & 0x0F)
         sleep(0.002)
@@ -69,106 +70,170 @@ class LCD1602:
         self.command(addr)
 
     def init_lcd(self):
-        # Init sequence for 4-bit mode
         sleep(0.05)
-        # send function set (special sequence to init 4-bit)
         self.rs.value(0)
-        # send 0x33 then 0x32 as nibble sequence
         self._write_nibble(0x3)
         sleep(0.005)
         self._write_nibble(0x3)
         sleep(0.001)
         self._write_nibble(0x3)
         sleep(0.001)
-        self._write_nibble(0x2)  # set to 4-bit
+        self._write_nibble(0x2)  # 4-bit
         sleep(0.002)
-        # function set: 4-bit, 2 lines, 5x8 dots
-        self.command(0x28)
-        # display on, cursor off, blink off
-        self.command(0x0C)
-        # entry mode set: increment, no shift
-        self.command(0x06)
+        self.command(0x28)  # 4-bit, 2 lignes
+        self.command(0x0C)  # display ON, cursor OFF
+        self.command(0x06)  # auto-increment
         self.clear()
 
-# ----------------- INITIALISATIONS -----------------
+# ----------------- FONCTIONS D'AFFICHAGE -----------------
+
 lcd = LCD1602(LCD_RS, LCD_E, LCD_D4, LCD_D5, LCD_D6, LCD_D7)
 led = Pin(LED_PIN, Pin.OUT)
 btn = Pin(BTN_PIN, Pin.IN, Pin.PULL_UP)
 
-# Etat
-alert_count = 0
-last_alert_time = ticks_ms()
-last_btn_state = btn.value()
-btn_debounce_time = 0
+def show_boot():
+    """État au démarrage / après reset manuel."""
+    lcd.clear()
+    lcd.set_cursor(0, 0)
+    lcd.write("Submarine pret ")
+    lcd.set_cursor(1, 0)
+    lcd.write("En attente...  ")
+    led.value(0)
 
 def lcd_show_status():
-    """Affiche sur le LCD : ligne1 = état, ligne2 = compteur"""
+    """État 'aucune alerte / total 0' comme dans ton ancienne idée."""
     lcd.clear()
-    if alert_count == 0:
-        lcd.set_cursor(0, 0)
-        lcd.write("Aucune alerte   ")  # 16 chars
-        lcd.set_cursor(1, 0)
-        lcd.write("Total: 0        ")
-    else:
-        lcd.set_cursor(0, 0)
-        lcd.write("!! ALERTE !!    ")
-        lcd.set_cursor(1, 0)
-        # afficher "Total: XX" (jusqu'à 3 chiffres)
-        txt = "Total: {:d}".format(alert_count)
-        lcd.write(txt + " " * (16 - len(txt)))
+    lcd.set_cursor(0, 0)
+    lcd.write("Aucune alerte   ")
+    lcd.set_cursor(1, 0)
+    lcd.write("Total: 0        ")
+    led.value(0)
 
-    # LED selon état
-    led.value(1 if alert_count > 0 else 0)
-
-def clear_alerts():
-    global alert_count
-    alert_count = 0
-    print("[+] Clear: problèmes résolus")
+def show_resolved_then_status():
+    """Quand tu appuies sur le bouton GP16 :
+       - affiche 'Probleme resolu'
+       - puis 'Aucune alerte / Total: 0'
+    """
+    print("[+] Clear: probleme resolu via bouton")
     lcd.clear()
     lcd.set_cursor(0, 0)
     lcd.write("Probleme resolu ")
     lcd.set_cursor(1, 0)
-    lcd.write("Total: 0        ")
+    lcd.write("Merci admin    ")
     led.value(0)
-    # garder l'affichage résolu 1s puis revenir au statut normal
     sleep(1)
     lcd_show_status()
 
-# Affichage initial
-lcd.set_cursor(0,0)
-lcd.write("Systeme pret     ")
-lcd.set_cursor(1,0)
-lcd.write("Total: 0         ")
-led.value(0)
-print("Systeme pret. Bouton sur GP{}, LED sur GP{}".format(BTN_PIN, LED_PIN))
+def show_thanks():
+    lcd.clear()
+    lcd.set_cursor(0, 0)
+    lcd.write("Merci admin !  ")
+    lcd.set_cursor(1, 0)
+    lcd.write("Submarine OK   ")
+    led.value(0)
 
-# ----------------- BOUCLE PRINCIPALE (non bloquante) -----------------
+def show_alert():
+    lcd.clear()
+    lcd.set_cursor(0, 0)
+    lcd.write("!!! ALERTE !!! ")
+    lcd.set_cursor(1, 0)
+    lcd.write("Voir mail     ")
+    led.value(1)
+
+# ----------------- WIFI + SERVEUR HTTP -----------------
+
+def connect_wifi():
+    wlan = network.WLAN(network.STA_IF)
+    wlan.active(True)
+    if not wlan.isconnected():
+        print("Connexion au WiFi...", WIFI_SSID)
+        wlan.connect(WIFI_SSID, WIFI_PASSWORD)
+        while not wlan.isconnected():
+            sleep(0.5)
+            print(".", end="")
+    print("\nConnecte !")
+    print("Config reseau:", wlan.ifconfig())
+    return wlan
+
+def start_http_server():
+    addr = socket.getaddrinfo("0.0.0.0", 8080)[0][-1]
+    s = socket.socket()
+    s.bind(addr)
+    s.listen(1)
+    s.settimeout(0.1)  # ⬅️ non bloquant pour pouvoir lire le bouton
+    print("Serveur HTTP sur", addr)
+    print("Endpoints :")
+    print("  POST /lcd/thank-admin")
+    print("  POST /lcd/alert")
+    return s
+
+def handle_request(conn):
+    try:
+        # Timeout de 5 secondes max pour lire la requête
+        conn.settimeout(5)
+        req = conn.recv(1024)
+        if not req:
+            return
+
+        # première ligne : "POST /xxx HTTP/1.1"
+        first_line = req.split(b"\r\n", 1)[0]
+        parts = first_line.split(b" ")
+        if len(parts) < 2:
+            path = b"/"
+        else:
+            path = parts[1]
+
+        print("Requete path:", path)
+
+        if path == b"/lcd/thank-admin":
+            show_thanks()
+            body = b'{"success": true, "message": "thanks displayed"}'
+        elif path == b"/lcd/alert":
+            show_alert()
+            body = b'{"success": true, "message": "alert displayed"}'
+        else:
+            body = b'{"success": false, "error": "unknown path"}'
+
+        conn.send(b"HTTP/1.1 200 OK\r\n")
+        conn.send(b"Content-Type: application/json\r\n")
+        conn.send(b"Content-Length: " + str(len(body)).encode() + b"\r\n")
+        conn.send(b"Connection: close\r\n")
+        conn.send(b"\r\n")
+        conn.send(body)
+
+    except OSError as e:
+        # <-- C'est ça qui évite que tout plante
+        print("Erreur socket dans handle_request:", e)
+
+    finally:
+        try:
+            conn.close()
+        except:
+            pass
+
+# ----------------- MAIN -----------------
+
+show_boot()
+wlan = connect_wifi()
+server = start_http_server()
+
 while True:
-    now = ticks_ms()
+    # 1) Essayer d'accepter une requête HTTP (non bloquant)
+    try:
+        conn, addr = server.accept()
+    except OSError:
+        conn = None
 
-    # --- génération d'alerte simulée (remplacer par réseau / interrupt) ---
-    if now - last_alert_time >= ALERT_INTERVAL_MS:
-        last_alert_time = now
-        alert_count += 1
-        print("[!] Nouvelle alerte (count {})".format(alert_count))
-        lcd_show_status()
+    if conn:
+        print("Client connecte :", addr)
+        handle_request(conn)
 
-    # --- gestion bouton avec debounce (falling edge detection) ---
-    current = btn.value()
-    if current != last_btn_state:
-        # changement d'état détecté -> démarrer debounce
-        btn_debounce_time = now
-        last_btn_state = current
+    # 2) Lire le bouton GP16
+    if btn.value() == 0:  # appui (pull-up)
+        show_resolved_then_status()
+        # attendre que le bouton soit relâché pour éviter les multi-triggers
+        while btn.value() == 0:
+            sleep(0.05)
 
-    else:
-        # si stable depuis >50ms et bouton appuyé (valeur 0)
-        if (now - btn_debounce_time) > 50 and current == 0:
-            # on a un appui stable -> actionner clear
-            clear_alerts()
-            # attendre que l'utilisateur relâche le bouton (évite multi-trigger)
-            while btn.value() == 0:
-                sleep(0.05)
-
-    # petite pause pour éviter boucle trop serrée
+    # petite pause
     sleep(0.02)
-

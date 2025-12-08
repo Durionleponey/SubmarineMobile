@@ -15,6 +15,7 @@ import { AuthService } from './auth/auth.service';
 import { FriendsModule } from './friends/friends.module';
 import { MailerModule } from '@nestjs-modules/mailer'; 
 import { MailModule } from './mail/mail.module'; // <--- 1. AJOUTE L'IMPORT DU MODULE MAIL
+import { LcdModule } from './lcd/lcd.module';
 
 @Module({
   imports: [
@@ -59,6 +60,7 @@ import { MailModule } from './mail/mail.module'; // <--- 1. AJOUTE L'IMPORT DU M
     AuthModule,
     ChatModule,
     PubSubModule,
+    LcdModule,
 
     // Configuration de l'envoi de mail
     MailerModule.forRoot({

@@ -9,7 +9,11 @@ import retrofit2.converter.gson.GsonConverterFactory
 object RetrofitInstance {
 
     // 🧩 Adresse de ton backend (Android Emulator → localhost)
-    private const val BASE_URL = "http://10.0.2.2:4000/"
+    // 🔴 AVANT : 4000
+    // private const val BASE_URL = "http://10.0.2.2:4000/"
+
+    // ✅ MAINTENANT : port 3000, comme ton backend Nest
+    private const val BASE_URL = "http://10.0.2.2:3000/"
 
     // 🔐 Ajoute automatiquement le token JWT dans chaque requête si présent
     private val authInterceptor = Interceptor { chain ->
@@ -41,7 +45,7 @@ object RetrofitInstance {
             .create(AuthApiService::class.java)
     }
 
-    // 🔹 Instance Retrofit pour les appels GraphQL génériques (bio, pseudo, etc.)
+    // 🔹 Instance Retrofit pour les appels GraphQL génériques (bio, pseudo, LCD, etc.)
     val graphqlApi: GraphQLApiService by lazy {
         Retrofit.Builder()
             .baseUrl(BASE_URL)
@@ -50,4 +54,8 @@ object RetrofitInstance {
             .build()
             .create(GraphQLApiService::class.java)
     }
+
+    // 🔹 Alias facultatif si tu utilises `graphQLApi` ailleurs (comme dans mon LcdActivity)
+    val graphQLApi: GraphQLApiService
+        get() = graphqlApi
 }

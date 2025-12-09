@@ -1,6 +1,8 @@
 package com.example.submarine.admin
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -12,6 +14,7 @@ import com.example.submarine.ui.theme.SubmarineTheme
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AdminHomeScreen(
+    onNavigateBack: () -> Unit,
     onNavigateToUsers: () -> Unit,
     onNavigateToStats: () -> Unit
     // On ajoutera les autres navigations ici plus tard
@@ -22,6 +25,14 @@ fun AdminHomeScreen(
         topBar = {
             TopAppBar(
                 title = { Text("Administration") },
+                navigationIcon = {
+                    IconButton(onClick = onNavigateBack) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Retour"
+                        )
+                    }
+                },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.primary,
                     titleContentColor = MaterialTheme.colorScheme.onPrimary
@@ -69,6 +80,7 @@ fun AdminHomeScreen(
 @Composable
 fun AdminHomeScreenPreview() {
         AdminHomeScreen(
+            onNavigateBack = {},
             onNavigateToUsers = {},
             onNavigateToStats = {}
         )

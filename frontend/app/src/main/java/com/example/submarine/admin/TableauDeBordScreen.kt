@@ -3,6 +3,9 @@ package com.example.submarine.admin
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material3.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.AlertDialog
@@ -28,6 +31,7 @@ import com.example.submarine.admin.composants.UtilisateurListItem
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TableauDeBordScreen(
+    onNavigateBack: () -> Unit,
     viewModel: TableauDeBordViewModel = viewModel()
 ) {
     val state by viewModel.uiState.collectAsState()
@@ -37,6 +41,14 @@ fun TableauDeBordScreen(
         topBar = {
             TopAppBar(
                 title = { Text("Tableau de Bord") },
+                navigationIcon = {
+                    IconButton(onClick = onNavigateBack) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Retour"
+                        )
+                    }
+                },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.primary,
                     titleContentColor = MaterialTheme.colorScheme.onPrimary
@@ -111,5 +123,5 @@ fun TableauDeBordScreen(
 @Preview(showBackground = true)
 @Composable
 fun TableauDeBordScreenPreview() {
-    TableauDeBordScreen()
+    TableauDeBordScreen(onNavigateBack = {})
 }

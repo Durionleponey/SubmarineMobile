@@ -61,6 +61,9 @@ class ConversationViewModel : ViewModel() {
     private val _userPseudo = MutableStateFlow<String>("Chargement...")
     val userPseudo = _userPseudo.asStateFlow()
 
+
+    private val _isEncryptionEnabled = MutableStateFlow(true)
+    val isEncryptionEnabled = _isEncryptionEnabled.asStateFlow()
     /**
      * POINT D'ENTRÉE : Appelé par l'UI à l'ouverture de l'écran
      */
@@ -215,7 +218,7 @@ class ConversationViewModel : ViewModel() {
                 var contentToSend = messageContent
 
                 // --- ÉTAPE 1 : CRYPTOGRAPHIE ---
-                if (ENCRYPTION_ENABLED){
+                if (_isEncryptionEnabled.value){
                     // On récupère la clé publique du destinataire pour chiffrer le message rien que pour lui.
                     val recipientPublicKeyStr = UserService.getPublicKey(contactId)
 
@@ -316,5 +319,11 @@ class ConversationViewModel : ViewModel() {
             Log.w(TAG, " ID UTILISATEUR FORCÉ POUR TEST : $hardcodedId")
         }
     }
+
+    fun toggleEncryption(enabled: Boolean) {
+        _isEncryptionEnabled.value = enabled
+        Log.d(TAG, "Chiffrement activé : $enabled")
+    }
+
 
 }

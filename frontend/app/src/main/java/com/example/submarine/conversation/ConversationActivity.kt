@@ -49,6 +49,9 @@ class ConversationActivity : ComponentActivity() {
                 val messages by viewModel.messages.collectAsState()
                 val currentUserId by viewModel.currentUserState.collectAsState() // Le bon ID de l'utilisateur courant
 
+
+                val isEncryptionEnabled by viewModel.isEncryptionEnabled.collectAsState()
+                val onToggleEncryption = { enabled: Boolean -> viewModel.toggleEncryption(enabled) }
                 // 1. On lance le chargement de "QUI SUIS-JE"
                 LaunchedEffect(Unit) {
                     viewModel.loadCurrentUser()
@@ -90,9 +93,13 @@ class ConversationActivity : ComponentActivity() {
                             viewModel.sendMessage(
                                 messageContent,
                                 senderId = currentUserId!!, // Le sender, c'est MOI
-                                contactId = contactId!!      // Le contact, c'est l'AUTRE (celui reçu par Intent)
+                                contactId = contactId!!  ,
+                                // Le contact, c'est l'AUTRE (celui reçu par Intent)
                             )
-                        }
+
+                        },
+                        isEncryptionEnabled = isEncryptionEnabled,
+                        onToggleEncryption = onToggleEncryption
                     )
                 }
 

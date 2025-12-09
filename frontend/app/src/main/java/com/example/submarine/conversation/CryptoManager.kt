@@ -143,4 +143,8 @@ object CryptoManager {
         keyGen.init(256)
         return keyGen.generateKey()
     }
+    fun isEncrypted(content: String): Boolean {
+        // "base64key|base64iv|base64msg"
+        return content.count { it == '|' } == 2
+    }
 }

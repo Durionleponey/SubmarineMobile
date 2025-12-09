@@ -10,11 +10,14 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -59,6 +62,8 @@ fun ComptesSupprimesScreenContent(
     onReactivateClick: (Int) -> Unit
 ) {
     var searchQuery by remember { mutableStateOf("") }
+    var showDialog by remember { mutableStateOf(false) }
+    var userToReactivate by remember { mutableStateOf<AdminUser?>(null) }
 
     val filteredDeletedUsers = remember(searchQuery, utilisateursSupprimes) {
         if (searchQuery.isBlank()) {
@@ -89,8 +94,38 @@ fun ComptesSupprimesScreenContent(
             )
         }
     ) { innerPadding ->
+        if (showDialog && userToReactivate != null) {
+            AlertDialog(
+                onDismissRequest = {
+                    showDialog = false
+                    userToReactivate = null
+                },
+                title = { Text("Confirmation de Réactivation") },
+                text = { Text("Êtes-vous sûr de vouloir réactiver le compte \"${userToReactivate!!.name}\" ?") },
+                confirmButton = {
+                    Button(
+                        onClick = {
+                            onReactivateClick(userToReactivate!!.id)
+                            showDialog = false
+                            userToReactivate = null
+                        }
+                    ) {
+                        Text("Oui, réactiver")
+                    }
+                },
+                dismissButton = {
+                    OutlinedButton(
+                        onClick = {
+                            showDialog = false
+                            userToReactivate = null
+                        }
+                    ) {
+                        Text("Annuler")
+                    }
+                }
+            )
+        }
         Column(modifier = Modifier.padding(innerPadding)) {
-
             OutlinedTextField(
                 value = searchQuery,
                 onValueChange = { searchQuery = it },
@@ -125,7 +160,11 @@ fun ComptesSupprimesScreenContent(
                     ) { user ->
                         UtilisateurSupprimeListItem(
                             user = user,
-                            onReactivateClick = onReactivateClick
+                            onReactivateClick = {
+                                userToReactivate = user
+                                showDialog = true
+                            }
+
                         )
                         HorizontalDivider()
                     }

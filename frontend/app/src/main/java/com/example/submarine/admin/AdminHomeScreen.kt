@@ -55,7 +55,7 @@ fun AdminHomeScreen(
             // Bouton pour les comptes supprimés
             Button(
                 onClick = onNavigateToDeletedUsers,
-                enabled = false,
+                enabled = true,
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text("Comptes Supprimés")

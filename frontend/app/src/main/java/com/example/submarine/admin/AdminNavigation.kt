@@ -1,9 +1,10 @@
 package com.example.submarine.admin
 
-
+import android.app.Activity
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -17,6 +18,8 @@ object AdminRoutes {
 
 @Composable
 fun AdminNavigation(navController: NavHostController) {
+    val context = LocalContext.current
+    val activity = context as? Activity
     val viewModel: TableauDeBordViewModel = viewModel() //utiliser pour le partage entre les écrans
     val uiState by viewModel.uiState.collectAsState() //récupère l'état de la liste utilisateurs
 
@@ -27,8 +30,7 @@ fun AdminNavigation(navController: NavHostController) {
         composable(AdminRoutes.HOME) {
             AdminHomeScreen(
                 onNavigateBack = {
-                    navController.popBackStack()
-                },
+                    activity?.finish()                },
                 onNavigateToUsers = {
                     navController.navigate(AdminRoutes.USER_LIST)
                 },

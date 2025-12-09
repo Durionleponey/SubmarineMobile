@@ -81,6 +81,7 @@ fun ContactsScreen(
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     var lastBackPressTime by remember { mutableLongStateOf(0L) }
 
+
     BackHandler(enabled = true) {
         if (drawerState.isOpen) {
             scope.launch { drawerState.close() }
@@ -101,6 +102,9 @@ fun ContactsScreen(
     var showDeleteConfirmDialog by remember { mutableStateOf(false) }
     val token = TokenProvider.token
 
+    LaunchedEffect(token) {
+        Log.d("TOKEN_CHECK", "Token: ${token?.take(10)}... | Est-il vide: ${token.isNullOrEmpty()}")
+    }
     // États pour la modification du pseudo utilisateur
     var showEditPseudoDialog by remember { mutableStateOf(false) }
     var newPseudoInput by remember { mutableStateOf("") }

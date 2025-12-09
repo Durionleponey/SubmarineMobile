@@ -54,7 +54,6 @@ fun AdminNavigation(navController: NavHostController) {
             )
         }
         composable(AdminRoutes.STATS) {
-            val totalUsers = uiState.activeUsers.size + uiState.deletedUsers.size
             StatistiquesScreen(
                 nombreUtilisateursActifs = uiState.activeUsers.size,
                 nombreUtilisateursSupprimes = uiState.deletedUsers.size,
@@ -65,7 +64,7 @@ fun AdminNavigation(navController: NavHostController) {
         }
         composable(AdminRoutes.DELETED_USERS) {
             ComptesSupprimesScreen(
-                utilisateursSupprimes = uiState.deletedUsers,
+                viewModel = viewModel, // On passe le viewModel partagé
                 onNavigateBack = { navController.popBackStack() }
             )
         }

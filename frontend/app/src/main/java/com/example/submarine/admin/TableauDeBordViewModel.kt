@@ -52,4 +52,17 @@ class TableauDeBordViewModel : ViewModel() {
             }
         }
     }
+    fun reactiverUtilisateur(userId: Int) {
+        _uiState.update { currentState ->
+            val userToMove = currentState.deletedUsers.find { it.id == userId }
+            if (userToMove != null) {
+                currentState.copy(
+                    deletedUsers = currentState.deletedUsers.filterNot { it.id == userId },
+                    activeUsers = (currentState.activeUsers + userToMove).sortedBy { it.name }
+                )
+            } else {
+                currentState
+            }
+        }
+    }
 }

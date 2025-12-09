@@ -15,7 +15,8 @@ import androidx.compose.ui.unit.dp
 fun AdminHomeScreen(
     onNavigateBack: () -> Unit,
     onNavigateToUsers: () -> Unit,
-    onNavigateToStats: () -> Unit
+    onNavigateToStats: () -> Unit,
+    onNavigateToDeletedUsers: () -> Unit
 ) {
     Scaffold(
         topBar = {
@@ -53,7 +54,7 @@ fun AdminHomeScreen(
 
             // Bouton pour les comptes supprimés
             Button(
-                onClick = { /* TODO */ },
+                onClick = onNavigateToDeletedUsers,
                 enabled = false,
                 modifier = Modifier.fillMaxWidth()
             ) {
@@ -78,7 +79,8 @@ fun AdminHomeScreenPreview() {
         AdminHomeScreen(
             onNavigateBack = {},
             onNavigateToUsers = {},
-            onNavigateToStats = {}
+            onNavigateToStats = {},
+            onNavigateToDeletedUsers = {}
         )
 
 }

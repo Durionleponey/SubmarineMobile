@@ -12,7 +12,8 @@ data class AdminUser(
 )
 
 data class TableauDeBordUiState(
-    val users: List<AdminUser> = emptyList()
+    val activeUsers: List<AdminUser> = emptyList(),
+    val deletedUsers: List<AdminUser> = emptyList()
 )
 
 class TableauDeBordViewModel : ViewModel() {
@@ -21,7 +22,7 @@ class TableauDeBordViewModel : ViewModel() {
 
     init {
         _uiState.value = TableauDeBordUiState(
-            users = listOf(
+            activeUsers = listOf(
                 AdminUser(id = 1, name = "Alice"),
                 AdminUser(id = 2, name = "Bob"),
                 AdminUser(id = 3, name = "Charlie"),
@@ -33,8 +34,22 @@ class TableauDeBordViewModel : ViewModel() {
 
     fun supprimerUtilisateur(userId: Int) {
         _uiState.update { currentState ->
-            val nouvelleListe = currentState.users.filter { user -> user.id != userId }
-            currentState.copy(users = nouvelleListe)
+            val userToMove = currentState.activeUsers.find { it.id == userId }
+
+            if (userToMove != null) {
+                // On le retire de la liste des actifs
+                val newActiveList = currentState.activeUsers.filter { it.id != userId }
+                // On l'ajoute à la liste des supprimés
+                val newDeletedList = currentState.deletedUsers + userToMove
+
+                // On retourne le nouvel état avec les deux listes mises à jour
+                currentState.copy(
+                    activeUsers = newActiveList,
+                    deletedUsers = newDeletedList
+                )
+            } else {
+                currentState
+            }
         }
     }
 }

@@ -14,6 +14,7 @@ object AdminRoutes {
     const val HOME = "admin_home"
     const val USER_LIST = "admin_user_list"
     const val STATS = "admin_stats"
+    const val DELETED_USERS = "admin_deleted_users"
 }
 
 @Composable
@@ -36,6 +37,9 @@ fun AdminNavigation(navController: NavHostController) {
                 },
                 onNavigateToStats = {
                     navController.navigate(AdminRoutes.STATS)
+                },
+                onNavigateToDeletedUsers = {
+                    navController.navigate(AdminRoutes.DELETED_USERS)
                 }
             )
         }
@@ -50,11 +54,18 @@ fun AdminNavigation(navController: NavHostController) {
             )
         }
         composable(AdminRoutes.STATS) {
+            val totalUsers = uiState.activeUsers.size + uiState.deletedUsers.size
             StatistiquesScreen(
-                nombreUtilisateurs = uiState.users.size,
+                nombreUtilisateurs = totalUsers,
                 onNavigateBack = {
                     navController.popBackStack()
                 }
+            )
+        }
+        composable(AdminRoutes.DELETED_USERS) {
+            ComptesSupprimesScreen(
+                utilisateursSupprimes = uiState.deletedUsers,
+                onNavigateBack = { navController.popBackStack() }
             )
         }
 

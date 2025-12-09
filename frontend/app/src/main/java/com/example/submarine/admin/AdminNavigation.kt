@@ -56,7 +56,8 @@ fun AdminNavigation(navController: NavHostController) {
         composable(AdminRoutes.STATS) {
             val totalUsers = uiState.activeUsers.size + uiState.deletedUsers.size
             StatistiquesScreen(
-                nombreUtilisateurs = totalUsers,
+                nombreUtilisateursActifs = uiState.activeUsers.size,
+                nombreUtilisateursSupprimes = uiState.deletedUsers.size,
                 onNavigateBack = {
                     navController.popBackStack()
                 }

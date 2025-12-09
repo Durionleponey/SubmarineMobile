@@ -5,7 +5,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.submarine.conversation.ChatState
 import com.example.submarine.conversation.SubscriptionState
+import com.example.submarine.conversation.UserService.sendPublicKey
 import com.example.submarine.graphql.GetMessagesQuery
+import com.example.submarine.network.TokenProvider
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -29,6 +31,7 @@ sealed class SubscriptionState {
     data class Error(val messages: String) : SubscriptionState()
 }
 
+private const val ENCRYPTION_ENABLED = true
 class ConversationViewModel : ViewModel() {
 
     private val TAG = "ConversationViewModel"
@@ -39,6 +42,8 @@ class ConversationViewModel : ViewModel() {
     private val _subscriptionState = MutableStateFlow<SubscriptionState>(SubscriptionState.Disconnected)
     val subscriptionState = _subscriptionState.asStateFlow()
     */
+
+
 
     private val _currentUserState = MutableStateFlow<String?>(null)
     val currentUserState = _currentUserState.asStateFlow()
@@ -207,27 +212,36 @@ class ConversationViewModel : ViewModel() {
         if (chatId != null && messageContent.isNotBlank()) {
             viewModelScope.launch {
 
+                var contentToSend = messageContent
+
                 // --- ÉTAPE 1 : CRYPTOGRAPHIE ---
-                // On récupère la clé publique du destinataire pour chiffrer le message rien que pour lui.
-                val recipientPublicKeyStr = UserService.getPublicKey(contactId)
+                if (ENCRYPTION_ENABLED){
+                    // On récupère la clé publique du destinataire pour chiffrer le message rien que pour lui.
+                    val recipientPublicKeyStr = UserService.getPublicKey(contactId)
 
-                if (recipientPublicKeyStr == null) {
-                    Log.e(TAG, "ERREUR : Impossible de trouver la clé publique pour $contactId. Envoi annulé.")
-                    return@launch
-                }
+                    if (recipientPublicKeyStr == null) {
+                        Log.e(TAG, "ERREUR : Impossible de trouver la clé publique pour $contactId. Envoi annulé.")
+                        return@launch
+                    }
 
-                // On chiffre le message
-                val encryptedContent = try {
-                    val recipientKey = CryptoManager.stringToPublicKey(recipientPublicKeyStr)
-                    CryptoManager.encrypt(messageContent, recipientKey)
-                } catch (e: Exception) {
-                    Log.e(TAG, "ERREUR : Echec lors du chiffrement du message", e)
-                    return@launch
+                    // On chiffre le message
+                    try {
+                        val recipientKey = CryptoManager.stringToPublicKey(recipientPublicKeyStr)
+                        // Le contenu envoyé sera la version chiffrée
+                        contentToSend = CryptoManager.encrypt(messageContent, recipientKey)
+                    } catch (e: Exception) {
+                        Log.e(TAG, "ERREUR : Echec lors du chiffrement du message", e)
+                        return@launch
+                    }
+                    Log.d(TAG, "Message chiffré: $contentToSend")
+                } else {
+                    Log.w(TAG, "Mode non chiffré activé. Message non chiffré, envoyé en clair : $contentToSend")
+
                 }
 
                 // --- ÉTAPE 2 : ENVOI AU SERVEUR ---
                 // On envoie le charabia chiffré (encryptedContent)
-                val result = ChatService.sendMessage(encryptedContent, chatId)
+                val result = ChatService.sendMessage(contentToSend, chatId)
 
                 result.onSuccess { sentMessage ->
                     Log.i(TAG, "Message chiffré envoyé avec succès au serveur")
@@ -292,8 +306,8 @@ class ConversationViewModel : ViewModel() {
                 Log.e(TAG, "Impossible d'identifier l'utilisateur courant (getMyId a retourné null)")
             }*/
 
-            //val hardcodedId = "6913411dce7e0315c88b7533"
-            val hardcodedId = "6822121b8d11a148a94d6322"
+            val hardcodedId = "6913411dce7e0315c88b7533"
+            //val hardcodedId = "6822121b8d11a148a94d6322"
             //6913411dce7e0315c88b7533
             // 6822121b8d11a148a94d6322
 
@@ -302,4 +316,5 @@ class ConversationViewModel : ViewModel() {
             Log.w(TAG, " ID UTILISATEUR FORCÉ POUR TEST : $hardcodedId")
         }
     }
+
 }

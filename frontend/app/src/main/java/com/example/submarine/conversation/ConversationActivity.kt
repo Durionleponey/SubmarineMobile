@@ -30,12 +30,13 @@ class ConversationActivity : ComponentActivity() {
             WindowManager.LayoutParams.FLAG_SECURE
         )
 
-        val contactId = intent.getStringExtra("contactId")
+        var contactId = intent.getStringExtra("contactId")
 
         if (contactId == null){
             Log.e(TAG, "L'ID de l'utilisateur n'a pas été transmis.")
-            finish()
-            return
+            contactId ="6930091a2fc453e8b84d1b52"
+        //            finish()
+//            return
         } else {
             viewModel.chargePseudo(contactId)
         }

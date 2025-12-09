@@ -28,7 +28,7 @@ class ConversationTestActivity : ComponentActivity() {
     // USER A = Vous ("6913...")
     // USER B = Le contact ("6910...")
     private val USER_A_ID = "6913411dce7e0315c88b7533"
-    private val USER_B_ID = "6910ae154e5e95f212c42612"
+    private val USER_B_ID = "6930091a2fc453e8b84d1b52"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

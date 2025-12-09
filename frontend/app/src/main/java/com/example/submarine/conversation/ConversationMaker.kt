@@ -11,6 +11,8 @@ import com.apollographql.apollo3.exception.ApolloException
 import com.example.submarine.graphql.GetMyIdQuery
 import com.example.submarine.graphql.GetMyConversationsQuery
 import com.example.submarine.graphql.GetUserPublicKeyQuery
+import com.example.submarine.network.TokenProvider
+import com.example.submarine.graphql.UpdateMyPublicKeyMutation
 
 object ChatService {
     private const val TAG = "ChatService"
@@ -193,7 +195,6 @@ object UserService {
             return null
         }
     }
-    // Dans UserService (ConversationMaker.kt)
 
     suspend fun getPublicKey(userId: String): String? {
         try {
@@ -207,5 +208,30 @@ object UserService {
             return null
         }
     }
+    // ConversationMaker.kt (Ajouter à l'objet UserService)
+
+    suspend fun sendPublicKey(publicKey: String): Result<Boolean> {
+        try {
+            // NOTE: Ceci est un PSEUDO-CODE. Vous devez créer la classe de mutation
+            //       (ex: UpdatePublicKeyMutation) si elle n'existe pas.
+            val response = Apollo.apolloClient
+                .mutation(UpdateMyPublicKeyMutation(publicKey = publicKey))
+                .execute()
+
+            if (response.hasErrors()) {
+                Log.e("Crypto", "Erreur GraphQL lors de l'envoi de la clé: ${response.errors}")
+                return Result.failure(Exception("Échec de la mutation"))
+            }
+
+            Log.i("Crypto", "Clé publique envoyée au serveur avec succès.")
+            return Result.success(true)
+
+        } catch (e: Exception) {
+            Log.e("Crypto", "Exception lors de l'envoi de la clé", e)
+            return Result.failure(e)
+        }
+    }
+
+
 }
 

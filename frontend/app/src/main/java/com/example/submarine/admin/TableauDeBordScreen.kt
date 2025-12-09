@@ -14,7 +14,6 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.*
@@ -34,7 +33,7 @@ fun TableauDeBordScreen(
     onNavigateBack: () -> Unit,
     viewModel: TableauDeBordViewModel = viewModel()
 ) {
-    val state by viewModel.uiState.collectAsState()
+    val uiState by viewModel.uiState.collectAsState()
     var showDialog by remember { mutableStateOf(false) }
     var userToDelete by remember { mutableStateOf<AdminUser?>(null) }
     Scaffold(
@@ -51,7 +50,8 @@ fun TableauDeBordScreen(
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.primary,
-                    titleContentColor = MaterialTheme.colorScheme.onPrimary
+                    titleContentColor = MaterialTheme.colorScheme.onPrimary,
+                    navigationIconContentColor = MaterialTheme.colorScheme.onPrimary
                 )
             )
         }
@@ -76,7 +76,7 @@ fun TableauDeBordScreen(
                     }
                 },
                 dismissButton = {
-                    TextButton(
+                    OutlinedButton(
                         onClick = {
                             showDialog = false
                             userToDelete = null
@@ -87,14 +87,14 @@ fun TableauDeBordScreen(
                 }
             )
         }
-        if (state.users.isEmpty()) {
+        if (uiState.activeUsers.isEmpty()) {
             Box(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(innerPadding),
                 contentAlignment = Alignment.Center
             ) {
-                Text("Tous les utilisateurs ont été supprimés.")
+                Text("Aucun utilisateur actif.")
             }
         } else {
             LazyColumn(
@@ -103,7 +103,7 @@ fun TableauDeBordScreen(
                     .padding(innerPadding)
             ) {
                 items(
-                    items = state.users,
+                    items = uiState.activeUsers,
                     key = { user -> user.id }
                 ) { user ->
                     UtilisateurListItem(

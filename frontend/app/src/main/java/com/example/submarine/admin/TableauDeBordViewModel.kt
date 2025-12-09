@@ -27,7 +27,10 @@ class TableauDeBordViewModel : ViewModel() {
                 AdminUser(id = 2, name = "Bob"),
                 AdminUser(id = 3, name = "Charlie"),
                 AdminUser(id = 4, name = "David"),
-                AdminUser(id = 5, name = "Eve")
+                AdminUser(id = 5, name = "Eve"),
+                AdminUser(id = 6, name = "Danny"),
+                AdminUser(id = 7, name = "Anais"),
+                AdminUser(id = 8, name = "Bastien")
             )
         )
     }

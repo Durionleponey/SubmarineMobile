@@ -163,32 +163,41 @@ class ConversationViewModel : ViewModel() {
 
             result.onSuccess { messagesHist ->
 
-                // 1. TRAITEMENT : On déchiffre les messages reçus
+// 1. TRAITEMENT : On déchiffre les messages reçus
                 val processedMessages = messagesHist.map { msg ->
 
                     val contentToDisplay = if (msg.userId != myUserId) {
-                        // CAS A : Message reçu (de l'autre) -> ON DÉCHIFFRE
-                        try {
-                            CryptoManager.decrypt(msg.content)
-                        } catch (e: Exception) {
-                            "Message illisible"
+                        // CAS A : Message reçu (de l'autre) -> DOIT ÊTRE DÉCHIFFRÉ (si le format est bon)
+                        if (CryptoManager.isEncrypted(msg.content)) {
+                            try {
+                                CryptoManager.decrypt(msg.content)
+                            } catch (e: Exception) {
+                                Log.e(TAG, "Decryption error for received message", e)
+                                "Message illisible"
+                            }
+                        } else {
+                            // Message non chiffré reçu de l'autre (probablement en mode test)
+                            msg.content
                         }
                     } else {
                         // CAS B : Message envoyé (par moi) venant du serveur
-                        // Comme il est chiffré pour l'autre, on ne peut pas le relire ici.
-                        // On met un texte par défaut.
-                        // (Si on vient de l'envoyer, la version locale en clair prendra le dessus grâce au code plus bas)
-                        "Message envoyé (Contenu sécurisé)"
+
+                        // 🔥 NOUVEAU : Tentative de récupération depuis la base locale
+                        val localPlaintext = LocalMessageStore.getPlaintext(msg._id)
+
+                        if (localPlaintext != null) {
+                            // C'est la version en clair que nous avions stockée
+                            localPlaintext
+                        } else if (CryptoManager.isEncrypted(msg.content)) {
+                            // Le message était chiffré, mais il n'est pas en base locale (bug, perte de données)
+                            "Message chiffré (Base locale manquante)"
+                        } else {
+                            // Message non chiffré (mode test), on affiche
+                            msg.content
+                        }
                     }
-
-                    // On recrée un objet message avec le texte clair
-                    GetMessagesQuery.GetMessage(
-                        _id = msg._id,
-                        content = contentToDisplay,
-                        userId = msg.userId
-                    )
+                    msg.copy(content = contentToDisplay)
                 }
-
                 // 2. MISE À JOUR : On fusionne avec la liste actuelle
                 _messages.update { currentList ->
                     // On récupère les IDs des messages qu'on a déjà affichés (probablement en clair via sendMessage)
@@ -251,6 +260,12 @@ class ConversationViewModel : ViewModel() {
 
                     if (sentMessage != null) {
 
+                        // Ceci est CRUCIAL pour la relecture de l'historique E2EE.
+                        LocalMessageStore.storePlaintext(
+                            messageId = sentMessage._id,
+                            plaintext = messageContent // messageContent est le texte en clair
+                        )
+
                         // --- ÉTAPE 3 : MISE À JOUR UI LOCALE ---
 
                         val finalUserId = sentMessage.userId ?: senderId
@@ -294,7 +309,7 @@ class ConversationViewModel : ViewModel() {
     }
     fun loadCurrentUser() {
         viewModelScope.launch {
-            /** 1. Récupération de l'ID via la requête GraphQL "me"
+            //1. Récupération de l'ID via la requête GraphQL "me"
             val myId = UserService.getMyId()
 
             if (myId != null) {
@@ -307,11 +322,11 @@ class ConversationViewModel : ViewModel() {
                 Log.d(TAG, "Pseudo de l'utilisateur courant : $myPseudo")
             } else {
                 Log.e(TAG, "Impossible d'identifier l'utilisateur courant (getMyId a retourné null)")
-            }*/
+            }
 
             val hardcodedId = "6913411dce7e0315c88b7533"
             //val hardcodedId = "6822121b8d11a148a94d6322"
-            //6913411dce7e0315c88b7533
+            //6913411dce7e0315c88b7533, 6930091a2fc453e8b84d1b52
             // 6822121b8d11a148a94d6322
 
             myUserId = hardcodedId

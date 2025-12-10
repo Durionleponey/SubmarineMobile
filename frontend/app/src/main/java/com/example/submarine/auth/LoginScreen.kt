@@ -37,7 +37,7 @@ fun LoginScreen() {
     val activity = context as? ComponentActivity
     val intent = activity?.intent
 
-    val prefillEmail = "marie@example.com"//intent?.getStringExtra("email") ?: ""
+    val prefillEmail = "marie@exemple.com"//intent?.getStringExtra("email") ?: ""
     val prefillPassword = "StrongPass123!"//intent?.getStringExtra("password") ?: ""
 
     var email by remember { mutableStateOf(prefillEmail) }

@@ -104,14 +104,16 @@ export class FriendsService {
       .populate('receiver')
       .exec();
 
-    return relations.map(rel => {
-      return rel.sender['_id'].toString() === userId.toString()
+    return relations.map(rel => ({
+      relationId: rel._id.toString(),
+      user: rel.sender._id.toString() === userId
         ? rel.receiver
-        : rel.sender;
-    });
+        : rel.sender
+    }));
   }
 
-  // 👇👇👇 C'EST LA FONCTION QU'IL TE MANQUAIT POUR LE CONTROLLER 👇👇👇
+
+
   async acceptRequestByEmail(requestId: string) {
     const request = await this.friendModel.findById(requestId);
     
@@ -127,7 +129,7 @@ export class FriendsService {
     request.status = 'accepted';
     return request.save();
   }
-  // 👇 AJOUTE CETTE MÉTHODE
+
   async rejectFriendRequest(requestId: string) {
     const request = await this.friendModel.findById(requestId);
     
@@ -142,4 +144,31 @@ export class FriendsService {
     // Alternative : Si tu préfères supprimer complètement la demande :
     // return this.friendModel.findByIdAndDelete(requestId);
   }
+
+
+  async removeFriendById(relationId: string, userId: string) {
+    const friend = await this.friendModel.findById(relationId);
+
+    if (!friend) {
+      throw new NotFoundException("Amitié introuvable.");
+    }
+
+    // Sécurité : vérifier que l’utilisateur connecté fait partie de la relation
+    if (
+      friend.sender.toString() !== userId &&
+      friend.receiver.toString() !== userId
+    ) {
+      throw new UnauthorizedException("Interdit.");
+    }
+
+    await friend.deleteOne();
+    return friend;
+  }
+
+
+
+
+
+
+
 }

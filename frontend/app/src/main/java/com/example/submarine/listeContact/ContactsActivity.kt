@@ -1,4 +1,4 @@
-git aspackage com.example.submarine.listeContact
+package com.example.submarine.listeContact
 
 import android.app.Activity
 import android.content.Intent

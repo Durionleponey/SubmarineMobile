@@ -5,7 +5,7 @@ name: Android CI
 # mais ignore les changements qui ne concernent que la documentation (ex: README.md).
 on:
   push:
-    branches: [ "**" ] # Toutes les branches
+    branches: [ Développement ] # Toutes les branches [ "**" ] 
     paths-ignore:
       - '**.md'
 

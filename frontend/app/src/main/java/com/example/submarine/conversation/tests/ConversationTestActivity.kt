@@ -160,8 +160,6 @@ fun TestChatScreen(
     LaunchedEffect(key1 = contactId) {
         viewModel.myUserId = myUserId
 
-        // IMPORTANT : On trie les IDs pour garantir que c'est la MEME conversation
-        // peu importe si on est A ou B.
         val participants = listOf(myUserId, contactId).sorted()
 
         Log.d("TestChat", "Lancement init chat. Participants triés: $participants")

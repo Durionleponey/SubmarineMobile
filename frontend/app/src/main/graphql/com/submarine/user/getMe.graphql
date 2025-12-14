@@ -1,5 +1,5 @@
 query GetMyId {
-  me {
+  meId {
     _id
     pseudo
     email

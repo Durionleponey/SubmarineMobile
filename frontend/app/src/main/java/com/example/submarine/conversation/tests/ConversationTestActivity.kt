@@ -148,8 +148,6 @@ fun UserSelectionScreen(
     }
 }
 
-// ConversationTestActivity.kt
-
 @Composable
 fun TestChatScreen(
     viewModel: ConversationViewModel,
@@ -170,6 +168,7 @@ fun TestChatScreen(
 
         viewModel.createOrGetChat(
             userIds = participants,
+            contactId = contactId,
             isPrivate = true
         )
 

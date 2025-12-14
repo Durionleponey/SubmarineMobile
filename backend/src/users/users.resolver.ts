@@ -3,7 +3,7 @@ import { UsersService } from './users.service';
 import { User } from './entities/user.entity';
 import { CreateUserInput } from './dto/create-user.input';
 import { UpdateUserInput } from './dto/update-user.input';
-import {UseGuards} from "@nestjs/common";
+import {NotFoundException, UseGuards} from "@nestjs/common";
 import {GqlAuthGuard} from "../auth/guards/gql-auth.guard";
 import {CurrentUser} from "../auth/current-user.decorator";
 import {TokenPayload} from "../auth/token-payload.interface";
@@ -94,6 +94,17 @@ async getMeAll(@CurrentUser() user: TokenPayload) {
   @UseGuards(GqlAuthGuard)
   getMe(@CurrentUser() user: TokenPayload) {//getMe will return the current login user idk how it's work but it's work
     return user;
+  }
+
+  @Query(() => User, { name: 'meId'})
+  @UseGuards(GqlAuthGuard)
+  async getMeId(@CurrentUser() tokenPayload: TokenPayload) {
+    const userId = tokenPayload._id;
+    const userFromDb = await this.usersService.findOne(userId);
+    if (!userFromDb){
+      throw new NotFoundException(`User not found ${userId} depuis le backend`);
+    }
+    return userFromDb;
   }
 
   @Query(() => [User], { name: 'searchUsers' })

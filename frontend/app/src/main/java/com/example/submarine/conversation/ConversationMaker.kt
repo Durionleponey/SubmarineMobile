@@ -156,7 +156,6 @@ object ChatService {
     suspend fun getAllMyChats(): Result<List<GetMyConversationsQuery.Chatss>> {
         Log.d(TAG, "Récupération de toutes les conversations via chatss...")
         try {
-            // On appelle la query qu'on vient de créer
             val response = Apollo.apolloClient.query(GetMyConversationsQuery()).execute()
 
             if (response.hasErrors()) {
@@ -164,7 +163,6 @@ object ChatService {
                 return Result.failure(Exception("Erreur GraphQL"))
             }
 
-            // Attention : Apollo reprend le nom du champ, donc ici .chatss
             val chats = response.data?.chatss ?: emptyList()
 
             return Result.success(chats)
@@ -188,7 +186,7 @@ object UserService {
                 return null
             }
 
-            return response.data?.me?._id
+            return response.data?.meId?._id
         } catch (e: Exception) {
             Log.e("Apollo", "Exception GetMyId", e)
             return null
@@ -207,12 +205,9 @@ object UserService {
             return null
         }
     }
-    // ConversationMaker.kt (Ajouter à l'objet UserService)
 
     suspend fun sendPublicKey(publicKey: String): Result<Boolean> {
         try {
-            // NOTE: Ceci est un PSEUDO-CODE. Vous devez créer la classe de mutation
-            //       (ex: UpdatePublicKeyMutation) si elle n'existe pas.
             val response = Apollo.apolloClient
                 .mutation(UpdateMyPublicKeyMutation(publicKey = publicKey))
                 .execute()

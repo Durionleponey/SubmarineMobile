@@ -35,19 +35,16 @@ class ConversationActivity : ComponentActivity() {
         if (contactId == null){
             Log.e(TAG, "L'ID de l'utilisateur n'a pas été transmis.")
             contactId ="6930091a2fc453e8b84d1b52"
-        //            finish()
-//            return
         } else {
             viewModel.chargePseudo(contactId)
         }
 
-        // ConversationActivity.kt - Partie setContent CORRIGÉE
 
         setContent {
             SubmarineTheme {
                 val pseudo by viewModel.userPseudo.collectAsState()
                 val messages by viewModel.messages.collectAsState()
-                val currentUserId by viewModel.currentUserState.collectAsState() // Le bon ID de l'utilisateur courant
+                val currentUserId by viewModel.currentUserState.collectAsState()
 
 
                 val isEncryptionEnabled by viewModel.isEncryptionEnabled.collectAsState()
@@ -61,11 +58,12 @@ class ConversationActivity : ComponentActivity() {
                 LaunchedEffect(key1 = contactId, key2 = currentUserId) {
                     // On vérifie que l'ID est bien chargé avant de l'utiliser
                     if (currentUserId != null) {
-                        val participants = listOf(currentUserId!!, contactId)
+                        val participants = listOf(currentUserId!!, contactId!!)
                         Log.d(TAG, "Lancement de la création du chat avec: $participants")
 
                         viewModel.createOrGetChat(
                             userIds = participants,
+                            contactId = contactId!!,
                             isPrivate = true
                         )
                     }

@@ -10,7 +10,7 @@ class AddContactActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             SubmarineTheme {
-                AddContactScreen(onBack = { finish() }) // ✅ Affiche le composable
+                AddContactScreen(onBack = { finish() }) // Affiche le composable
             }
         }
     }

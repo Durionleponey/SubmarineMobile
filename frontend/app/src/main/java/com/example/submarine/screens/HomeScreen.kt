@@ -20,7 +20,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.submarine.auth.LoginActivity
 import com.example.submarine.auth.SignUpActivity
-import com.example.submarine.ui.theme.SubmarineTheme // Assurez-vous que votre thème est bien configuré
+import com.example.submarine.ui.theme.SubmarineTheme
 import com.example.submarine.conversation.ConversationActivity
 import com.example.submarine.listeContact.ContactsActivity
 import androidx.compose.ui.res.painterResource
@@ -32,7 +32,6 @@ import com.example.submarine.conversation.tests.ConversationTestActivity
 fun HomeScreen() {
     val context = LocalContext.current
 
-    // Utilisation d'un dégradé pour le fond
     val backgroundBrush = Brush.verticalGradient(
         colors = listOf(
             MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),

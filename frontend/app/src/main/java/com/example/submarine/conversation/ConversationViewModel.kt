@@ -70,9 +70,10 @@ class ConversationViewModel : ViewModel() {
 
 
 
-    fun createOrGetChat(userIds: List<String>, isPrivate: Boolean, name: String? = null) {
+    fun createOrGetChat(userIds: List<String>, contactId: String, isPrivate: Boolean = true, name: String? = null) {
         viewModelScope.launch {
 
+            chargePseudo(contactId)
             // 1. On récupère la liste des conversations existantes
             val resultList = ChatService.getAllMyChats()
 
@@ -227,7 +228,7 @@ class ConversationViewModel : ViewModel() {
 
                 // --- ÉTAPE 1 : CRYPTOGRAPHIE ---
                 if (_isEncryptionEnabled.value){
-                    // On récupère la clé publique du destinataire pour chiffrer le message rien que pour lui.
+
                     val recipientPublicKeyStr = UserService.getPublicKey(contactId)
 
                     if (recipientPublicKeyStr == null) {
@@ -235,10 +236,8 @@ class ConversationViewModel : ViewModel() {
                         return@launch
                     }
 
-                    // On chiffre le message
                     try {
                         val recipientKey = CryptoManager.stringToPublicKey(recipientPublicKeyStr)
-                        // Le contenu envoyé sera la version chiffrée
                         contentToSend = CryptoManager.encrypt(messageContent, recipientKey)
                     } catch (e: Exception) {
                         Log.e(TAG, "ERREUR : Echec lors du chiffrement du message", e)
@@ -277,7 +276,6 @@ class ConversationViewModel : ViewModel() {
                         )
 
                         _messages.update { currentList ->
-                            // On évite les doublons si le WebSocket a été plus rapide que la réponse HTTP
                             if (currentList.any { it._id == newMessageForUI._id }) {
                                 currentList
                             } else {
@@ -308,29 +306,24 @@ class ConversationViewModel : ViewModel() {
     }
     fun loadCurrentUser() {
         viewModelScope.launch {
-            //1. Récupération de l'ID via la requête GraphQL "me"
             val myId = UserService.getMyId()
 
             if (myId != null) {
-                myUserId = myId // Mise à jour de la variable de classe utilisée pour l'envoi
+                myUserId = myId
                 _currentUserState.value = myId
                 Log.d(TAG, "Utilisateur identifié avec succès : $myId")
 
-                // 2. (Optionnel) Si vous voulez aussi stocker son pseudo pour l'UI
                 val myPseudo = userPseudoRecup.fetchUser(myId)
                 Log.d(TAG, "Pseudo de l'utilisateur courant : $myPseudo")
             } else {
                 Log.e(TAG, "Impossible d'identifier l'utilisateur courant (getMyId a retourné null)")
             }
 
-            val hardcodedId = "6930091a2fc453e8b84d1b52"
-            //val hardcodedId = "6822121b8d11a148a94d6322"
-            //6913411dce7e0315c88b7533, 6930091a2fc453e8b84d1b52
-            // 6822121b8d11a148a94d6322
 
-            myUserId = hardcodedId
-            _currentUserState.value = hardcodedId
-            Log.w(TAG, " ID UTILISATEUR FORCÉ POUR TEST : $hardcodedId")
+
+            myUserId = myId
+            _currentUserState.value = myId
+           // Log.w(TAG, " ID UTILISATEUR FORCÉ POUR TEST : $hardcodedId")
         }
     }
 

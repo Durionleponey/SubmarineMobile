@@ -55,6 +55,7 @@ type Query {
   user(id: String!): User!
   userMail(email: String!): User!
   me: User!
+  meId: User!
 
   chatss: [Chat!]!
   chat(_id: String!): Chat!

@@ -35,11 +35,11 @@ jobs:
       # --- Étape 3 : Donner les permissions d'exécution à gradlew ---
       # Sur les systèmes Linux/Mac, le script gradlew a besoin d'être exécutable.
       - name: Grant execute permission for gradlew
-        run: chmod +x gradlew
+        run: chmod +x frontend/gradlew
 
       # --- Étape 4 : Compiler l'application (le test principal) ---
       # 'assembleDebug' compile tout le code et génère un APK de débogage.
       # Si cette étape échoue, le workflow s'arrête et est marqué comme "failed".
       - name: Build with Gradle
-        run: ./gradlew assembleDebug
+        run: ./frontend/gradlew assembleDebug
 

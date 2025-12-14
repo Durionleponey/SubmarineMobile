@@ -37,7 +37,9 @@ fun ConversationScreen(
     //creationState: com.example.submarine.conversation.ChatState,
    // subscriptionState: com.example.submarine.conversation.SubscriptionState,
     currentUserId: String,
-    onSentMessage: (String) -> Unit
+    onSentMessage: (String) -> Unit,
+    isEncryptionEnabled: Boolean,
+    onToggleEncryption: (Boolean) -> Unit
 
 
 ) {
@@ -153,7 +155,9 @@ fun ConversationScreenPreview() {
             messages = emptyList(),
             onNavigateBack = {},
             currentUserId = "1_test",
-            onSentMessage = {}
+            onSentMessage = {},
+            isEncryptionEnabled = true,
+            onToggleEncryption = {}
 
         )
     }

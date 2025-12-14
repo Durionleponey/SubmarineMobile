@@ -30,15 +30,15 @@ class ConversationActivity : ComponentActivity() {
             WindowManager.LayoutParams.FLAG_SECURE
         )
 
-        val contactId = intent.getStringExtra("contactId")
+        var contactId = intent.getStringExtra("contactId")
 
         if (contactId == null){
             Log.e(TAG, "L'ID de l'utilisateur n'a pas été transmis.")
-            finish()
-            return
+            contactId ="6930091a2fc453e8b84d1b52"
         } else {
             viewModel.chargePseudo(contactId)
         }
+
 
         setContent {
             SubmarineTheme {
@@ -46,21 +46,24 @@ class ConversationActivity : ComponentActivity() {
                 val messages by viewModel.messages.collectAsState()
                 val currentUserId by viewModel.currentUserState.collectAsState()
 
+
+                val isEncryptionEnabled by viewModel.isEncryptionEnabled.collectAsState()
+                val onToggleEncryption = { enabled: Boolean -> viewModel.toggleEncryption(enabled) }
                 // 1. On lance le chargement de "QUI SUIS-JE"
                 LaunchedEffect(Unit) {
                     viewModel.loadCurrentUser()
                 }
 
                 // 2. On surveille à la fois contactId ET currentUserId.
-                // Le code à l'intérieur ne s'exécutera que si les clés changent.
                 LaunchedEffect(key1 = contactId, key2 = currentUserId) {
                     // On vérifie que l'ID est bien chargé avant de l'utiliser
                     if (currentUserId != null) {
-                        val participants = listOf(currentUserId!!, contactId)
+                        val participants = listOf(currentUserId!!, contactId!!)
                         Log.d(TAG, "Lancement de la création du chat avec: $participants")
 
                         viewModel.createOrGetChat(
                             userIds = participants,
+                            contactId = contactId!!,
                             isPrivate = true
                         )
                     }
@@ -69,7 +72,6 @@ class ConversationActivity : ComponentActivity() {
                 // 3. Gestion de l'affichage : Chargement vs Écran de conversation
                 if (currentUserId == null) {
                     // TANT QUE l'ID n'est pas chargé, on affiche une roue de chargement
-                    // Cela évite le crash du "currentUserId!!" dans le ConversationScreen
                     Box(
                         modifier = Modifier.fillMaxSize(),
                         contentAlignment = Alignment.Center
@@ -82,13 +84,22 @@ class ConversationActivity : ComponentActivity() {
                         contactName = pseudo ?: "User test",
                         messages = messages,
                         onNavigateBack = { finish() },
-                        // Ici le !! est sûr car on est dans le bloc "else" du if(currentUserId == null)
+                        // Ici, on utilise l'état "currentUserId" collecté
                         currentUserId = currentUserId!!,
+                        // On passe le currentUserId comme senderId ET le contactId comme contactId
                         onSentMessage = { messageContent ->
-                            viewModel.sendMessage(messageContent, currentUserId!!)
-                        }
+                            viewModel.sendMessage(
+                                messageContent,
+                                senderId = currentUserId!!, // Le sender, c'est MOI
+                                contactId = contactId!!  ,
+                            )
+
+                        },
+                        isEncryptionEnabled = isEncryptionEnabled,
+                        onToggleEncryption = onToggleEncryption
                     )
                 }
+
             }
         }
     }

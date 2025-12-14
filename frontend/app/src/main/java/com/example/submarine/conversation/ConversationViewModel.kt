@@ -5,7 +5,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.submarine.conversation.ChatState
 import com.example.submarine.conversation.SubscriptionState
+import com.example.submarine.conversation.UserService.sendPublicKey
 import com.example.submarine.graphql.GetMessagesQuery
+import com.example.submarine.network.TokenProvider
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -29,6 +31,7 @@ sealed class SubscriptionState {
     data class Error(val messages: String) : SubscriptionState()
 }
 
+private const val ENCRYPTION_ENABLED = true
 class ConversationViewModel : ViewModel() {
 
     private val TAG = "ConversationViewModel"
@@ -39,6 +42,8 @@ class ConversationViewModel : ViewModel() {
     private val _subscriptionState = MutableStateFlow<SubscriptionState>(SubscriptionState.Disconnected)
     val subscriptionState = _subscriptionState.asStateFlow()
     */
+
+
 
     private val _currentUserState = MutableStateFlow<String?>(null)
     val currentUserState = _currentUserState.asStateFlow()
@@ -56,16 +61,19 @@ class ConversationViewModel : ViewModel() {
     private val _userPseudo = MutableStateFlow<String>("Chargement...")
     val userPseudo = _userPseudo.asStateFlow()
 
+
+    private val _isEncryptionEnabled = MutableStateFlow(true)
+    val isEncryptionEnabled = _isEncryptionEnabled.asStateFlow()
     /**
      * POINT D'ENTRÉE : Appelé par l'UI à l'ouverture de l'écran
      */
 
 
-// Dans ConversationViewModel.kt
 
-    fun createOrGetChat(userIds: List<String>, isPrivate: Boolean, name: String? = null) {
+    fun createOrGetChat(userIds: List<String>, contactId: String, isPrivate: Boolean = true, name: String? = null) {
         viewModelScope.launch {
 
+            chargePseudo(contactId)
             // 1. On récupère la liste des conversations existantes
             val resultList = ChatService.getAllMyChats()
 
@@ -149,17 +157,60 @@ class ConversationViewModel : ViewModel() {
     }
 
 
-    private fun loadMessages(chatId: String) {
+    fun loadMessages(chatId: String) {
         viewModelScope.launch {
             val result = ChatService.getMessages(chatId)
+
             result.onSuccess { messagesHist ->
+
+// 1. TRAITEMENT : On déchiffre les messages reçus
+                val processedMessages = messagesHist.map { msg ->
+
+                    val contentToDisplay = if (msg.userId != myUserId) {
+                        // CAS A : Message reçu (de l'autre) -> DOIT ÊTRE DÉCHIFFRÉ (si le format est bon)
+                        if (CryptoManager.isEncrypted(msg.content)) {
+                            try {
+                                CryptoManager.decrypt(msg.content)
+                            } catch (e: Exception) {
+                                Log.e(TAG, "Decryption error for received message", e)
+                                "Message illisible"
+                            }
+                        } else {
+                            // Message non chiffré reçu de l'autre (probablement en mode test)
+                            msg.content
+                        }
+                    } else {
+                        // CAS B : Message envoyé (par moi) venant du serveur
+
+                        // 🔥 NOUVEAU : Tentative de récupération depuis la base locale
+                        val localPlaintext = LocalMessageStore.getPlaintext(msg._id)
+
+                        if (localPlaintext != null) {
+                            // C'est la version en clair que nous avions stockée
+                            localPlaintext
+                        } else if (CryptoManager.isEncrypted(msg.content)) {
+                            // Le message était chiffré, mais il n'est pas en base locale (bug, perte de données)
+                            "Message chiffré (Base locale manquante)"
+                        } else {
+                            // Message non chiffré (mode test), on affiche
+                            msg.content
+                        }
+                    }
+                    msg.copy(content = contentToDisplay)
+                }
+                // 2. MISE À JOUR : On fusionne avec la liste actuelle
                 _messages.update { currentList ->
+                    // On récupère les IDs des messages qu'on a déjà affichés (probablement en clair via sendMessage)
                     val currentIds = currentList.map { it._id }.toSet()
 
-                    val newMessages = messagesHist.filter { it._id !in currentIds }
+                    // On ne garde que les messages de l'historique qu'on n'a PAS encore
+                    val newMessages = processedMessages.filter { it._id !in currentIds }
 
+                    // On ajoute les nouveaux à la suite (ou au début selon votre tri)
+                    // Ici on suppose que la liste est chronologique
                     currentList + newMessages
                 }
+
             }.onFailure { e ->
                 Log.e(TAG, "Echec chargement historique", e)
             }
@@ -167,37 +218,64 @@ class ConversationViewModel : ViewModel() {
     }
 
 
-// ConversationViewModel.kt
-
-    // Ajoutez le paramètre senderId
-// Dans ConversationViewModel.kt
-
-    fun sendMessage(messageContent: String, senderId: String) {
+    fun sendMessage(messageContent: String, senderId: String, contactId: String) {
         val chatId = _activeChatId.value
 
         if (chatId != null && messageContent.isNotBlank()) {
             viewModelScope.launch {
 
-                val result = ChatService.sendMessage(messageContent, chatId)
-                result.onSuccess { sentMessage ->
-                    Log.i(TAG, "Message envoyé avec succès")
+                var contentToSend = messageContent
 
-                    // CORRECTION : On ne redéfinit pas senderId avec myUserId.
-                    // On utilise le 'senderId' passé en paramètre de la fonction si sentMessage.userId est null.
+                // --- ÉTAPE 1 : CRYPTOGRAPHIE ---
+                if (_isEncryptionEnabled.value){
+
+                    val recipientPublicKeyStr = UserService.getPublicKey(contactId)
+
+                    if (recipientPublicKeyStr == null) {
+                        Log.e(TAG, "ERREUR : Impossible de trouver la clé publique pour $contactId. Envoi annulé.")
+                        return@launch
+                    }
+
+                    try {
+                        val recipientKey = CryptoManager.stringToPublicKey(recipientPublicKeyStr)
+                        contentToSend = CryptoManager.encrypt(messageContent, recipientKey)
+                    } catch (e: Exception) {
+                        Log.e(TAG, "ERREUR : Echec lors du chiffrement du message", e)
+                        return@launch
+                    }
+                    Log.d(TAG, "Message chiffré: $contentToSend")
+                } else {
+                    Log.w(TAG, "Mode non chiffré activé. Message non chiffré, envoyé en clair : $contentToSend")
+
+                }
+
+                // --- ÉTAPE 2 : ENVOI AU SERVEUR ---
+                // On envoie le charabia chiffré (encryptedContent)
+                val result = ChatService.sendMessage(contentToSend, chatId)
+
+                result.onSuccess { sentMessage ->
+                    Log.i(TAG, "Message chiffré envoyé avec succès au serveur")
 
                     if (sentMessage != null) {
 
-                        // On détermine l'ID à utiliser pour l'affichage
+                        // Ceci est CRUCIAL pour la relecture de l'historique E2EE.
+                        LocalMessageStore.storePlaintext(
+                            messageId = sentMessage._id,
+                            plaintext = messageContent // messageContent est le texte en clair
+                        )
+
+                        // --- ÉTAPE 3 : MISE À JOUR UI LOCALE ---
+
                         val finalUserId = sentMessage.userId ?: senderId
+
 
                         val newMessageForUI = GetMessagesQuery.GetMessage(
                             _id = sentMessage._id,
-                            content = sentMessage.content,
+                            content = messageContent, // <--- ICI : On force l'affichage en clair
                             userId = finalUserId
                         )
 
                         _messages.update { currentList ->
-                            // On évite les doublons si le WebSocket a déjà reçu le message entre temps
                             if (currentList.any { it._id == newMessageForUI._id }) {
                                 currentList
                             } else {
@@ -210,14 +288,16 @@ class ConversationViewModel : ViewModel() {
                 }
             }
         } else {
-            Log.w(TAG, "Tentative d'envoi échouée. ChatID: $chatId, SenderID: $senderId")
+            Log.w(TAG, "Tentative d'envoi échouée. ChatID: $chatId")
         }
-    }    fun chargePseudo(userId: String) {
+    }
+    fun chargePseudo(userId: String) {
         viewModelScope.launch {
             val pseudo = userPseudoRecup.fetchUser(userId)
             _userPseudo.value = pseudo ?: "Utilisateur inconnu"
         }
-    }
+}
+
 
     override fun onCleared() {
         Log.d(TAG, "ViewModel onCleared. Nettoyage.")
@@ -226,29 +306,31 @@ class ConversationViewModel : ViewModel() {
     }
     fun loadCurrentUser() {
         viewModelScope.launch {
-            /** 1. Récupération de l'ID via la requête GraphQL "me"
             val myId = UserService.getMyId()
 
             if (myId != null) {
-                myUserId = myId // Mise à jour de la variable de classe utilisée pour l'envoi
+                myUserId = myId
                 _currentUserState.value = myId
                 Log.d(TAG, "Utilisateur identifié avec succès : $myId")
 
-                // 2. (Optionnel) Si vous voulez aussi stocker son pseudo pour l'UI
                 val myPseudo = userPseudoRecup.fetchUser(myId)
                 Log.d(TAG, "Pseudo de l'utilisateur courant : $myPseudo")
             } else {
                 Log.e(TAG, "Impossible d'identifier l'utilisateur courant (getMyId a retourné null)")
-            }*/
+            }
 
-            //val hardcodedId = "6913411dce7e0315c88b7533"
-            val hardcodedId = "6822121b8d11a148a94d6322"
-            //6913411dce7e0315c88b7533
-            // 6822121b8d11a148a94d6322
 
-            myUserId = hardcodedId
-            _currentUserState.value = hardcodedId
-            Log.w(TAG, " ID UTILISATEUR FORCÉ POUR TEST : $hardcodedId")
+
+            myUserId = myId
+            _currentUserState.value = myId
+           // Log.w(TAG, " ID UTILISATEUR FORCÉ POUR TEST : $hardcodedId")
         }
     }
+
+    fun toggleEncryption(enabled: Boolean) {
+        _isEncryptionEnabled.value = enabled
+        Log.d(TAG, "Chiffrement activé : $enabled")
+    }
+
+
 }

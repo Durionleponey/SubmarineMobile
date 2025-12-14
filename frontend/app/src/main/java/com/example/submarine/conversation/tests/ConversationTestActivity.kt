@@ -9,6 +9,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -18,7 +19,7 @@ import androidx.compose.ui.unit.dp
 import com.example.submarine.conversation.ConversationViewModel
 import com.example.submarine.screens.ConversationScreen
 import com.example.submarine.ui.theme.SubmarineTheme
-
+import androidx.compose.runtime.collectAsState
 class ConversationTestActivity : ComponentActivity() {
 
     private val TAG = "ConversationTestActivity"
@@ -28,7 +29,9 @@ class ConversationTestActivity : ComponentActivity() {
     // USER A = Vous ("6913...")
     // USER B = Le contact ("6910...")
     private val USER_A_ID = "6913411dce7e0315c88b7533"
-    private val USER_B_ID = "6910ae154e5e95f212c42612"
+    private val USER_B_ID = "6930091a2fc453e8b84d1b52"
+
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -46,6 +49,9 @@ class ConversationTestActivity : ComponentActivity() {
                 var currentContactId by remember { mutableStateOf("") }
                 var currentContactName by remember { mutableStateOf("") }
 
+// ConversationTestActivity.kt (dans onCreate)
+                val isEncryptionEnabled by viewModel.isEncryptionEnabled.collectAsState()
+                val toggleEncryption = { enabled: Boolean -> viewModel.toggleEncryption(enabled) }
                 if (!isChatMode) {
                     // --- ÉCRAN 1 : SÉLECTION DU RÔLE ---
                     UserSelectionScreen(
@@ -60,7 +66,10 @@ class ConversationTestActivity : ComponentActivity() {
                             currentContactId = USER_A_ID
                             currentContactName = "Moi (A)"
                             isChatMode = true
-                        }
+                        },
+                        isEncryptionEnabled = isEncryptionEnabled,
+                        onToggleEncryption = toggleEncryption
+
                     )
                 } else {
                     // --- ÉCRAN 2 : LE CHAT ---
@@ -84,7 +93,10 @@ class ConversationTestActivity : ComponentActivity() {
 @Composable
 fun UserSelectionScreen(
     onSelectUserA: () -> Unit,
-    onSelectUserB: () -> Unit
+    onSelectUserB: () -> Unit,
+    isEncryptionEnabled: Boolean,          // <--- AJOUTER ÇA
+    onToggleEncryption: (Boolean) -> Unit  // <--- ET AJOUTER ÇA
+
 ) {
     Column(
         modifier = Modifier
@@ -118,6 +130,21 @@ fun UserSelectionScreen(
             style = MaterialTheme.typography.bodySmall,
             color = Color.Gray
         )
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.padding(top = 8.dp)
+        ) {
+            Text(
+                text = if (isEncryptionEnabled) "CHIFFREMENT ON" else "CHIFFREMENT OFF",
+                color = if (isEncryptionEnabled) Color.Green else MaterialTheme.colorScheme.error,
+                style = MaterialTheme.typography.titleMedium
+            )
+            Spacer(Modifier.width(16.dp))
+            Switch(
+                checked = isEncryptionEnabled,
+                onCheckedChange = onToggleEncryption // Maintenant, cette variable existe !
+            )
+        }
     }
 }
 
@@ -141,6 +168,7 @@ fun TestChatScreen(
 
         viewModel.createOrGetChat(
             userIds = participants,
+            contactId = contactId,
             isPrivate = true
         )
 
@@ -150,6 +178,8 @@ fun TestChatScreen(
 
     val messages by viewModel.messages.collectAsState()
     val pseudoReel by viewModel.userPseudo.collectAsState()
+
+    val isEncryptionEnabled by viewModel.isEncryptionEnabled.collectAsState()
 
     // Affichage d'un bandeau de debug en haut
     Column(Modifier.fillMaxSize()) {
@@ -166,14 +196,20 @@ fun TestChatScreen(
             )
         }
 
+
         ConversationScreen(
             contactName = if(pseudoReel != "Chargement...") pseudoReel else contactName,
             messages = messages,
             onNavigateBack = onBack,
             currentUserId = myUserId,
             onSentMessage = { messageContent ->
-                viewModel.sendMessage(messageContent, myUserId)
+                viewModel.sendMessage(messageContent, myUserId, contactId)
+            },
+            isEncryptionEnabled = isEncryptionEnabled,
+            onToggleEncryption = { enabled ->
+                viewModel.toggleEncryption(enabled)
             }
+
         )
     }
 }

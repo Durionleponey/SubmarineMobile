@@ -4,31 +4,23 @@ import androidx.compose.foundation.BorderStroke
 
 
 import android.content.Intent
-import android.os.Bundle
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.submarine.auth.LoginActivity
 import com.example.submarine.auth.SignUpActivity
-import com.example.submarine.ui.theme.SubmarineTheme // Assurez-vous que votre thème est bien configuré
+import com.example.submarine.ui.theme.SubmarineTheme
 import com.example.submarine.conversation.ConversationActivity
 import com.example.submarine.listeContact.ContactsActivity
 import androidx.compose.ui.res.painterResource
@@ -40,7 +32,6 @@ import com.example.submarine.conversation.tests.ConversationTestActivity
 fun HomeScreen() {
     val context = LocalContext.current
 
-    // Utilisation d'un dégradé pour le fond
     val backgroundBrush = Brush.verticalGradient(
         colors = listOf(
             MaterialTheme.colorScheme.primary.copy(alpha = 0.1f),

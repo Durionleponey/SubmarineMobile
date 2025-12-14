@@ -8,6 +8,8 @@ type User {
   pseudo: String!
   email: String!
   bio: String! # <-- Important : On garde la bio
+  friends: [String!]!
+  publicKey: String
 }
 
 type Message {
@@ -53,6 +55,7 @@ type Query {
   user(id: String!): User!
   userMail(email: String!): User!
   me: User!
+  meId: User!
 
   chatss: [Chat!]!
   chat(_id: String!): Chat!
@@ -91,11 +94,13 @@ type Mutation {
 input CreateUserInput {
   email: String!
   password: String!
+  publicKey: String
 }
 
 input UpdateUserInput {
   email: String
   password: String
+  publicKey: String
 }
 
 input CreateChatInput {

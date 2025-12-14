@@ -117,7 +117,7 @@ class LcdActivity : ComponentActivity() {
                     // 👉 Message en haut de la page
                     val uiMsg =
                         "Une alerte a été envoyée à l'administrateur.\n" +
-                                "Veuillez le contacter au plus vite via submarinehelpdesk@gmail.com."
+                                "Veuillez le contacter au plus vite via submarinehelpdeskk@gmail.com."
                     tvStatus.text = uiMsg
 
                     Toast.makeText(

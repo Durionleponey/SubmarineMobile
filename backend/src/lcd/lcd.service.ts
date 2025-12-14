@@ -8,7 +8,7 @@ import { LcdMessageResult } from './dto/lcd-message-result.dto';
 export class LcdService {
   private readonly logger = new Logger(LcdService.name);
 
-  // ⚠️ METS ICI L'IP DE TA PICO (celle affichée dans ifconfig())
+  
   private readonly picoBaseUrl = 'http://192.168.1.37:8080';
 
   constructor(private readonly http: HttpService) {}

@@ -1,0 +1,45 @@
+# Nom du workflow qui apparaîtra dans l'onglet "Actions" de votre dépôt GitHub
+name: Android CI
+
+# Déclencheur du workflow : s'exécute à chaque "push" sur n'importe quelle branche,
+# mais ignore les changements qui ne concernent que la documentation (ex: README.md).
+on:
+  push:
+    branches: [ "**" ] # Toutes les branches
+    paths-ignore:
+      - '**.md'
+
+jobs:
+  # Nom de la tâche (vous pouvez l'appeler comme vous voulez)
+  build:
+    # La tâche s'exécutera sur une machine virtuelle Ubuntu fournie par GitHub
+    runs-on: ubuntu-latest
+
+    steps:
+      # --- Étape 1 : Récupérer votre code ---
+      # Cette action pré-faite télécharge le code de votre branche sur la machine virtuelle.
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # --- Étape 2 : Configurer l'environnement Java ---
+      # Android a besoin d'un JDK (Java Development Kit) pour compiler.
+      # On utilise une version commune comme Java 17.
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          # Mise en cache pour accélérer les builds futurs
+          cache: gradle
+
+      # --- Étape 3 : Donner les permissions d'exécution à gradlew ---
+      # Sur les systèmes Linux/Mac, le script gradlew a besoin d'être exécutable.
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      # --- Étape 4 : Compiler l'application (le test principal) ---
+      # 'assembleDebug' compile tout le code et génère un APK de débogage.
+      # Si cette étape échoue, le workflow s'arrête et est marqué comme "failed".
+      - name: Build with Gradle
+        run: ./gradlew assembleDebug
+

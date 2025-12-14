@@ -35,8 +35,10 @@ import androidx.compose.ui.res.painterResource
 import com.example.submarine.R
 import com.example.submarine.admin.AdminActivity
 import com.example.submarine.conversation.tests.ConversationTestActivity
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 
-
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun HomeScreen() {
     val context = LocalContext.current
@@ -117,13 +119,13 @@ fun HomeScreen() {
 
         // --- Note de bas de page ---
 
-        Row(
+        FlowRow(
             modifier = Modifier
                 .align(Alignment.BottomCenter) // Aligne la rangée en bas de la Box
                 .fillMaxWidth()
                 .padding(bottom = 16.dp),
             horizontalArrangement = Arrangement.SpaceEvenly,
-            verticalAlignment = Alignment.CenterVertically
+            verticalArrangement = Arrangement.Center
         ) {
             val context = LocalContext.current // Le contexte doit être redéfini ici ou passé en paramètre
             // Bouton pour la liste de contacts

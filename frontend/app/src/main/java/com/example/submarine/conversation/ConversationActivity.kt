@@ -94,7 +94,6 @@ class ConversationActivity : ComponentActivity() {
                                 messageContent,
                                 senderId = currentUserId!!, // Le sender, c'est MOI
                                 contactId = contactId!!  ,
-                                // Le contact, c'est l'AUTRE (celui reçu par Intent)
                             )
 
                         },
@@ -103,7 +102,6 @@ class ConversationActivity : ComponentActivity() {
                     )
                 }
 
-                // --- LES LIGNES REDONDANTES ONT ÉTÉ SUPPRIMÉES ICI ---
             }
         }
     }

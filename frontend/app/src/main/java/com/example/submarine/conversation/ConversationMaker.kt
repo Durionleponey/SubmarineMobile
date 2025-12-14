@@ -152,7 +152,6 @@ object ChatService {
             return Result.failure(e)
         }
     }
-    // Dans ConversationMaker.kt
 
     suspend fun getAllMyChats(): Result<List<GetMyConversationsQuery.Chatss>> {
         Log.d(TAG, "Récupération de toutes les conversations via chatss...")

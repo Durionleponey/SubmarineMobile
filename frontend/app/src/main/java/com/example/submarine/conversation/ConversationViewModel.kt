@@ -69,7 +69,6 @@ class ConversationViewModel : ViewModel() {
      */
 
 
-// Dans ConversationViewModel.kt
 
     fun createOrGetChat(userIds: List<String>, isPrivate: Boolean, name: String? = null) {
         viewModelScope.launch {
@@ -157,7 +156,7 @@ class ConversationViewModel : ViewModel() {
     }
 
 
-    private fun loadMessages(chatId: String) {
+    fun loadMessages(chatId: String) {
         viewModelScope.launch {
             val result = ChatService.getMessages(chatId)
 
@@ -324,7 +323,7 @@ class ConversationViewModel : ViewModel() {
                 Log.e(TAG, "Impossible d'identifier l'utilisateur courant (getMyId a retourné null)")
             }
 
-            val hardcodedId = "6913411dce7e0315c88b7533"
+            val hardcodedId = "6930091a2fc453e8b84d1b52"
             //val hardcodedId = "6822121b8d11a148a94d6322"
             //6913411dce7e0315c88b7533, 6930091a2fc453e8b84d1b52
             // 6822121b8d11a148a94d6322

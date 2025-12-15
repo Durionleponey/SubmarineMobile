@@ -10,6 +10,9 @@ import com.example.submarine.graphql.GetMessagesQuery
 import com.apollographql.apollo3.exception.ApolloException
 import com.example.submarine.graphql.GetMyIdQuery
 import com.example.submarine.graphql.GetMyConversationsQuery
+import com.example.submarine.graphql.GetUserPublicKeyQuery
+import com.example.submarine.network.TokenProvider
+import com.example.submarine.graphql.UpdateMyPublicKeyMutation
 
 object ChatService {
     private const val TAG = "ChatService"
@@ -149,12 +152,10 @@ object ChatService {
             return Result.failure(e)
         }
     }
-    // Dans ConversationMaker.kt
 
     suspend fun getAllMyChats(): Result<List<GetMyConversationsQuery.Chatss>> {
         Log.d(TAG, "Récupération de toutes les conversations via chatss...")
         try {
-            // On appelle la query qu'on vient de créer
             val response = Apollo.apolloClient.query(GetMyConversationsQuery()).execute()
 
             if (response.hasErrors()) {
@@ -162,7 +163,6 @@ object ChatService {
                 return Result.failure(Exception("Erreur GraphQL"))
             }
 
-            // Attention : Apollo reprend le nom du champ, donc ici .chatss
             val chats = response.data?.chatss ?: emptyList()
 
             return Result.success(chats)
@@ -186,11 +186,46 @@ object UserService {
                 return null
             }
 
-            return response.data?.me?._id
+            return response.data?.meId?._id
         } catch (e: Exception) {
             Log.e("Apollo", "Exception GetMyId", e)
             return null
         }
     }
+
+    suspend fun getPublicKey(userId: String): String? {
+        try {
+            val response = Apollo.apolloClient
+                .query(GetUserPublicKeyQuery(userId = userId))
+                .execute()
+
+            return response.data?.user?.publicKey
+        } catch (e: Exception) {
+            Log.e("Crypto", "Erreur récupération clé publique", e)
+            return null
+        }
+    }
+
+    suspend fun sendPublicKey(publicKey: String): Result<Boolean> {
+        try {
+            val response = Apollo.apolloClient
+                .mutation(UpdateMyPublicKeyMutation(publicKey = publicKey))
+                .execute()
+
+            if (response.hasErrors()) {
+                Log.e("Crypto", "Erreur GraphQL lors de l'envoi de la clé: ${response.errors}")
+                return Result.failure(Exception("Échec de la mutation"))
+            }
+
+            Log.i("Crypto", "Clé publique envoyée au serveur avec succès.")
+            return Result.success(true)
+
+        } catch (e: Exception) {
+            Log.e("Crypto", "Exception lors de l'envoi de la clé", e)
+            return Result.failure(e)
+        }
+    }
+
+
 }
 

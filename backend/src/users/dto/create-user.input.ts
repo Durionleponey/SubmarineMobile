@@ -13,5 +13,8 @@ export class CreateUserInput {
   @Field()
   @IsStrongPassword()
   password: string;
+
+  @Field({nullable : true})
+  publicKey?: string;
 }
 //dta means DATA TRANSFERT OBJET BTW

@@ -39,6 +39,8 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import com.example.submarine.bio.EditBioActivity
 import com.example.submarine.conversation.ConversationActivity
+import com.example.submarine.conversation.CryptoManager
+import com.example.submarine.conversation.UserService
 import com.example.submarine.graphql.GetFriendsListQuery
 import com.example.submarine.graphql.RemoveFriendMutation
 import com.example.submarine.listeContact.API.FriendsApi
@@ -81,7 +83,8 @@ fun ContactsScreen(
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     var lastBackPressTime by remember { mutableLongStateOf(0L) }
 
-    BackHandler(enabled = true) {
+
+    BackHandler(enabled = false) { //ici désactivé temproairement pour test
         if (drawerState.isOpen) {
             scope.launch { drawerState.close() }
         } else {
@@ -101,6 +104,9 @@ fun ContactsScreen(
     var showDeleteConfirmDialog by remember { mutableStateOf(false) }
     val token = TokenProvider.token
 
+    LaunchedEffect(token) {
+        Log.d("TOKEN_CHECK", "Token: ${token?.take(10)}... | Est-il vide: ${token.isNullOrEmpty()}")
+    }
     // États pour la modification du pseudo utilisateur
     var showEditPseudoDialog by remember { mutableStateOf(false) }
     var newPseudoInput by remember { mutableStateOf("") }
@@ -117,6 +123,8 @@ fun ContactsScreen(
     var contacts by remember { mutableStateOf<List<GetFriendsListQuery.FriendsList>>(emptyList()) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
     var selectedContact by remember { mutableStateOf<GetFriendsListQuery.FriendsList?>(null) }
+
+
 
     // --- FONCTION : CHARGER LE PROFIL ---
     fun fetchUserData() {
@@ -236,6 +244,7 @@ fun ContactsScreen(
         onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
     }
 
+
     LaunchedEffect(Unit) {
         if (!token.isNullOrEmpty()) {
             try {
@@ -243,8 +252,19 @@ fun ContactsScreen(
             } catch (e: Exception) {
                 errorMessage = e.message ?: "Erreur lors du chargement"
             }
+            try {
+                // 1. Déclenche la création/récupération de la clé locale
+                val myPublicKey = CryptoManager.getMyPublicKey()
+                // 2. Envoie au serveur
+                UserService.sendPublicKey(myPublicKey)
+            } catch (e: Exception) {
+                Log.e("CryptoKey", "Échec de l'envoi de la clé publique au serveur", e)
+            }
         }
     }
+
+    //------CREATION DES CLES PUBLIC ET ENVOIE AU SERVEUR
+
 
     // --- LISTE FILTRÉE & NOM PERSONNALISÉ ---
     val filtered = contacts.map { contact ->

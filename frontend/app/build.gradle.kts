@@ -1,8 +1,17 @@
+import java.util.Properties // <--- 1. IMPORT IMPORTANT
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.apollo)
+}
+
+// <--- 2. CHARGEMENT DU FICHIER LOCAL.PROPERTIES
+val localProperties = Properties()
+val localPropertiesFile = rootProject.file("local.properties")
+if (localPropertiesFile.exists()) {
+    localProperties.load(localPropertiesFile.inputStream())
 }
 
 android {
@@ -17,6 +26,12 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        // <--- 3. INJECTION DE LA VARIABLE IP
+        // On lit l'IP, sinon on met celle par défaut de l'émulateur
+        val serverIp = localProperties.getProperty("SERVER_IP") ?: "10.0.2.2"
+        // On crée le champ accessible via BuildConfig.SERVER_IP
+        buildConfigField("String", "SERVER_IP", "\"$serverIp\"")
     }
 
     buildTypes {
@@ -37,6 +52,7 @@ android {
     }
     buildFeatures {
         compose = true
+        buildConfig = true // <--- 4. C'EST CETTE LIGNE QUI CORRIGE L'ERREUR ROUGE !
     }
     buildToolsVersion = "35.0.0"
 }
@@ -71,12 +87,11 @@ dependencies {
     debugImplementation(libs.androidx.compose.ui.tooling)
     debugImplementation(libs.androidx.compose.ui.test.manifest)
 
-
     // Réseau (Retrofit & OkHttp)
     implementation("com.squareup.retrofit2:retrofit:2.11.0")
     implementation("com.squareup.retrofit2:converter-gson:2.11.0")
     implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
-    implementation("com.squareup.okhttp3:okhttp:4.12.0") // Ajouté depuis le conflit
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
 
     // Navigation & Icons
     implementation("androidx.navigation:navigation-compose:2.9.5")
@@ -84,13 +99,12 @@ dependencies {
     implementation("androidx.compose.material:material-icons-core:1.7.8")
     implementation("androidx.compose.material:material-icons-extended:1.7.8")
 
-    // Apollo GraphQL (Ta version propre)
+    // Apollo GraphQL
     implementation(libs.apollo.adapters)
     implementation(libs.apollo.runtime)
     implementation(libs.apollo.api)
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.1")
 
-    // Outils Kotlin (Ajoutés depuis le conflit, nécessaires pour le nouveau code)
+    // Coroutines & Serialization & DataStore
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.1")
     implementation("androidx.datastore:datastore-preferences:1.1.1")

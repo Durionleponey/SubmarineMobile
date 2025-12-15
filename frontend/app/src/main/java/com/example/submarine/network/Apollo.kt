@@ -10,6 +10,7 @@ import com.apollographql.apollo3.network.http.HttpNetworkTransport
 import com.apollographql.apollo3.network.ws.GraphQLWsProtocol
 import com.apollographql.apollo3.network.ws.SubscriptionWsProtocol
 import com.apollographql.apollo3.network.ws.WebSocketNetworkTransport
+import com.example.submarine.BuildConfig
 
 private const val APOLLO_TAG = "Apollo"
 private class AuthorizationInterceptor : HttpInterceptor {
@@ -38,8 +39,8 @@ object Apollo {
     val apolloClient: ApolloClient by lazy {
         Log.d(APOLLO_TAG, "Creating Apollo Client")
 
-        val servHttp = "http://10.0.2.2:4000/graphql"
-        val servWebSocket = "ws://10.0.2.2:4000/graphql"
+        val servHttp = "http://${BuildConfig.SERVER_IP}:4000/graphql"
+        val servWebSocket = "ws://${BuildConfig.SERVER_IP}:4000/graphql"
 
         Log.d(APOLLO_TAG, "URL HTTP $servHttp")
         Log.d(APOLLO_TAG, "URL WS $servWebSocket")

@@ -5,13 +5,16 @@ import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import com.example.submarine.BuildConfig
 
 object RetrofitInstance {
 
-    // 🧩 Adresse de ton backend (Android Emulator → localhost)
-    private const val BASE_URL = "http://10.0.2.2:4000/"
+    // ✅ CORRECTION IMPORTANTE :
+    // 1. On pointe vers la racine du serveur (pas /graphql).
+    // 2. On met OBLIGATOIREMENT un slash "/" à la fin.
+    private const val BASE_URL = "http://${BuildConfig.SERVER_IP}:4000/"
 
-    // 🔐 Ajoute automatiquement le token JWT dans chaque requête si présent
+    // 🔐 Intercepteur pour le Token
     private val authInterceptor = Interceptor { chain ->
         val requestBuilder = chain.request().newBuilder()
         TokenProvider.token?.let { token ->
@@ -20,18 +23,18 @@ object RetrofitInstance {
         chain.proceed(requestBuilder.build())
     }
 
-    // 🧾 Intercepteur pour afficher les requêtes/réponses dans Logcat
+    // 🧾 Logs
     private val logging = HttpLoggingInterceptor().apply {
         level = HttpLoggingInterceptor.Level.BODY
     }
 
-    // ⚙️ Configuration du client HTTP commun
+    // ⚙️ Client HTTP
     private val client = OkHttpClient.Builder()
         .addInterceptor(authInterceptor)
         .addInterceptor(logging)
         .build()
 
-    // 🔹 Instance Retrofit pour les appels REST (authentification, etc.)
+    // 🔹 API Auth (REST)
     val authApi: AuthApiService by lazy {
         Retrofit.Builder()
             .baseUrl(BASE_URL)
@@ -41,7 +44,7 @@ object RetrofitInstance {
             .create(AuthApiService::class.java)
     }
 
-    // 🔹 Instance Retrofit pour les appels GraphQL génériques (bio, pseudo, etc.)
+    // 🔹 API GraphQL (via Retrofit, si nécessaire)
     val graphqlApi: GraphQLApiService by lazy {
         Retrofit.Builder()
             .baseUrl(BASE_URL)

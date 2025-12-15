@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.text.KeyboardOptions // AJOUT
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
@@ -20,6 +21,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.input.KeyboardType // AJOUT
+import androidx.compose.ui.text.input.PasswordVisualTransformation // AJOUT
 import androidx.compose.ui.unit.dp
 import com.example.submarine.listeContact.ContactsActivity
 import com.example.submarine.network.LoginRequest
@@ -29,7 +32,6 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-
 
 @Composable
 fun LoginScreen() {
@@ -56,15 +58,22 @@ fun LoginScreen() {
             value = email,
             onValueChange = { email = it },
             label = { Text("Email") },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email) // Bonnes pratiques pour l'email
         )
 
+        // --- CHAMPS MOT DE PASSE MODIFIÉ ---
         OutlinedTextField(
             value = password,
             onValueChange = { password = it },
             label = { Text("Password") },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            // C'est cette ligne qui transforme le texte en points noirs
+            visualTransformation = PasswordVisualTransformation(),
+            // C'est cette ligne qui dit au clavier "c'est un mot de passe"
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password)
         )
+        // ------------------------------------
 
         if (errorMessage != null) {
             Text(
@@ -77,21 +86,30 @@ fun LoginScreen() {
         Button(
             onClick = {
                 CoroutineScope(Dispatchers.IO).launch {
-                    val response = RetrofitInstance.authApi.login(LoginRequest(email.trim(), password))
-                    if (response.isSuccessful) {
-                        TokenProvider.token = response.body()?.token
-                        Log.d("API", "Token reçu : ${TokenProvider.token}")
+                    try {
+                        val response = RetrofitInstance.authApi.login(LoginRequest(email.trim(), password))
+                        if (response.isSuccessful) {
+                            TokenProvider.token = response.body()?.token
+                            Log.d("API", "Token reçu : ${TokenProvider.token}")
 
-                        withContext(Dispatchers.Main) {
-                            errorMessage = null
-                            val intent = Intent(context, ContactsActivity::class.java)
-                            context.startActivity(intent)
+                            withContext(Dispatchers.Main) {
+                                errorMessage = null
+                                val intent = Intent(context, ContactsActivity::class.java)
+                                context.startActivity(intent)
+                                // Optionnel : finish() l'activité de login pour ne pas pouvoir revenir en arrière
+                                // (context as? ComponentActivity)?.finish()
+                            }
+                        } else {
+                            println("❌ Erreur lors de la connexion : ${response.errorBody()?.string()}")
+                            Log.e("auth","❌ Erreur de connexion : ${response.code()}")
+                            withContext(Dispatchers.Main) {
+                                errorMessage = "Email ou mot de passe incorrect."
+                            }
                         }
-                    } else {
-                        println("❌ Erreur lors de la connexion : ${response.errorBody()?.string()}")
-                        Log.e("auth","❌ Erreur de connexion : ${response.code()}")
+                    } catch (e: Exception) {
+                        Log.e("auth", "Erreur réseau", e)
                         withContext(Dispatchers.Main) {
-                            errorMessage = "Email ou mot de passe incorrect."
+                            errorMessage = "Erreur de connexion serveur."
                         }
                     }
                 }

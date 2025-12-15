@@ -487,14 +487,6 @@ fun ContactsScreen(
                             showBioDialog = true
                         }
                     ) { Text("Voir la bio") }
-
-                    TextButton(
-                        onClick = {
-                            showActionsDialog = false
-                            scope.launch { snackbarHostState.showSnackbar("Fonction à venir") }
-                        }
-                    ) { Text("Créer un groupe") }
-
                     // Renommer le contact
                     TextButton(
                         onClick = {

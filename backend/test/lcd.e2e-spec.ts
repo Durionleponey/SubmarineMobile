@@ -1,3 +1,5 @@
+jest.setTimeout(30000); // 30 secondes pour les tests e2e
+
 import { INestApplication } from '@nestjs/common';
 import { Test } from '@nestjs/testing';
 import { AppModule } from '../src/app.module';

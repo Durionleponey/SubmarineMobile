@@ -51,12 +51,10 @@ fun HomeScreen() {
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Center
         ) {
-            // --- Section Titre et Logo ---
             AppHeader()
 
             Spacer(modifier = Modifier.height(64.dp))
 
-            // --- Section Boutons d'action ---
             Text(
                 text = "Bienvenue à bord",
                 style = MaterialTheme.typography.titleMedium,
@@ -65,7 +63,6 @@ fun HomeScreen() {
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Bouton "Se Connecter"
             Button(
                 onClick = {
                     val intent = Intent(context, LoginActivity::class.java)
@@ -84,7 +81,6 @@ fun HomeScreen() {
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Bouton "Créer un compte"
             OutlinedButton(
                 onClick = {
                     val intent = Intent(context, SignUpActivity::class.java)
@@ -104,57 +100,70 @@ fun HomeScreen() {
             }
         }
 
-        // --- Bas de page : boutons navigation ---
-        Column(
+        // --- Barre du bas ---
+        Row(
             modifier = Modifier
                 .align(Alignment.BottomCenter)
                 .fillMaxWidth()
                 .padding(start = 16.dp, end = 16.dp, bottom = 16.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            // Rangée des 3 boutons existants (NE PAS TOUCHER)
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceEvenly,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                // Liste Contacts
-                TextButton(onClick = {
+            TextButton(
+                onClick = {
                     val intent = Intent(context, ContactsActivity::class.java)
                     context.startActivity(intent)
-                }) {
-                    Text("Liste Contacts", fontSize = 12.sp)
-                }
-
-                // Conversations
-                TextButton(onClick = {
-                    val intent = Intent(context, ConversationActivity::class.java)
-                    context.startActivity(intent)
-                }) {
-                    Text("Conversations", fontSize = 12.sp)
-                }
-
-                // TEST Conversations
-                TextButton(onClick = {
-                    val intent = Intent(context, ConversationTestActivity::class.java)
-                    context.startActivity(intent)
-                }) {
-                    Text("TEST Conversations", fontSize = 12.sp)
-                }
+                },
+                modifier = Modifier.weight(1f)
+            ) {
+                Text(
+                    "Liste Contacts",
+                    fontSize = 12.sp,
+                    modifier = Modifier.fillMaxWidth(),
+                    textAlign = TextAlign.Center
+                )
             }
 
-            Spacer(modifier = Modifier.height(8.dp))
+            TextButton(
+                onClick = {
+                    val intent = Intent(context, ConversationActivity::class.java)
+                    context.startActivity(intent)
+                },
+                modifier = Modifier.weight(1f)
+            ) {
+                Text(
+                    "Conversations",
+                    fontSize = 12.sp,
+                    modifier = Modifier.fillMaxWidth(),
+                    textAlign = TextAlign.Center
+                )
+            }
 
-            // Bouton ajouté : Help/Contact (sur une ligne en dessous)
+            TextButton(
+                onClick = {
+                    val intent = Intent(context, ConversationTestActivity::class.java)
+                    context.startActivity(intent)
+                },
+                modifier = Modifier.weight(1f)
+            ) {
+                Text(
+                    "TEST Conversations",
+                    fontSize = 12.sp,
+                    modifier = Modifier.fillMaxWidth(),
+                    textAlign = TextAlign.Center
+                )
+            }
+
+            // Contact / Help (votre bouton)
             TextButton(
                 onClick = {
                     val intent = Intent(context, LcdActivity::class.java)
                     context.startActivity(intent)
                 },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.weight(1f)
             ) {
                 Text(
-                    "Help/Contact",
+                    "Contact-help",
                     fontSize = 12.sp,
                     modifier = Modifier.fillMaxWidth(),
                     textAlign = TextAlign.Center
@@ -186,9 +195,12 @@ fun AppHeader() {
 
 @Preview(showBackground = true, device = "id:pixel_6")
 @Composable
-fun LoginScreenPreview() {
+fun HomeScreenPreview() {
     SubmarineTheme {
-        Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
+        Surface(
+            modifier = Modifier.fillMaxSize(),
+            color = MaterialTheme.colorScheme.background
+        ) {
             HomeScreen()
         }
     }

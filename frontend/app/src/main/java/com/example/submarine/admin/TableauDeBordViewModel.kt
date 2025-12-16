@@ -1,70 +1,85 @@
 package com.example.submarine.admin
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewModelScope
+import androidx.paging.map
+import com.apollographql.apollo3.ApolloClient
+import com.apollographql.apollo3.exception.ApolloException
+import com.example.submarine.UsersQuery
+import com.example.submarine.di.Apollo
+import com.example.submarine.type.UserStatus
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
-
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 data class AdminUser(
-    val id: Int,
-    val name: String
+    val id: String,
+    val pseudo: String,
+    val email: String,
+    val status: UserStatus
 )
 
 data class TableauDeBordUiState(
-    val activeUsers: List<AdminUser> = emptyList(),
-    val deletedUsers: List<AdminUser> = emptyList()
+    val isLoading: Boolean = true,
+    val users: List<AdminUser> = emptyList(),
+    val error: String? = null
 )
 
-class TableauDeBordViewModel : ViewModel() {
+class TableauDeBordViewModel(private val apolloClient: ApolloClient) : ViewModel() {
     private val _uiState = MutableStateFlow(TableauDeBordUiState())
     val uiState: StateFlow<TableauDeBordUiState> = _uiState.asStateFlow()
 
     init {
-        _uiState.value = TableauDeBordUiState(
-            activeUsers = listOf(
-                AdminUser(id = 1, name = "Alice"),
-                AdminUser(id = 2, name = "Bob"),
-                AdminUser(id = 3, name = "Charlie"),
-                AdminUser(id = 4, name = "David"),
-                AdminUser(id = 5, name = "Eve"),
-                AdminUser(id = 6, name = "Danny"),
-                AdminUser(id = 7, name = "Anais"),
-                AdminUser(id = 8, name = "Bastien")
-            )
-        )
+        loadUsers()
     }
+    fun loadUsers() {
+        _uiState.update { it.copy(isLoading = true, error = null) }
 
-    fun supprimerUtilisateur(userId: Int) {
-        _uiState.update { currentState ->
-            val userToMove = currentState.activeUsers.find { it.id == userId }
+        viewModelScope.launch {
+            try {
+                val response = apolloClient.query(UsersQuery()).execute()
 
-            if (userToMove != null) {
-                // On le retire de la liste des actifs
-                val newActiveList = currentState.activeUsers.filter { it.id != userId }
-                // On l'ajoute à la liste des supprimés
-                val newDeletedList = currentState.deletedUsers + userToMove
+                if (response.data != null && !response.hasErrors()) {
+                    val serverUsers = response.data!!.users.map { user ->
+                        AdminUser(
+                            id = user._id,
+                            pseudo = user.pseudo,
+                            email = user.email,
+                            status = user.status
+                        )
+                    }
 
-                // On retourne le nouvel état avec les deux listes mises à jour
-                currentState.copy(
-                    activeUsers = newActiveList,
-                    deletedUsers = newDeletedList
-                )
-            } else {
-                currentState
+                    _uiState.update {
+                        it.copy(isLoading = false, users = serverUsers)
+                    }
+                } else {
+                    val errorMessage = response.errors?.firstOrNull()?.message ?: "Erreur GraphQL inconnue"
+                    _uiState.update { it.copy(isLoading = false, error = errorMessage) }
+                }
+            } catch (e: ApolloException) {
+                _uiState.update { it.copy(isLoading = false, error = "Erreur réseau : ${e.message}") }
             }
         }
     }
-    fun reactiverUtilisateur(userId: Int) {
-        _uiState.update { currentState ->
-            val userToMove = currentState.deletedUsers.find { it.id == userId }
-            if (userToMove != null) {
-                currentState.copy(
-                    deletedUsers = currentState.deletedUsers.filterNot { it.id == userId },
-                    activeUsers = (currentState.activeUsers + userToMove).sortedBy { it.name }
-                )
-            } else {
-                currentState
+    fun supprimerUtilisateur(userId: String) {
+        // TODO: Appeler la mutation GraphQL "deactivateUser(userId: userId)" ici
+        // Pour l'instant, on se contente de rafraîchir la liste pour voir le changement
+        loadUsers()
+    }
+    fun reactiverUtilisateur(userId: String) {
+        // TODO: Appeler la mutation GraphQL "reactivateUser(userId: userId)" ici
+        loadUsers()
+    }
+
+    companion object {
+        val Factory: ViewModelProvider.Factory = object : ViewModelProvider.Factory {
+            @Suppress("UNCHECKED_CAST")
+            override fun <T : ViewModel> create(modelClass: Class<T>): T {
+                val apolloClient = Apollo.apolloClient
+                return TableauDeBordViewModel(apolloClient) as T
             }
         }
     }

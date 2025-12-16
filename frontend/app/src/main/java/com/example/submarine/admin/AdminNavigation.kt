@@ -9,6 +9,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import com.example.submarine.type.UserStatus
 
 object AdminRoutes {
     const val HOME = "admin_home"
@@ -21,7 +22,7 @@ object AdminRoutes {
 fun AdminNavigation(navController: NavHostController) {
     val context = LocalContext.current
     val activity = context as? Activity
-    val viewModel: TableauDeBordViewModel = viewModel() //utiliser pour le partage entre les écrans
+    val viewModel: TableauDeBordViewModel = viewModel(factory = TableauDeBordViewModel.Factory)
     val uiState by viewModel.uiState.collectAsState() //récupère l'état de la liste utilisateurs
 
     NavHost(
@@ -54,9 +55,13 @@ fun AdminNavigation(navController: NavHostController) {
             )
         }
         composable(AdminRoutes.STATS) {
+
+            val activeCount = uiState.users.count { it.status == UserStatus.ACTIVE }
+            val deletedCount = uiState.users.count { it.status == UserStatus.DELETED }
+
             StatistiquesScreen(
-                nombreUtilisateursActifs = uiState.activeUsers.size,
-                nombreUtilisateursSupprimes = uiState.deletedUsers.size,
+                nombreUtilisateursActifs = activeCount,
+                nombreUtilisateursSupprimes = deletedCount,
                 onNavigateBack = {
                     navController.popBackStack()
                 }

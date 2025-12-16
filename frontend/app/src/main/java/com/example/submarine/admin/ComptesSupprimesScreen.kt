@@ -12,6 +12,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -31,49 +32,39 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.submarine.ui.theme.SubmarineTheme
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.submarine.admin.composants.UtilisateurSupprimeListItem
+import com.example.submarine.type.UserStatus
 
 
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ComptesSupprimesScreen(
     onNavigateBack: () -> Unit,
-    viewModel: TableauDeBordViewModel = viewModel()
+    viewModel: TableauDeBordViewModel // On reçoit le ViewModel partagé
 ) {
     val uiState by viewModel.uiState.collectAsState()
-
-    ComptesSupprimesScreenContent(
-        utilisateursSupprimes = uiState.deletedUsers,
-        onReactivateClick = { userId ->
-            viewModel.reactiverUtilisateur(userId)
-        },
-        onNavigateBack = onNavigateBack
-    )
-}
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun ComptesSupprimesScreenContent(
-    utilisateursSupprimes: List<AdminUser>,
-    onNavigateBack: () -> Unit,
-    onReactivateClick: (Int) -> Unit
-) {
-    var searchQuery by remember { mutableStateOf("") }
     var showDialog by remember { mutableStateOf(false) }
     var userToReactivate by remember { mutableStateOf<AdminUser?>(null) }
+    var searchQuery by remember { mutableStateOf("") }
 
-    val filteredDeletedUsers = remember(searchQuery, utilisateursSupprimes) {
+    val filteredUsers = remember(searchQuery, uiState.users) {
+        val deletedUsers = uiState.users.filter { it.status == UserStatus.DELETED }
+
         if (searchQuery.isBlank()) {
-            utilisateursSupprimes
+            deletedUsers
         } else {
-            utilisateursSupprimes.filter {
-                it.name.startsWith(searchQuery, ignoreCase = true)
+            deletedUsers.filter {
+                it.pseudo.contains(searchQuery, ignoreCase = true)
             }
         }
     }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -98,16 +89,14 @@ fun ComptesSupprimesScreenContent(
             AlertDialog(
                 onDismissRequest = {
                     showDialog = false
-                    userToReactivate = null
                 },
                 title = { Text("Confirmation de Réactivation") },
                 text = { Text("Êtes-vous sûr de vouloir réactiver le compte \"${userToReactivate!!.name}\" ?") },
                 confirmButton = {
                     Button(
                         onClick = {
-                            onReactivateClick(userToReactivate!!.id)
+                            userToReactivate?.id?.let { viewModel.reactiverUtilisateur(it) }
                             showDialog = false
-                            userToReactivate = null
                         }
                     ) {
                         Text("Oui, réactiver")
@@ -117,7 +106,6 @@ fun ComptesSupprimesScreenContent(
                     OutlinedButton(
                         onClick = {
                             showDialog = false
-                            userToReactivate = null
                         }
                     ) {
                         Text("Annuler")
@@ -132,7 +120,7 @@ fun ComptesSupprimesScreenContent(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp, vertical = 8.dp),
-                label = { Text("Rechercher par nom...") },
+                label = { Text("Rechercher par pseudo...") },
                 leadingIcon = {
                     Icon(
                         Icons.Default.Search,
@@ -142,31 +130,49 @@ fun ComptesSupprimesScreenContent(
                 singleLine = true
             )
 
-            if (filteredDeletedUsers.isEmpty()) {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Text(
-                        if (searchQuery.isBlank()) "Aucun compte n'a été supprimé."
-                        else "Aucun compte supprimé trouvé pour \"$searchQuery\""
-                    )
-                }
-            } else {
-                LazyColumn(modifier = Modifier.fillMaxSize()) {
-                    items(
-                        items = filteredDeletedUsers,
-                        key = { user -> user.id }
-                    ) { user ->
-                        UtilisateurSupprimeListItem(
-                            user = user,
-                            onReactivateClick = {
-                                userToReactivate = user
-                                showDialog = true
-                            }
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
+                when {
+                    uiState.isLoading -> {
+                        CircularProgressIndicator()
+                    }
 
+                    uiState.error != null -> {
+                        Text(
+                            text = "Erreur de chargement :\n${uiState.error}",
+                            color = MaterialTheme.colorScheme.error,
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.padding(16.dp)
                         )
-                        HorizontalDivider()
+                    }
+
+                    filteredUsers.isEmpty() -> {
+                        Text(
+                            text = if (searchQuery.isBlank()) "Aucun compte supprimé."
+                            else "Aucun compte trouvé pour \"$searchQuery\"",
+                            modifier = Modifier.padding(16.dp)
+                        )
+                    }
+
+                    else -> {
+                        LazyColumn(modifier = Modifier.fillMaxSize()) {
+                            items(
+                                items = filteredDeletedUsers,
+                                key = { user -> user.id }
+                            ) { user ->
+                                UtilisateurSupprimeListItem(
+                                    user = user,
+                                    onReactivateClick = {
+                                        userToReactivate = user
+                                        showDialog = true
+                                    }
+
+                                )
+                                HorizontalDivider()
+                            }
+                        }
                     }
                 }
             }
@@ -174,7 +180,7 @@ fun ComptesSupprimesScreenContent(
     }
 }
 
-@Preview(showBackground = true, name = "Écran des Comptes Supprimés")
+/*@Preview(showBackground = true, name = "Écran des Comptes Supprimés")
 @Composable
 fun ComptesSupprimesScreenPreview() {
     val sampleUsers = listOf(
@@ -188,4 +194,4 @@ fun ComptesSupprimesScreenPreview() {
             onNavigateBack = {}
         )
     }
-}
+}*/

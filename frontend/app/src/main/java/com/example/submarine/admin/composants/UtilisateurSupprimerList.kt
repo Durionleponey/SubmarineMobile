@@ -1,6 +1,7 @@
 package com.example.submarine.admin.composants
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -27,16 +28,16 @@ fun UtilisateurSupprimeListItem(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        Text(
-            text = user.name,
-            modifier = Modifier.weight(1f)
-        )
+        Column(modifier = Modifier.padding(vertical = 12.dp)) {
+            Text(text = user.pseudo)
+            Text(text = user.email, style = androidx.compose.material3.MaterialTheme.typography.bodySmall)
+        }
 
         // Le bouton pour réactiver
-        IconButton(onClick = { onReactivateClick(user.id) }) {
+        IconButton(onClick = { onReactivateClick }) {
             Icon(
                 imageVector = Icons.Default.Restore,
-                contentDescription = "Réactiver l'utilisateur ${user.name}"
+                contentDescription = "Réactiver l'utilisateur ${user.pseudo}"
             )
         }
     }

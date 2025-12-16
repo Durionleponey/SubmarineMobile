@@ -19,6 +19,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
@@ -31,34 +32,38 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.test.filter
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.submarine.admin.composants.UtilisateurListItem
+import com.example.submarine.type.UserStatus
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TableauDeBordScreen(
     onNavigateBack: () -> Unit,
-    viewModel: TableauDeBordViewModel = viewModel()
+    viewModel: TableauDeBordViewModel
 ) {
     val uiState by viewModel.uiState.collectAsState()
     var showDialog by remember { mutableStateOf(false) }
     var userToDelete by remember { mutableStateOf<AdminUser?>(null) }
     var searchQuery by remember { mutableStateOf("") }
-    val filteredUsers = remember(searchQuery, uiState.activeUsers) {
+    val filteredUsers = remember(searchQuery, uiState.users) {
+        val activeUsers = uiState.users.filter { it.status == UserStatus.ACTIVE }
         if (searchQuery.isBlank()) {
-            uiState.activeUsers
+            activeUsers
         } else {
-            uiState.activeUsers.filter {
-                it.name.startsWith(searchQuery, ignoreCase = true)
+            activeUsers.filter {
+                it.pseudo.contains(searchQuery, ignoreCase = true)
             }
         }
     }
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Gestion des Utilisateurs") },
+                title = { Text("Gestion des Utilisateurs Actif") },
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(
@@ -79,16 +84,14 @@ fun TableauDeBordScreen(
             AlertDialog(
                 onDismissRequest = {
                     showDialog = false
-                    userToDelete = null
                 },
                 title = { Text("Confirmation") },
-                text = { Text("Êtes-vous sûr de vouloir supprimer l'utilisateur \"${userToDelete!!.name}\" ?") },
+                text = { Text("Êtes-vous sûr de vouloir supprimer l'utilisateur \"${userToDelete!!.pseudo}\" ?") },
                 confirmButton = {
                     Button(
                         onClick = {
-                            viewModel.supprimerUtilisateur(userToDelete!!.id)
+                            userToDelete?.id?.let { viewModel.supprimerUtilisateur(it) }
                             showDialog = false
-                            userToDelete = null
                         }
                     ) {
                         Text("Oui, supprimer")
@@ -98,7 +101,6 @@ fun TableauDeBordScreen(
                     OutlinedButton(
                         onClick = {
                             showDialog = false
-                            userToDelete = null
                         }
                     ) {
                         Text("Annuler")
@@ -108,7 +110,7 @@ fun TableauDeBordScreen(
         }
         Column(
             modifier = Modifier.padding(innerPadding),
-            horizontalAlignment = Alignment.CenterHorizontally
+            //horizontalAlignment = Alignment.CenterHorizontally
         ) {
             // Le champ de texte pour la recherche
             OutlinedTextField(
@@ -116,50 +118,66 @@ fun TableauDeBordScreen(
                 onValueChange = { searchQuery = it },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 16.dp,vertical = 4.dp),
-                label = { Text("Rechercher par nom...") },
+                    .padding(horizontal = 16.dp, vertical = 4.dp),
+                label = { Text("Rechercher par pseudo...") },
                 leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Icône de recherche") },
                 singleLine = true
             )
 
-            // On vérifie si la liste FILTRÉE est vide
-            if (filteredUsers.isEmpty()) {
-                Box(
-                    modifier = Modifier.fillMaxSize(),
-                    contentAlignment = Alignment.Center
-                ) {
-                    // Le message affiché dépend de si une recherche est active ou non
-                    Text(
-                        if (searchQuery.isBlank()) "Aucun utilisateur actif."
-                        else "Aucun utilisateur trouvé pour \"$searchQuery\""
-                    )
-                }
-            } else {
-                LazyColumn(
-                    modifier = Modifier
-                        .fillMaxSize()
-                ) {
-                    items(
-                        items = filteredUsers,
-                        key = { user -> user.id }
-                    ) { user ->
-                        UtilisateurListItem(
-                            user = user,
-                            onDeleteClick = {
-                                userToDelete = user
-                                showDialog = true
-                            }
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                   contentAlignment = Alignment.Center
+            ) {
+                when {
+                    uiState.isLoading -> {
+                        CircularProgressIndicator()
+                    }
+
+                    uiState.error != null -> {
+                        Text(
+                            text = "Erreur de chargement :\n${uiState.error}",
+                            color = MaterialTheme.colorScheme.error,
+                            textAlign = TextAlign.Center,
+                            modifier = Modifier.padding(16.dp)
                         )
-                        HorizontalDivider()
+                    }
+
+                    filteredUsers.isEmpty() -> {
+                        Text(
+                            text = if (searchQuery.isBlank()) "Aucun utilisateur actif."
+                            else "Aucun utilisateur trouvé pour \"$searchQuery\"",
+                            modifier = Modifier.padding(16.dp)
+                        )
+                    }
+
+                    else -> {
+                        LazyColumn(
+                            modifier = Modifier.fillMaxSize()
+                        ) {
+                            items(
+                                items = filteredUsers,
+                                key = { user -> user.id }
+                            ) { user ->
+                                UtilisateurListItem(
+                                    user = user,
+                                    onDeleteClick = {
+                                        userToDelete = user
+                                        showDialog = true
+                                    }
+                                )
+                                HorizontalDivider()
+                            }
+                        }
                     }
                 }
+
             }
         }
     }
 }
 
-@Preview(showBackground = true)
+/*@Preview(showBackground = true)
 @Composable
 fun TableauDeBordScreenPreview() {
     TableauDeBordScreen(onNavigateBack = {})
-}
+}*/

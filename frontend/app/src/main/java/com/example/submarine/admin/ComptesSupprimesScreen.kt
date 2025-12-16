@@ -38,7 +38,7 @@ import androidx.compose.ui.unit.dp
 import com.example.submarine.ui.theme.SubmarineTheme
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.submarine.admin.composants.UtilisateurSupprimeListItem
-import com.example.submarine.type.UserStatus
+import com.example.submarine.graphql.type.UserStatus
 
 
 
@@ -91,7 +91,7 @@ fun ComptesSupprimesScreen(
                     showDialog = false
                 },
                 title = { Text("Confirmation de Réactivation") },
-                text = { Text("Êtes-vous sûr de vouloir réactiver le compte \"${userToReactivate!!.name}\" ?") },
+                text = { Text("Êtes-vous sûr de vouloir réactiver le compte \"${userToReactivate!!.pseudo}\" ?") },
                 confirmButton = {
                     Button(
                         onClick = {
@@ -159,7 +159,7 @@ fun ComptesSupprimesScreen(
                     else -> {
                         LazyColumn(modifier = Modifier.fillMaxSize()) {
                             items(
-                                items = filteredDeletedUsers,
+                                items = filteredUsers,
                                 key = { user -> user.id }
                             ) { user ->
                                 UtilisateurSupprimeListItem(

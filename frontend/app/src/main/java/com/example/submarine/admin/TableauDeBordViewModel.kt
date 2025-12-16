@@ -3,12 +3,11 @@ package com.example.submarine.admin
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
-import androidx.paging.map
 import com.apollographql.apollo3.ApolloClient
 import com.apollographql.apollo3.exception.ApolloException
-import com.example.submarine.UsersQuery
-import com.example.submarine.di.Apollo
-import com.example.submarine.type.UserStatus
+import com.example.submarine.graphql.UsersQuery
+import com.example.submarine.network.Apollo
+import com.example.submarine.graphql.type.UserStatus
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow

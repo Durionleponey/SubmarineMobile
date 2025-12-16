@@ -9,7 +9,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import com.example.submarine.type.UserStatus
+import com.example.submarine.graphql.type.UserStatus
 
 object AdminRoutes {
     const val HOME = "admin_home"

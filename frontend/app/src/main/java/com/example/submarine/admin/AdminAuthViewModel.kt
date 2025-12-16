@@ -4,8 +4,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.apollographql.apollo3.ApolloClient
-import com.example.submarine.MeAllQuery
-import com.example.submarine.di.Apollo
+import com.example.submarine.graphql.MeAllQuery
+import com.example.submarine.network.Apollo
 import com.example.submarine.network.TokenProvider
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow

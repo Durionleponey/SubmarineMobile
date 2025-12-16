@@ -245,11 +245,13 @@ fun ContactsScreen(
     }
 
     // --- CYCLE DE VIE ---
+// --- CYCLE DE VIE ---
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_RESUME) {
-                // On recharge si on revient sur l'écran
-                if (contacts.isEmpty()) fetchAllData()
+                // 🚀 CORRECTION : On recharge TOUJOURS les données quand on revient
+                // (Même si la liste n'est pas vide, car la bio a pu changer)
+                fetchAllData()
             }
         }
         lifecycleOwner.lifecycle.addObserver(observer)

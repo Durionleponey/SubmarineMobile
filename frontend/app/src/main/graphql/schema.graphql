@@ -1,15 +1,19 @@
-# On garde la directive si elle est nécessaire, mais surtout on prend la structure du bas
+# Indicates exactly one field must be supplied and this field must not be `null`.
 directive @oneOf on INPUT_OBJECT
-
-scalar DateTime
 
 type User {
   _id: ID!
   pseudo: String!
   email: String!
-  bio: String! # <-- Important : On garde la bio
+  bio: String
   friends: [String!]!
   publicKey: String
+  status: UserStatus!
+}
+
+enum UserStatus {
+  ACTIVE
+  DELETED
 }
 
 type Message {
@@ -26,6 +30,9 @@ type Message {
   city: String
 }
 
+# A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
+scalar DateTime
+
 type Chat {
   _id: ID!
   userId: String!
@@ -35,7 +42,6 @@ type Chat {
   lastMessage: Message
 }
 
-# --- NOUVEAU TYPE AMIS (Important) ---
 type Friend {
   _id: ID!
   sender: User!
@@ -47,48 +53,48 @@ type Friend {
 
 type FriendItem {
   relationId: ID!
-  user: User!   # l'ami
+  user: User!
 }
 
 type Query {
-  users(search: String!): [User!]!
+  users(search: String, status: UserStatus): [User!]!
   user(id: String!): User!
+  meAll: User!
   userMail(email: String!): User!
+  getBio: String!
   me: User!
   meId: User!
-
+  searchUsers(pseudo: String!): [User!]!
   chatss: [Chat!]!
   chat(_id: String!): Chat!
-
   getMessages(chatId: String!): [Message!]!
   getMessageViewers(messageId: String!, chatId: String!): [String!]!
-
-  # --- QUERIES AMIS ---
   pendingRequests: [Friend!]!
   friendsList: [FriendItem!]!
-
 }
-
 
 type Mutation {
   createUser(createUserInput: CreateUserInput!): User!
   updateUser(updateUserInput: UpdateUserInput!): User!
+  updateBio(updateUserBio: UpdateUserBio!): User!
+  updatePseudo(updateUserPseudo: updateUserPseudo!): User!
   removeUser: User!
 
+  # Désactive un utilisateur (statut 'DELETED').
+  deactivateUser(userId: ID!): User!
+
+  # Réactive un utilisateur (statut 'ACTIVE').
+  reactivateUser(userId: ID!): User!
   createChat(createChatInput: CreateChatInput!): Chat!
   leaveAllChat: Int!
   addUserToChat(email: String!, chatId: String!): String!
   removeChat(id: Int!): Chat!
-
   createMessage(createMessageInput: CreateMessageInput!): Message!
   viewMessage(messageId: String, chatId: String!): String!
-
-  # --- MUTATIONS AMIS ---
   sendFriendRequest(receiverId: String!): Friend!
   acceptFriendRequest(id: String!): Friend!
   rejectFriendRequest(id: String!): Friend!
   removeFriend(id: ID!): Friend!
-
 }
 
 input CreateUserInput {
@@ -101,6 +107,20 @@ input UpdateUserInput {
   email: String
   password: String
   publicKey: String
+}
+
+input UpdateUserBio {
+  email: String
+  password: String
+  publicKey: String
+  bio: String
+}
+
+input updateUserPseudo {
+  email: String
+  password: String
+  publicKey: String
+  pseudo: String!
 }
 
 input CreateChatInput {

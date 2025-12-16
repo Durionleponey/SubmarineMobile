@@ -1,6 +1,6 @@
-import { Resolver, Query, Mutation, Args, Int } from '@nestjs/graphql';
+import { Resolver, Query, Mutation, Args, Int, ID } from '@nestjs/graphql';
 import { UsersService } from './users.service';
-import { User } from './entities/user.entity';
+import { User, UserStatus } from './entities/user.entity';
 import { CreateUserInput } from './dto/create-user.input';
 import { UpdateUserInput } from './dto/update-user.input';
 import {NotFoundException, UseGuards} from "@nestjs/common";
@@ -22,8 +22,11 @@ export class UsersResolver {
 
   @Query(() => [User], { name: 'users' })
   @UseGuards(GqlAuthGuard)
-  findAll(@Args('search', { type: () => String!}) search: string) {
-    return this.usersService.findAll(search);
+  findAll(
+    @Args('search', { type: () => String, nullable: true}) search?: string,
+    @Args('status', { type: () => UserStatus, nullable: true }) status?: UserStatus
+  ) {
+    return this.usersService.findAll({ search, status });
   }
 
 
@@ -113,6 +116,18 @@ async getMeAll(@CurrentUser() user: TokenPayload) {
     ): Promise<User[]> {
       return this.usersService.findByPseudo(pseudo);
     }
+
+  @Mutation(() => User, { description: "Désactive un utilisateur (statut 'DELETED')." })
+  @UseGuards(GqlAuthGuard) // Sécurise la mutation, seul un utilisateur connecté peut le faire
+  deactivateUser(@Args('userId', { type: () => ID }) userId: string) {
+    return this.usersService.deactivate(userId);
+  }
+
+  @Mutation(() => User, { description: "Réactive un utilisateur (statut 'ACTIVE')." })
+  @UseGuards(GqlAuthGuard) // Idem, on sécurise
+  reactivateUser(@Args('userId', { type: () => ID }) userId: string) {
+    return this.usersService.reactivate(userId);
+  }
 
 /*
   @Mutation(() => User)

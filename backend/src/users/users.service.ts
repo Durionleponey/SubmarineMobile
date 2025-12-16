@@ -1,4 +1,4 @@
-import {Injectable, UnauthorizedException,BadRequestException} from '@nestjs/common';
+import {Injectable, UnauthorizedException,BadRequestException, NotFoundException} from '@nestjs/common';
 import { CreateUserInput } from './dto/create-user.input';
 import { UpdateUserInput } from './dto/update-user.input';
 import {UsersRepository} from "./users.repository";
@@ -6,6 +6,8 @@ import * as bcrypt from 'bcryptjs'
 import {uniqueNamesGenerator, adjectives, colors, animals} from 'unique-names-generator';
 import {UpdateUserBio} from "./dto/update-user-input";
 import {updateUserPseudo} from "./dto/update-user-pseudo";
+import { UserStatus } from "./entities/user.entity";
+
 
 @Injectable()
 export class UsersService {
@@ -13,7 +15,6 @@ export class UsersService {
 
   async create(createUserInput: CreateUserInput) {
     //console.log("frffrrfe", createUserInput);
-
 
     const pseudoBeforeNumber = uniqueNamesGenerator({
       dictionaries: [adjectives, colors, animals],
@@ -31,7 +32,8 @@ export class UsersService {
       pseudo,
       bio:"",
       friends: [],
-      publicKey:""
+      publicKey:"",
+      status: UserStatus.ACTIVE,
     });
   }
 
@@ -39,33 +41,77 @@ export class UsersService {
     return bcrypt.hash(password, 10)
   }
 
-  async findAll(search: string) {
+  async findAll(arg: string | { search?: string, status?: UserStatus }) {
 
-    if (!search) {
-      throw new UnauthorizedException("Type a character to search for a pseudo");
+    if (typeof arg === 'string') {
+        const search = arg;
+        console.log(`[LOG] Ancien findAll utilisé avec la recherche : "${search}"`);
+
+
+      if (!search) {
+        throw new UnauthorizedException("Type a character to search for a pseudo");
+      }
+
+      const r1 =await this.userRepository.find({
+        pseudo: {// the $ in search is not related to mongo it's just regular js like ${hello}
+          $regex: new RegExp(`^${search}`, 'i')//$ is a special operator, pseudo is a regular opertator options i is unsensible to the case
+        }
+      },5);
+
+      const r2 =await this.userRepository.find({
+        email: {// the $ in search is not related to mongo it's just regular js like ${hello}
+          $regex: new RegExp(`^${search}`, 'i')//$ is a special operator, pseudo is a regular opertator options i is unsensible to the case
+        }
+      },5);
+
+      console.log("-->",r2)
+      const merged = [...r1, ...r2];
+      return merged
     }
 
+    const filters = arg;
+    console.log(`[LOG] Nouveau findAll utilisé avec les filtres :`, filters);
+    const mongoQuery: any = {};
 
-    const r1 =await this.userRepository.find({
-      pseudo: {// the $ in search is not related to mongo it's just regular js like ${hello}
-        $regex: new RegExp(`^${search}`, 'i')//$ is a special operator, pseudo is a regular opertator options i is unsensible to the case
-      }
-    },5);
+    if (filters.status) {
+        mongoQuery.status = filters.status;
+    } else {
+        // Par défaut, si aucun statut n'est donné, on retourne que les actifs.
+        mongoQuery.status = UserStatus.ACTIVE;
+    }
 
-    const r2 =await this.userRepository.find({
-      email: {// the $ in search is not related to mongo it's just regular js like ${hello}
-        $regex: new RegExp(`^${search}`, 'i')//$ is a special operator, pseudo is a regular opertator options i is unsensible to the case
-      }
-    },5);
+    if (filters.search) {
+        mongoQuery.$or = [
+            { pseudo: { $regex: filters.search, $options: 'i' } },
+            { email: { $regex: filters.search, $options: 'i' } }
+        ];
+    }
 
-    console.log("-->",r2)
-
-    const merged = [...r1, ...r2];
-
-    return merged
+    return this.userRepository.find(mongoQuery);
 
   }
 
+  async deactivate(userId: string) {
+    const user = await this.userRepository.findOneAndUpdate(
+        { _id: userId },
+        { $set: { status: UserStatus.DELETED } }
+    );
+    if (!user) {
+        throw new NotFoundException(`Utilisateur avec l'ID ${userId} non trouvé.`);
+    }
+    return user;
+  }
+
+  async reactivate(userId: string) {
+      const user = await this.userRepository.findOneAndUpdate(
+          { _id: userId },
+          { $set: { status: UserStatus.ACTIVE } }
+      );
+      if (!user) {
+          throw new NotFoundException(`Utilisateur avec l'ID ${userId} non trouvé.`);
+      }
+      return user;
+  }
 
   async findOne(id: string) {//mongo db's _id can be search as a string apparently
     return this.userRepository.findOne({ _id:id});

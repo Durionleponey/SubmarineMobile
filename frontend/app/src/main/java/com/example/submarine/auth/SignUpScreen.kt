@@ -3,10 +3,13 @@ package com.example.submarine.auth
 import android.content.Intent
 import android.util.Log
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.text.KeyboardOptions // AJOUT
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.input.KeyboardType // AJOUT
+import androidx.compose.ui.text.input.PasswordVisualTransformation // AJOUT
 import androidx.compose.ui.unit.dp
 import com.example.submarine.network.GraphQLRequest
 import com.example.submarine.network.RetrofitInstance
@@ -34,20 +37,26 @@ fun SignUpScreen() {
             value = email,
             onValueChange = { email = it },
             label = { Text("Email") },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            // Optimisation pour le clavier email
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email)
         )
 
+        // --- CHAMP MOT DE PASSE MODIFIÉ ---
         OutlinedTextField(
             value = password,
             onValueChange = { password = it },
             label = { Text("Password") },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            // Masque le texte (points noirs)
+            visualTransformation = PasswordVisualTransformation(),
+            // Indique au clavier que c'est un mot de passe
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password)
         )
-
         Button(
-            onClick = {
-                CoroutineScope(Dispatchers.IO).launch {
-                    val mutation = """
+                onClick = {
+                    CoroutineScope(Dispatchers.IO).launch {
+                        val mutation = """
                         mutation {
                           createUser(createUserInput: {
                             email: "$email",
@@ -61,39 +70,53 @@ fun SignUpScreen() {
                         }
                     """.trimIndent()
 
-                    val request = GraphQLRequest(query = mutation)
+                        val request = GraphQLRequest(query = mutation)
 
-                    val response = RetrofitInstance.graphqlApi.executeGraphQL<Map<String, Any>>(
-                        token = "",
-                        request = request
-                    )
+                        try {
+                            val response = RetrofitInstance.graphqlApi.executeGraphQL<Map<String, Any>>(
+                                token = "",
+                                request = request
+                            )
 
-                    withContext(Dispatchers.Main) {
-                        if (response.isSuccessful && response.body()?.data != null) {
-                            val user = response.body()?.data?.get("createUser") as? Map<*, *>
-                            val userEmail = user?.get("email") as? String
-                            val userPseudo = user?.get("pseudo") as? String
-                            message = "✅ Account created! Welcome $userPseudo ($userEmail)"
-                            Log.d("auth"," Account created! Welcome $userPseudo ($userEmail)")
-                            // Redirection vers la page de login avec préremplissage
-                            val intent = Intent(context, LoginActivity::class.java).apply {
-                                putExtra("email", email)
-                                putExtra("password", password)
-                            }
-                            context.startActivity(intent)
-                        } else {
-                            Log.e("auth","❌ Erreur de connexion : ${response.code()}")
                             withContext(Dispatchers.Main) {
-                                message = "❌ Error creating account: invalid email or password is not secure enough"
+                                if (response.isSuccessful && response.body()?.data != null) {
+                                    val user = response.body()?.data?.get("createUser") as? Map<*, *>
+                                    val userEmail = user?.get("email") as? String
+                                    val userPseudo = user?.get("pseudo") as? String
+                                    message = "✅ Account created! Welcome $userPseudo ($userEmail)"
+                                    Log.d("auth"," Account created! Welcome $userPseudo ($userEmail)")
+
+                                    val intent = Intent(context, LoginActivity::class.java).apply {
+                                        putExtra("email", email)
+                                        putExtra("password", password)
+                                    }
+                                    context.startActivity(intent)
+                                } else {
+                                    Log.e("auth","❌ Erreur de création : ${response.code()}")
+
+                                    // --- CORRECTION ICI ---
+                                    // On récupère la liste des erreurs
+                                    val errors = response.body()?.errors
+                                    // On prend la première, on la caste en Map, et on lit "message"
+                                    val firstError = errors?.firstOrNull() as? Map<*, *>
+                                    val errorMsg = firstError?.get("message")?.toString()
+                                        ?: "Invalid email or password is not secure enough"
+
+                                    message = "❌ Error: $errorMsg"
+                                }
+                            }
+                        } catch (e: Exception) {
+                            Log.e("auth", "Erreur réseau", e)
+                            withContext(Dispatchers.Main) {
+                                message = "❌ Network error"
                             }
                         }
                     }
-                }
-            },
-            modifier = Modifier.fillMaxWidth()
+                },
+        modifier = Modifier.fillMaxWidth()
         ) {
-            Text("Sign Up")
-        }
+        Text("Sign Up")
+    }
 
         message?.let {
             Text(text = it, color = MaterialTheme.colorScheme.primary)

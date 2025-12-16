@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
-    
+
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
@@ -14,12 +14,12 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.Submarine"
-        android:networkSecurityConfig="@xml/network_security_config"
+
+        android:usesCleartextTraffic="true"
+
+
         tools:targetApi="31">
 
-
-
-        <!-- 🚀 Écran principal : MainActivity (point d'entrée de l'app) -->
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -30,51 +30,33 @@
             </intent-filter>
         </activity>
 
-        <!-- 🟢 Écran d’authentification (Login/Signup combiné) -->
         <activity
             android:name=".auth.LoginActivity"
             android:exported="true"
-
             android:theme="@style/Theme.Submarine" />
 
         <activity android:name=".auth.SignUpActivity" />
 
-
-        <!-- 🟣 Édition de bio -->
         <activity
             android:name=".bio.EditBioActivity"
             android:exported="false" />
 
-        <!-- 🗨️ Conversation / Chat -->
         <activity android:name=".conversation.ConversationActivity" />
-        <activity android:name=".conversation.tests.ConversationTestActivity"
+        <activity
+            android:name=".conversation.tests.ConversationTestActivity"
             android:exported="true"
-            android:label="Conversation Test" >
+            android:label="Conversation Test" />
 
-        </activity>
-
-
-
-
-
-
-
-        <!-- 👥 Contacts -->
         <activity android:name=".listeContact.ContactsActivity" />
 
-        <!-- ➕ Ajouter un contact -->
         <activity
             android:name=".listeContact.AddContactActivity"
             android:exported="false"
             android:label="Ajouter un contact"
             android:theme="@style/Theme.Submarine" />
 
-        <!-- ➕ Voir les demandes d'amis -->
         <activity android:name=".listeContact.PendingRequestsActivity" />
+
     </application>
-
-
-
-    <!-- 🌐 Autorisations réseau -->
 
 </manifest>

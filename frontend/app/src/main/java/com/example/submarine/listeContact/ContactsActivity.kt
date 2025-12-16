@@ -21,7 +21,7 @@ import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.PersonAdd
 import androidx.compose.material3.*
-import androidx.compose.material3.pulltorefresh.PullToRefreshBox // Important pour le refresh
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -43,6 +43,7 @@ import com.example.submarine.bio.EditBioActivity
 import com.example.submarine.conversation.ConversationActivity
 import com.example.submarine.conversation.CryptoManager
 import com.example.submarine.conversation.UserService
+import com.example.submarine.elec.LcdActivity // ✅ AJOUT
 import com.example.submarine.graphql.GetFriendsListQuery
 import com.example.submarine.graphql.RemoveFriendMutation
 import com.example.submarine.listeContact.API.FriendsApi
@@ -64,6 +65,10 @@ class ContactsActivity : ComponentActivity() {
                     onAddFriendClick = {
                         val intent = Intent(this, AddContactActivity::class.java)
                         startActivity(intent)
+                    },
+                    onHelpContactClick = { // ✅ AJOUT
+                        val intent = Intent(this, LcdActivity::class.java)
+                        startActivity(intent)
                     }
                 )
             }
@@ -75,7 +80,8 @@ class ContactsActivity : ComponentActivity() {
 @Composable
 fun ContactsScreen(
     onBack: () -> Unit,
-    onAddFriendClick: () -> Unit
+    onAddFriendClick: () -> Unit,
+    onHelpContactClick: () -> Unit // ✅ AJOUT
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
@@ -112,7 +118,6 @@ fun ContactsScreen(
     var searchQuery by remember { mutableStateOf("") }
 
     // --- FONCTION : CHARGER TOUT (PROFIL + CONTACTS) ---
-    // On regroupe tout ici pour faciliter le "Refresh"
     fun fetchAllData() {
         if (token.isNullOrEmpty()) return
         scope.launch {
@@ -162,7 +167,6 @@ fun ContactsScreen(
                 Log.e("CryptoKey", "Échec envoi clé", e)
             }
 
-            // Petit délai pour l'UX si c'est trop rapide
             delay(500)
             isRefreshing = false
         }
@@ -175,10 +179,8 @@ fun ContactsScreen(
         } else {
             val currentTime = System.currentTimeMillis()
             if (currentTime - lastBackPressTime < 2000) {
-                // Si moins de 2 secondes : Retour à l'écran d'accueil du téléphone
                 (context as? Activity)?.moveTaskToBack(true)
             } else {
-                // Premier appui : Toast
                 lastBackPressTime = currentTime
                 Toast.makeText(context, "Appuyez à nouveau pour quitter", Toast.LENGTH_SHORT).show()
             }
@@ -245,12 +247,9 @@ fun ContactsScreen(
     }
 
     // --- CYCLE DE VIE ---
-// --- CYCLE DE VIE ---
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_RESUME) {
-                // 🚀 CORRECTION : On recharge TOUJOURS les données quand on revient
-                // (Même si la liste n'est pas vide, car la bio a pu changer)
                 fetchAllData()
             }
         }
@@ -340,7 +339,6 @@ fun ContactsScreen(
             snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
         ) { padding ->
 
-            // --- ZONE DE REFRESH ---
             PullToRefreshBox(
                 isRefreshing = isRefreshing,
                 onRefresh = { fetchAllData() },
@@ -348,6 +346,7 @@ fun ContactsScreen(
                 modifier = Modifier.padding(padding).fillMaxSize()
             ) {
                 Column(modifier = Modifier.fillMaxSize()) {
+
                     OutlinedTextField(
                         value = searchQuery,
                         onValueChange = { searchQuery = it },
@@ -359,9 +358,12 @@ fun ContactsScreen(
                         Text(errorMessage!!, color = MaterialTheme.colorScheme.error, modifier = Modifier.padding(8.dp))
                     }
 
+                    // ✅ On donne le poids à la liste pour laisser la place au bouton en bas
                     LazyColumn(
-                        modifier = Modifier.fillMaxSize().padding(horizontal = 8.dp),
-                        // Permet de swiper même si la liste est vide ou petite
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .weight(1f)
+                            .padding(horizontal = 8.dp),
                         verticalArrangement = if (filtered.isEmpty()) Arrangement.Center else Arrangement.Top
                     ) {
                         if (filtered.isEmpty() && !isRefreshing) {
@@ -391,14 +393,24 @@ fun ContactsScreen(
                             )
                         }
                     }
+
+                    // ✅ BOUTON AJOUTÉ EN BAS
+                    Spacer(modifier = Modifier.height(8.dp))
+                    OutlinedButton(
+                        onClick = onHelpContactClick,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(12.dp)
+                            .height(48.dp)
+                    ) {
+                        Text("Help/Contact")
+                    }
                 }
             }
         }
     }
 
-    // --- DIALOGS (Reste inchangé ou presque) ---
-    // (J'ai gardé la logique des Dialogs identique à ton code original pour la lisibilité)
-
+    // --- DIALOGS ---
     if (showEditPseudoDialog) {
         AlertDialog(
             onDismissRequest = { if (!isUpdatingPseudo) showEditPseudoDialog = false },
@@ -468,7 +480,6 @@ fun ContactsScreen(
     }
 }
 
-// ... (La classe ContactRow et ContactPrefs reste inchangée en bas du fichier)
 @Composable
 private fun ContactRow(name: String, onClick: () -> Unit, onLongPress: () -> Unit, isMuted: Boolean) {
     val haptic = LocalHapticFeedback.current
@@ -485,7 +496,12 @@ private fun ContactRow(name: String, onClick: () -> Unit, onLongPress: () -> Uni
             )
             .padding(16.dp)
     ) {
-        Text(text = name, fontSize = 20.sp, fontWeight = FontWeight.Bold, color = if (isMuted) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurface)
+        Text(
+            text = name,
+            fontSize = 20.sp,
+            fontWeight = FontWeight.Bold,
+            color = if (isMuted) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurface
+        )
         if (isMuted) Text("En sourdine", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
     }
     HorizontalDivider()
@@ -495,9 +511,22 @@ object ContactPrefs {
     private const val PREFS_NAME = "contact_prefs"
     private const val KEY_PREFIX_NAME = "contact_name_"
     private const val KEY_PREFIX_MUTED = "contact_muted_"
-    private fun prefs(context: android.content.Context) = context.getSharedPreferences(PREFS_NAME, android.content.Context.MODE_PRIVATE)
-    fun getCustomName(context: android.content.Context, userId: String): String? = prefs(context).getString(KEY_PREFIX_NAME + userId, null)
-    fun setCustomName(context: android.content.Context, userId: String, name: String?) { prefs(context).edit().apply { if (name.isNullOrBlank()) remove(KEY_PREFIX_NAME + userId) else putString(KEY_PREFIX_NAME + userId, name) }.apply() }
-    fun isMuted(context: android.content.Context, userId: String): Boolean = prefs(context).getBoolean(KEY_PREFIX_MUTED + userId, false)
-    fun setMuted(context: android.content.Context, userId: String, muted: Boolean) { prefs(context).edit().putBoolean(KEY_PREFIX_MUTED + userId, muted).apply() }
+    private fun prefs(context: android.content.Context) =
+        context.getSharedPreferences(PREFS_NAME, android.content.Context.MODE_PRIVATE)
+
+    fun getCustomName(context: android.content.Context, userId: String): String? =
+        prefs(context).getString(KEY_PREFIX_NAME + userId, null)
+
+    fun setCustomName(context: android.content.Context, userId: String, name: String?) {
+        prefs(context).edit().apply {
+            if (name.isNullOrBlank()) remove(KEY_PREFIX_NAME + userId) else putString(KEY_PREFIX_NAME + userId, name)
+        }.apply()
+    }
+
+    fun isMuted(context: android.content.Context, userId: String): Boolean =
+        prefs(context).getBoolean(KEY_PREFIX_MUTED + userId, false)
+
+    fun setMuted(context: android.content.Context, userId: String, muted: Boolean) {
+        prefs(context).edit().putBoolean(KEY_PREFIX_MUTED + userId, muted).apply()
+    }
 }

@@ -7,7 +7,7 @@ export class MailService {
 
   async sendFriendRequestEmail(receiverEmail: string, senderPseudo: string, requestId: string) {
     // Lien de validation (10.0.2.2 = l'hôte pour l'émulateur Android, localhost pour le web)
-    const url = `http://10.0.2.2:4000/friends/confirm-email?id=${requestId}`;
+    const url = `http://51.21.218.249:4000/friends/confirm-email?id=${requestId}`;
 
     await this.mailerService.sendMail({
       to: receiverEmail,

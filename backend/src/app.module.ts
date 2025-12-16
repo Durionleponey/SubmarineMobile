@@ -66,7 +66,7 @@ import { MailModule } from './mail/mail.module'; // <--- 1. AJOUTE L'IMPORT DU M
         host: 'smtp.gmail.com',
         auth: {
           user: 'submarine.app.contact@gmail.com',
-          pass: 'mgivspcjjrnjcjnk', 
+          pass: 'muejqlazswagcgbh', 
         },
       },
       defaults: {

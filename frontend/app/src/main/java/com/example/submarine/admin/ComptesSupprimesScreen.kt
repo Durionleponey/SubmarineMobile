@@ -46,23 +46,31 @@ import com.example.submarine.graphql.type.UserStatus
 @Composable
 fun ComptesSupprimesScreen(
     onNavigateBack: () -> Unit,
-    viewModel: TableauDeBordViewModel // On reçoit le ViewModel partagé
+    viewModel: TableauDeBordViewModel
 ) {
     val uiState by viewModel.uiState.collectAsState()
-    var showDialog by remember { mutableStateOf(false) }
     var userToReactivate by remember { mutableStateOf<AdminUser?>(null) }
     var searchQuery by remember { mutableStateOf("") }
 
     val filteredUsers = remember(searchQuery, uiState.users) {
-        val deletedUsers = uiState.users.filter { it.status == UserStatus.DELETED }
-
-        if (searchQuery.isBlank()) {
-            deletedUsers
-        } else {
-            deletedUsers.filter {
-                it.pseudo.contains(searchQuery, ignoreCase = true)
-            }
+        uiState.users.filter {
+            it.status == UserStatus.DELETED && it.pseudo.contains(
+                searchQuery,
+                ignoreCase = true
+            )
         }
+    }
+    if (userToReactivate != null) {
+        ReactivationDialog(
+            user = userToReactivate!!,
+            onConfirm = {
+                viewModel.reactiverUtilisateur(userToReactivate!!.id)
+                userToReactivate = null // On referme la dialogue
+            },
+            onDismiss = {
+                userToReactivate = null // On referme la dialogue
+            }
+        )
     }
 
     Scaffold(
@@ -85,34 +93,6 @@ fun ComptesSupprimesScreen(
             )
         }
     ) { innerPadding ->
-        if (showDialog && userToReactivate != null) {
-            AlertDialog(
-                onDismissRequest = {
-                    showDialog = false
-                },
-                title = { Text("Confirmation de Réactivation") },
-                text = { Text("Êtes-vous sûr de vouloir réactiver le compte \"${userToReactivate!!.pseudo}\" ?") },
-                confirmButton = {
-                    Button(
-                        onClick = {
-                            userToReactivate?.id?.let { viewModel.reactiverUtilisateur(it) }
-                            showDialog = false
-                        }
-                    ) {
-                        Text("Oui, réactiver")
-                    }
-                },
-                dismissButton = {
-                    OutlinedButton(
-                        onClick = {
-                            showDialog = false
-                        }
-                    ) {
-                        Text("Annuler")
-                    }
-                }
-            )
-        }
         Column(modifier = Modifier.padding(innerPadding)) {
             OutlinedTextField(
                 value = searchQuery,
@@ -166,7 +146,6 @@ fun ComptesSupprimesScreen(
                                     user = user,
                                     onReactivateClick = {
                                         userToReactivate = user
-                                        showDialog = true
                                     }
 
                                 )
@@ -178,6 +157,29 @@ fun ComptesSupprimesScreen(
             }
         }
     }
+}
+
+@Composable
+private fun ReactivationDialog(
+    user: AdminUser,
+    onConfirm: () -> Unit,
+    onDismiss: () -> Unit
+) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Confirmation de Réactivation") },
+        text = { Text("Êtes-vous sûr de vouloir réactiver le compte \"${user.pseudo}\" ?") },
+        confirmButton = {
+            Button(onClick = onConfirm) {
+                Text("Oui, réactiver")
+            }
+        },
+        dismissButton = {
+            OutlinedButton(onClick = onDismiss) {
+                Text("Annuler")
+            }
+        }
+    )
 }
 
 /*@Preview(showBackground = true, name = "Écran des Comptes Supprimés")

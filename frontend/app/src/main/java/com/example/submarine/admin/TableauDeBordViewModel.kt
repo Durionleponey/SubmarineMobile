@@ -1,5 +1,6 @@
 package com.example.submarine.admin
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
@@ -14,6 +15,8 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import com.example.submarine.graphql.DeactivateUserMutation
+import com.example.submarine.graphql.ReactivateUserMutation
 data class AdminUser(
     val id: String,
     val pseudo: String,
@@ -64,13 +67,69 @@ class TableauDeBordViewModel(private val apolloClient: ApolloClient) : ViewModel
         }
     }
     fun supprimerUtilisateur(userId: String) {
-        // TODO: Appeler la mutation GraphQL "deactivateUser(userId: userId)" ici
-        // Pour l'instant, on se contente de rafraîchir la liste pour voir le changement
-        loadUsers()
+        viewModelScope.launch {
+            try {
+                val response = apolloClient.mutation(DeactivateUserMutation(userId = userId)).execute()
+
+                if (response.data != null && !response.hasErrors()) {
+                    val newStatus = response.data?.deactivateUser?.status
+
+                    Log.d("ViewModel", "Utilisateur $userId désactivé. Nouveau statut: $newStatus")
+
+                    _uiState.update { currentState ->
+                        val updatedUsers = currentState.users.map { user ->
+                            if (user.id == userId) {
+                                user.copy(status = newStatus ?: UserStatus.DELETED)
+                            } else {
+                                user
+                            }
+                        }
+                        currentState.copy(users = updatedUsers)
+                    }
+                } else {
+                    val errorMessage = response.errors?.firstOrNull()?.message ?: "Erreur lors de la désactivation"
+                    Log.e("ViewModel", "Erreur GraphQL: $errorMessage")
+                    _uiState.update { it.copy(error = errorMessage) }
+                }
+
+            } catch (e: ApolloException) {
+                // Erreur réseau
+                Log.e("ViewModel", "Erreur réseau lors de la désactivation: ${e.message}")
+                _uiState.update { it.copy(error = "Erreur réseau: ${e.message}") }
+            }
+        }
     }
     fun reactiverUtilisateur(userId: String) {
-        // TODO: Appeler la mutation GraphQL "reactivateUser(userId: userId)" ici
-        loadUsers()
+        Log.d("REAC_TEST", "!!!!!!!!!!!!!! LA FONCTION A ÉTÉ APPELÉE !!!!!!!!!!!!!! ID: $userId")
+        viewModelScope.launch {
+            try {
+                val response = apolloClient.mutation(ReactivateUserMutation(userId = userId)).execute()
+
+                if (response.data != null && !response.hasErrors()) {
+                    val newStatus = response.data?.reactivateUser?.status
+                    Log.d("ViewModel", "Utilisateur $userId réactivé. Nouveau statut: $newStatus")
+
+                    _uiState.update { currentState ->
+                        val updatedUsers = currentState.users.map { user ->
+                            if (user.id == userId) {
+                                // On met à jour le statut de l'utilisateur concerné
+                                user.copy(status = newStatus ?: UserStatus.ACTIVE)
+                            } else {
+                                user
+                            }
+                        }
+                        currentState.copy(users = updatedUsers)
+                    }
+                } else {
+                    val errorMessage = response.errors?.firstOrNull()?.message ?: "Erreur lors de la réactivation"
+                    Log.e("ViewModel", "Erreur GraphQL: $errorMessage")
+                    _uiState.update { it.copy(error = errorMessage) }
+                }
+            } catch (e: ApolloException) {
+                Log.e("ViewModel", "Erreur réseau lors de la réactivation: ${e.message}")
+                _uiState.update { it.copy(error = "Erreur réseau: ${e.message}") }
+            }
+        }
     }
 
     companion object {

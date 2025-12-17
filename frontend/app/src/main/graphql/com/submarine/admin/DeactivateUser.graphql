@@ -1,0 +1,6 @@
+mutation DeactivateUser($userId: ID!) {
+    deactivateUser(userId: $userId) {
+        _id
+        status
+    }
+}

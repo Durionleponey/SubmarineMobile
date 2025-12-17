@@ -19,7 +19,7 @@ import com.example.submarine.admin.AdminUser
 @Composable
 fun UtilisateurSupprimeListItem(
     user: AdminUser,
-    onReactivateClick: (Int) -> Unit
+    onReactivateClick: (String) -> Unit
 ) {
     Row(
         modifier = Modifier
@@ -34,7 +34,7 @@ fun UtilisateurSupprimeListItem(
         }
 
         // Le bouton pour réactiver
-        IconButton(onClick = { onReactivateClick }) {
+        IconButton(onClick = {onReactivateClick(user.id)}) {
             Icon(
                 imageVector = Icons.Default.Restore,
                 contentDescription = "Réactiver l'utilisateur ${user.pseudo}"

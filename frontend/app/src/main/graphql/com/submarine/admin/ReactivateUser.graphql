@@ -1,0 +1,6 @@
+mutation ReactivateUser($userId: ID!) {
+    reactivateUser(userId: $userId) {
+        _id
+        status
+    }
+}

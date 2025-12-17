@@ -15,39 +15,34 @@ const gqlContext = GqlExecutionContext.create(context).getContext();
 
         const req = gqlContext.req;
         
-        // ---------------------------------------------------------
-        // 1. CAS WS : L'utilisateur est attaché à l'objet Request du Socket
-        // Testons si le contexte est sur la requête qui a initié le WS
-        // C'est souvent le cas si le type est 'graphql'
-        // ---------------------------------------------------------
         if (req?.extra?.request?.user) {
-            console.log("SUCCESS WS: Utilisateur trouvé via req.extra.request.user");
+           // console.log("SUCCESS WS: Utilisateur trouvé via req.extra.request.user");
             return req.extra.request.user;
         }
 
         // 2. CAS WS : Attaché à l'objet Socket lui-même (comme propriété simple)
         if (req?.extra?.socket?.user) {
-            console.log("SUCCESS WS: Utilisateur trouvé via req.extra.socket.user");
+           // console.log("SUCCESS WS: Utilisateur trouvé via req.extra.socket.user");
             return req.extra.socket.user;
         }
 
         // 3. CAS WS : Le contexte est directement sur la connexion WS (le plus robuste)
         if (gqlContext.connection?.context?.user) {
-            console.log("SUCCESS WS: Utilisateur trouvé via gqlContext.connection.context.user");
+           // console.log("SUCCESS WS: Utilisateur trouvé via gqlContext.connection.context.user");
             return gqlContext.connection.context.user;
         }
 
         // 4. CAS HTTP/GQL standard
         if (gqlContext.req?.user) {
-            console.log("SUCCESS HTTP/GQL: Utilisateur trouvé via gqlContext.req.user");
+           // console.log("SUCCESS HTTP/GQL: Utilisateur trouvé via gqlContext.req.user");
             return gqlContext.req.user;
         }
 
     } catch (e) {
-        console.error("Erreur lors de l'extraction du contexte GQL:", e);
+      //  console.error("Erreur lors de l'extraction du contexte GQL:", e);
     }
     
-    console.log(`FAIL: Utilisateur non trouvé. Type: ${context.getType()}`);
+   // console.log(`FAIL: Utilisateur non trouvé. Type: ${context.getType()}`);
     return undefined;
 };
 

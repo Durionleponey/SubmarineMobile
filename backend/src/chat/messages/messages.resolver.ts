@@ -24,8 +24,8 @@ export class MessagesResolver {
       @Args('createMessageInput') createMessageInput: CreateMessageInput,
       @CurrentUser() user:TokenPayload
   ) {
-    console.log("hello from resolveur 🥳", createMessageInput);
-    console.log(user);
+    //console.log("hello from resolveur 🥳", createMessageInput);
+    //console.log(user);
     return this.messagesService.createMessage(createMessageInput, user._id)
   }
 
@@ -79,23 +79,20 @@ export class MessagesResolver {
 
       const user = context.req?.user || context.connection?.context?.user; // ⬅️ Récupère l'utilisateur
      if (!user || !user._id) {
-        // Optionnel : si on n'a pas l'utilisateur, on pourrait rejeter l'événement
-        // mais le Guard devrait l'empêcher d'arriver ici.
         return false; 
       }
       
       const userId = user._id;
-      console.log("🏓🏓",context.req.user._id);
+      //console.log("🏓🏓",context.req.user._id);
 
       return payload.messageCreated.chatId === variables.chatId && userId !== payload.messageCreated.userId;    }
 })
 
-@UseGuards(GqlAuthGuard) // <--- AJOUTEZ LE GUARD ICI
+@UseGuards(GqlAuthGuard)
 messageCreated(@Args()chatId:MessageCreatedArgs, @CurrentUser() user:TokenPayload) { // <-- Le décorateur @CurrentUser va maintenant fonctionner
 
     console.log("Tentative d'accès à l'ID (via @CurrentUser):", user?._id); // ✅ Ceci devrait afficher l'ID maintenant
     
-    // Si pour une raison ou une autre le Guard échoue, assurez-vous de gérer 'user' undefined
     if (!user || !user._id) {
         throw new Error("Utilisateur non authentifié dans le contexte de la souscription.");                      
       }

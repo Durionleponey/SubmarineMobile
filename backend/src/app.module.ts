@@ -32,8 +32,6 @@ import { LcdModule } from './lcd/lcd.module';
       useFactory: (authService: AuthService) => ({
         autoSchemaFile: true,
           context: (ctx) => {
-            // --- SONDE DE RECHERCHE ---
-            // On cherche l'utilisateur dans tous les recoins possibles de l'objet WebSocket
             const user = 
               ctx.extra?.user || 
               ctx.user || 
@@ -41,14 +39,14 @@ import { LcdModule } from './lcd/lcd.module';
               (ctx as any).user;
 
             if (user) {
-              console.log("🎯 USER ENFIN LOCALISÉ ! ID:", user._id);
+             // console.log("🎯 USER ENFIN LOCALISÉ ! ID:", user._id);
               return { 
-                req: { user }, // On simule req pour @CurrentUser
+                req: { user }, 
                 user 
               };
             }
 
-            console.log("❓ Keys dans ctx.extra:", ctx.extra ? Object.keys(ctx.extra) : "pas d'extra");
+           // console.log("❓ Keys dans ctx.extra:", ctx.extra ? Object.keys(ctx.extra) : "pas d'extra");
             return { req: ctx.req };
           },
         subscriptions: {
@@ -57,11 +55,10 @@ import { LcdModule } from './lcd/lcd.module';
             try {
                 const userPayload = authService.verifyWs(context.connectionParams);
                 
-                // FORÇAGE : On l'attache aux deux endroits possibles
                 context.user = userPayload; 
                 if (context.extra) context.extra.user = userPayload;
 
-                console.log("✅ onConnect: User injecté manuellement");
+               // console.log("✅ onConnect: User injecté manuellement");
                 return { user: userPayload };     
               } catch (e) {
                 throw new UnauthorizedException();

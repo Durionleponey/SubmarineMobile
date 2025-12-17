@@ -19,11 +19,10 @@ object AdminRoutes {
 }
 
 @Composable
-fun AdminNavigation(navController: NavHostController) {
+fun AdminNavigation(navController: NavHostController, tableauDeBordViewModel: TableauDeBordViewModel) {
     val context = LocalContext.current
     val activity = context as? Activity
-    val viewModel: TableauDeBordViewModel = viewModel(factory = TableauDeBordViewModel.Factory)
-    val uiState by viewModel.uiState.collectAsState() //récupère l'état de la liste utilisateurs
+    val uiState by tableauDeBordViewModel.uiState.collectAsState()
 
     NavHost(
         navController = navController,
@@ -48,7 +47,7 @@ fun AdminNavigation(navController: NavHostController) {
         // Définition de l'écran de la liste des utilisateurs
         composable(AdminRoutes.USER_LIST) {
             TableauDeBordScreen(
-                viewModel = viewModel,
+                viewModel = tableauDeBordViewModel,
                 onNavigateBack = {
                     navController.popBackStack()
                 }
@@ -69,7 +68,7 @@ fun AdminNavigation(navController: NavHostController) {
         }
         composable(AdminRoutes.DELETED_USERS) {
             ComptesSupprimesScreen(
-                viewModel = viewModel, // On passe le viewModel partagé
+                viewModel = tableauDeBordViewModel,
                 onNavigateBack = { navController.popBackStack() }
             )
         }

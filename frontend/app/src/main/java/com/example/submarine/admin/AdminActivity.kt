@@ -1,6 +1,7 @@
 package com.example.submarine.admin
 
 import android.os.Bundle
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -15,16 +16,24 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.navigation.compose.rememberNavController
 import com.example.submarine.ui.theme.SubmarineTheme
+import com.example.submarine.network.TokenProvider
 
 class AdminActivity : ComponentActivity() {
 
-    private val authViewModel: AdminAuthViewModel by viewModels { AdminAuthViewModel.Factory }
+    //private val authViewModel: AdminAuthViewModel by viewModels { AdminAuthViewModel.Factory }
+    private val tableauDeBordViewModel: TableauDeBordViewModel by viewModels { TableauDeBordViewModel.Factory }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
         setContent {
             SubmarineTheme {
-                val status by authViewModel.authStatus.collectAsState()
+                val navController = rememberNavController()
+                AdminNavigation(
+                    navController = navController,
+                    tableauDeBordViewModel = tableauDeBordViewModel
+                )
+                /*val status by authViewModel.authStatus.collectAsState()
 
                 Box(
                     modifier = Modifier.fillMaxSize(),
@@ -32,14 +41,12 @@ class AdminActivity : ComponentActivity() {
                 ) {
                     when (status) {
                         AuthStatus.CHECKING -> {
-                            // 1. En cours de vérification : on affiche une roue de chargement
                             CircularProgressIndicator()
                         }
 
                         AuthStatus.IS_ADMIN -> {
-                            // 2. C'est un admin ! On peut afficher le vrai panel
                             val navController = rememberNavController()
-                            AdminNavigation(navController = navController)
+                            AdminNavigation(navController = navController, tableauDeBordViewModel = tableauDeBordViewModel)
                         }
 
                         AuthStatus.NOT_ADMIN -> {
@@ -62,7 +69,7 @@ class AdminActivity : ComponentActivity() {
                             finish() // Ferme l'activité
                         }
                     }
-                }
+                }*/
             }
         }
     }

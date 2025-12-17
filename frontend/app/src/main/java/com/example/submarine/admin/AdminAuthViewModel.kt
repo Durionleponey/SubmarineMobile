@@ -1,5 +1,6 @@
 package com.example.submarine.admin
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
@@ -27,7 +28,7 @@ class AdminAuthViewModel(private val apolloClient: ApolloClient) : ViewModel(){
         checkAdminStatus()
     }
 
-    private fun checkAdminStatus() {
+    fun checkAdminStatus() {
         // Si personne n'est connecté, pas la peine d'aller plus loin
         if (TokenProvider.token == null) {
             _authStatus.value = AuthStatus.NOT_LOGGED_IN
@@ -58,12 +59,17 @@ class AdminAuthViewModel(private val apolloClient: ApolloClient) : ViewModel(){
         }
     }
 
+    fun forceCheck() {
+        Log.d("AdminAuthViewModel", "Forcing a re-check of admin status.")
+        checkAdminStatus()
+    }
+
     companion object {
         val Factory: ViewModelProvider.Factory = object : ViewModelProvider.Factory {
             @Suppress("UNCHECKED_CAST")
             override fun <T : ViewModel> create(modelClass: Class<T>): T {
-                return AdminAuthViewModel(Apollo.apolloClient) as T
-            }
+                val apolloClient = Apollo.apolloClient
+                return AdminAuthViewModel(apolloClient) as T            }
         }
     }
 }

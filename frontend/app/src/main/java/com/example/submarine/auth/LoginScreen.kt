@@ -29,6 +29,8 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import com.example.submarine.admin.AdminActivity
+
 
 
 @Composable
@@ -78,14 +80,31 @@ fun LoginScreen() {
             onClick = {
                 CoroutineScope(Dispatchers.IO).launch {
                     val response = RetrofitInstance.authApi.login(LoginRequest(email.trim(), password))
-                    if (response.isSuccessful) {
-                        TokenProvider.token = response.body()?.token
+                    if (response.isSuccessful && response.body() != null) {
+
+                        val loginResponse = response.body()!!
+                        TokenProvider.token = loginResponse.token
                         Log.d("API", "Token reçu : ${TokenProvider.token}")
+
+                        val userStatus = loginResponse.user.status
+                        Log.d("API", "Statut de l'utilisateur : $userStatus")
 
                         withContext(Dispatchers.Main) {
                             errorMessage = null
-                            val intent = Intent(context, ContactsActivity::class.java)
-                            context.startActivity(intent)
+                            if (userStatus == "ADMIN") {
+                                // C'est un admin ! On va au tableau de bord.
+                                Log.d("API", "Navigation vers AdminActivity")
+                                val intent = Intent(context, AdminActivity::class.java)
+                                intent.putExtra("auth_token", loginResponse.token)
+                                context.startActivity(intent)
+                            } else {
+                                // C'est un utilisateur normal. On va à la liste de contacts.
+                                Log.d("API", "Navigation vers ContactsActivity")
+                                val intent = Intent(context, ContactsActivity::class.java)
+                                context.startActivity(intent)
+                            }
+                            // Termine l'activité de login pour ne pas pouvoir y revenir
+                            activity?.finish()
                         }
                     } else {
                         println("❌ Erreur lors de la connexion : ${response.errorBody()?.string()}")
@@ -99,6 +118,20 @@ fun LoginScreen() {
             modifier = Modifier.fillMaxWidth()
         ) {
             Text("Login")
+        }
+
+        Button(
+            onClick = {
+                // On simule une connexion admin pour que le TokenProvider ne soit pas vide
+                TokenProvider.token = "fake-admin-token-for-dev"
+                Log.d("DEV_MODE", "Accès direct au panel admin demandé.")
+
+                val intent = Intent(context, AdminActivity::class.java)
+                context.startActivity(intent)
+            },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("Accès Direct Admin (DEV)")
         }
 
         OutlinedButton(

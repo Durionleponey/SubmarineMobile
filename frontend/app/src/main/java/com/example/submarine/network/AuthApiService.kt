@@ -8,8 +8,8 @@ import retrofit2.http.GET
 import retrofit2.http.POST
 
 data class LoginRequest(val email: String, val password: String)
-data class LoginResponse(val token: String)
-data class UserResponse(val _id: String, val email: String)
+data class LoginResponse(val token: String, val user: UserResponse)
+data class UserResponse(val _id: String, val email: String, val status: String)
 
 interface AuthApiService {
     @POST("auth/login")

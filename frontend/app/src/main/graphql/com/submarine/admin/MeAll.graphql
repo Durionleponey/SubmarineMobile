@@ -1,5 +1,8 @@
 query MeAll {
     meAll {
+        _id
+        pseudo
+        email
         status
     }
 }

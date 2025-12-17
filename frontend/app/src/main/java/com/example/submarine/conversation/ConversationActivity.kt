@@ -46,6 +46,7 @@ class ConversationActivity : ComponentActivity() {
                 val messages by viewModel.messages.collectAsState()
                 val currentUserId by viewModel.currentUserState.collectAsState()
 
+                val subscriptionState by viewModel.subscriptionState.collectAsState()
 
                 val isEncryptionEnabled by viewModel.isEncryptionEnabled.collectAsState()
                 val onToggleEncryption = { enabled: Boolean -> viewModel.toggleEncryption(enabled) }
@@ -96,7 +97,8 @@ class ConversationActivity : ComponentActivity() {
 
                         },
                         isEncryptionEnabled = isEncryptionEnabled,
-                        onToggleEncryption = onToggleEncryption
+                        onToggleEncryption = onToggleEncryption,
+                        subscriptionState = subscriptionState
                     )
                 }
 

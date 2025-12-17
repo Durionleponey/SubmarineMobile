@@ -1,4 +1,4 @@
-import {Resolver, Query, Mutation, Args, Int, Subscription} from '@nestjs/graphql';
+import {Resolver, Query, Mutation, Args, Int, Subscription,Context} from '@nestjs/graphql';
 import { ChatService } from './chat.service';
 import { Chat } from './entities/chat.entity';
 import { CreateChatInput } from './dto/create-chat.input';
@@ -10,6 +10,7 @@ import {TokenPayload} from "../auth/token-payload.interface";
 import {string} from "joi";
 import {Message} from "./messages/entities/message.entity";
 import {MessageCreatedArgs} from "./dto/message-created.args";
+import { GqlExecutionContext } from '@nestjs/graphql'; 
 
 @Resolver(() => Chat)
 export class ChatResolver {
@@ -52,34 +53,39 @@ export class ChatResolver {
   }
 
 
-  @Subscription(() => Chat, {
-    filter:(payload, variables, context) => {//payload --> in the message to waiting to be published, variables --> graphQL request execuse in every publi
+@Subscription(() => Chat, {
+    // Notez que le décorateur @Context est ajouté pour le filtre
+    filter:(payload, variables, context) => {
 
-      const userId= context.req.user._id
+      // CORRECTION DU FILTRE : Accède à l'utilisateur depuis le contexte du WS
+      // L'utilisateur est désormais sous context.user grâce à la configuration 'onConnect'
+      const userId = context.user?._id; 
 
-      //console.log("🏓🏓",context.req.user._id);
+      if (!userId) {
+          console.error("Erreur: Utilisateur non trouvé dans le contexte du filtre.");
+          return false; 
+      }
 
-      //console.log("🍕 payload",payload)//its the data send
-      //console.log("🚩 variable",variables)//var
-
-      //return payload.messageCreated.chatId === variables.chatId && userId !== payload.messageCreated.userId;
-
-      //return payload.messageCreated.chatId === variables.chatId && userId !== payload.messageCreated.userId;
-
-      //console.log("userid",userId)
-      //console.log(payload.newuserid)
-
+      // ... le reste de votre logique de filtre
       return userId === payload.chatCreated.newuserid.toString()
-
-
-
-
     }
   })
-  chatCreated(@CurrentUser() user:TokenPayload) {
-    //console.log("aaaa",user)
-
-
+chatCreated(@Context() context: any) { 
+    
+    // Accès direct à la propriété 'user'
+    let user = context.user; 
+    
+    // Vérification alternative
+    if (!user?._id) {
+        user = context.connection?.context?.user;
+    }
+    
+    if (!user?._id) {
+        console.error("Erreur: Utilisateur non trouvé dans le contexte du résolveur de souscription.");
+        return null;
+    }
+    
+    // On passe l'ID utilisateur valide à la couche service
     return this.chatService.chatCreated(user._id)
   }
 }

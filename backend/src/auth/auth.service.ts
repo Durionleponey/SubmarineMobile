@@ -65,7 +65,7 @@ export class AuthService {
 
     verifyWs(connectionParams: any): TokenPayload {
     const authHeader = connectionParams.Authorization || connectionParams.authorization;
-
+    console.log('verifyWs reçu:', connectionParams);
     if (!authHeader) {
       throw new UnauthorizedException('No authorization header found in WebSocket payload');
     }
@@ -75,6 +75,7 @@ export class AuthService {
         throw new UnauthorizedException('Invalid authorization header format');
     }
 
+    console.log('Header extrait (authHeader):', authHeader);
     return this.jwtService.verify(token);
   }
 }

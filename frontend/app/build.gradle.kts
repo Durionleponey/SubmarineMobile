@@ -5,6 +5,8 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.apollo)
+
+
 }
 
 // <--- 2. CHARGEMENT DU FICHIER LOCAL.PROPERTIES
@@ -102,11 +104,12 @@ dependencies {
 
     // Apollo GraphQL
     implementation(libs.apollo.adapters)
-    implementation(libs.apollo.runtime)
+    //implementation(libs.apollo.runtime)
     implementation(libs.apollo.api)
-
-    // Coroutines & Serialization & DataStore
+    implementation("com.apollographql.apollo:apollo-runtime:4.3.3")
+    //implementation(libs.apollo.websocket.okhttp)
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.1")
     implementation("androidx.datastore:datastore-preferences:1.1.1")
+
 }

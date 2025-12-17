@@ -4,7 +4,7 @@ package com.example.submarine.conversation
 import android.util.Log
 import com.example.submarine.graphql.GetUserByIDQuery
 import com.example.submarine.network.Apollo
-import com.apollographql.apollo3.exception.ApolloException
+import com.apollographql.apollo.exception.ApolloException
 
 
 /**

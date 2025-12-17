@@ -15,6 +15,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.example.submarine.conversation.SubscriptionState
 import com.example.submarine.ui.theme.SubmarineTheme
 import com.example.submarine.conversation.composants.MessageBubble
 import com.example.submarine.conversation.composants.IconUser
@@ -39,7 +40,8 @@ fun ConversationScreen(
     currentUserId: String,
     onSentMessage: (String) -> Unit,
     isEncryptionEnabled: Boolean,
-    onToggleEncryption: (Boolean) -> Unit
+    onToggleEncryption: (Boolean) -> Unit,
+    subscriptionState: SubscriptionState
 
 
 ) {
@@ -146,19 +148,19 @@ fun ConversationScreen(
 
 
 
-@Preview(showBackground = true, name = "Conversation Screen Preview")
-@Composable
-fun ConversationScreenPreview() {
-    SubmarineTheme {
-        ConversationScreen(
-            contactName = "Ash San",
-            messages = emptyList(),
-            onNavigateBack = {},
-            currentUserId = "1_test",
-            onSentMessage = {},
-            isEncryptionEnabled = true,
-            onToggleEncryption = {}
-
-        )
-    }
-}
+//@Preview(showBackground = true, name = "Conversation Screen Preview")
+//@Composable
+//fun ConversationScreenPreview() {
+//    SubmarineTheme {
+//        ConversationScreen(
+//            contactName = "Ash San",
+//            messages = emptyList(),
+//            onNavigateBack = {},
+//            currentUserId = "1_test",
+//            onSentMessage = {},
+//            isEncryptionEnabled = true,
+//            onToggleEncryption = {}
+//
+//        )
+//    }
+//}

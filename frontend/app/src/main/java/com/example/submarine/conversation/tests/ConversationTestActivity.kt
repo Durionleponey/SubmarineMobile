@@ -20,6 +20,8 @@ import com.example.submarine.conversation.ConversationViewModel
 import com.example.submarine.screens.ConversationScreen
 import com.example.submarine.ui.theme.SubmarineTheme
 import androidx.compose.runtime.collectAsState
+import com.example.submarine.conversation.SubscriptionState
+
 class ConversationTestActivity : ComponentActivity() {
 
     private val TAG = "ConversationTestActivity"
@@ -206,7 +208,9 @@ fun TestChatScreen(
             isEncryptionEnabled = isEncryptionEnabled,
             onToggleEncryption = { enabled ->
                 viewModel.toggleEncryption(enabled)
-            }
+
+            },
+            subscriptionState = SubscriptionState.Connected
 
         )
     }

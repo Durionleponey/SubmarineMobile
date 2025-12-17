@@ -134,9 +134,7 @@ export class MessagesService {
 
     async messageCreated({chatId}: MessageCreatedArgs, userId:string) {
 
-        await this.chatRepository.findOne(
-            {   //findOneAndUpdate take two argument, first is the filter and the second is the update
-                //_id: chatId --> finding the correct chat to update
+        const chat = await this.chatRepository.findOne({
                 _id: chatId,
                 $or: [//a leaste one of the two condition shoud be true
                     { userId },

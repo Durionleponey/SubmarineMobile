@@ -1,7 +1,7 @@
 package com.example.submarine.conversation
 
 import android.util.Log
-import com.apollographql.apollo3.exception.ApolloException
+import com.apollographql.apollo.exception.ApolloException
 import com.example.submarine.graphql.GetMessagesQuery
 import com.example.submarine.graphql.SubscribeToMessagesSubscription
 import com.example.submarine.network.Apollo

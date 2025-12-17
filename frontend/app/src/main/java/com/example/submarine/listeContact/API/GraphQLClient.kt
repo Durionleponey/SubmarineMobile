@@ -1,6 +1,6 @@
 package com.example.submarine.listeContact.API
 
-import com.apollographql.apollo3.ApolloClient
+import com.apollographql.apollo.ApolloClient
 import com.example.submarine.BuildConfig
 
 object GraphQLClient {

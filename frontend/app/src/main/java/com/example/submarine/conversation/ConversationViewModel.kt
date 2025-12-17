@@ -11,6 +11,7 @@ import com.example.submarine.network.TokenProvider
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlin.collections.emptyList
@@ -38,10 +39,11 @@ class ConversationViewModel : ViewModel() {
 
     /**private val _creationState = MutableStateFlow<ChatState>(ChatState.Idle)
     val creationState = _creationState.asStateFlow()
+    */
 
     private val _subscriptionState = MutableStateFlow<SubscriptionState>(SubscriptionState.Disconnected)
     val subscriptionState = _subscriptionState.asStateFlow()
-    */
+
 
 
 
@@ -124,32 +126,63 @@ class ConversationViewModel : ViewModel() {
             }
         }
     }
+
     private fun subscribeToChat(chatId: String) {
         subscriptionJob?.cancel()
-        //_subscriptionState.value = SubscriptionState.Connecting
+        _subscriptionState.value = SubscriptionState.Connecting
 
         subscriptionJob = viewModelScope.launch {
             Log.d(TAG, "Abonnement WS au chat: $chatId")
 
             Subscribe.subscribeToConversation(chatId)
+                .catch { e ->
+                    Log.e(TAG, "Erreur dans l'abonnement WS", e)
+                    _subscriptionState.value = SubscriptionState.Error(e.message ?: "Erreur inconnue")
+                }
                 .collect { newMessage ->
-                   /** if (_subscriptionState.value !is SubscriptionState.Connected) {
+
+                    if (_subscriptionState.value !is SubscriptionState.Connected) {
                         _subscriptionState.value = SubscriptionState.Connected
-                    }*/
+                    }
 
                     Log.d(TAG, "WS Message reçu: ${newMessage.content}")
 
+                    // 1. Conversion du message de la subscription en objet local
                     val convertedMessage = GetMessagesQuery.GetMessage(
                         _id = newMessage._id,
-                        content = newMessage.content,
+                        content = newMessage.content, // Contient le texte chiffré/brut
                         userId = newMessage.userId,
                     )
 
+                    val contentToDisplay = if (convertedMessage.userId != myUserId) {
+                        // CAS A : Message REÇU (de l'autre) -> DOIT ÊTRE DÉCHIFFRÉ
+                        if (CryptoManager.isEncrypted(convertedMessage.content)) {
+                            try {
+                                CryptoManager.decrypt(convertedMessage.content) //
+                            } catch (e: Exception) {
+                                Log.e(TAG, "Decryption error for received WS message", e)
+                                "Message illisible (WS)"
+                            }
+                        } else {
+                            // Message non chiffré reçu de l'autre (mode test)
+                            convertedMessage.content
+                        }
+                    } else {
+                        // CAS B : Message ENVOYÉ (par moi) venant du serveur
+                        // On essaie de récupérer la version en clair qu'on a stockée localement lors de l'envoi
+                        LocalMessageStore.getPlaintext(convertedMessage._id) ?: //
+                        "Message chiffré (Base locale manquante pour mon message)"
+                    }
+
+
+                    // 3. Création de l'objet message à afficher dans l'UI
+                    val messageForUI = convertedMessage.copy(content = contentToDisplay)
+
                     _messages.update { currentList ->
-                        if (currentList.any { it._id == convertedMessage._id }) {
+                        if (currentList.any { it._id == messageForUI._id }) {
                             currentList
                         } else {
-                            currentList + convertedMessage
+                            currentList + messageForUI
                         }
                     }
                 }
@@ -182,32 +215,22 @@ class ConversationViewModel : ViewModel() {
                     } else {
                         // CAS B : Message envoyé (par moi) venant du serveur
 
-                        // 🔥 NOUVEAU : Tentative de récupération depuis la base locale
                         val localPlaintext = LocalMessageStore.getPlaintext(msg._id)
 
                         if (localPlaintext != null) {
-                            // C'est la version en clair que nous avions stockée
                             localPlaintext
                         } else if (CryptoManager.isEncrypted(msg.content)) {
-                            // Le message était chiffré, mais il n'est pas en base locale (bug, perte de données)
                             "Message chiffré (Base locale manquante)"
                         } else {
-                            // Message non chiffré (mode test), on affiche
                             msg.content
                         }
                     }
                     msg.copy(content = contentToDisplay)
                 }
-                // 2. MISE À JOUR : On fusionne avec la liste actuelle
                 _messages.update { currentList ->
-                    // On récupère les IDs des messages qu'on a déjà affichés (probablement en clair via sendMessage)
                     val currentIds = currentList.map { it._id }.toSet()
 
-                    // On ne garde que les messages de l'historique qu'on n'a PAS encore
                     val newMessages = processedMessages.filter { it._id !in currentIds }
-
-                    // On ajoute les nouveaux à la suite (ou au début selon votre tri)
-                    // Ici on suppose que la liste est chronologique
                     currentList + newMessages
                 }
 
@@ -249,8 +272,6 @@ class ConversationViewModel : ViewModel() {
 
                 }
 
-                // --- ÉTAPE 2 : ENVOI AU SERVEUR ---
-                // On envoie le charabia chiffré (encryptedContent)
                 val result = ChatService.sendMessage(contentToSend, chatId)
 
                 result.onSuccess { sentMessage ->

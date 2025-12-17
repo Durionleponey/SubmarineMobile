@@ -1,4 +1,4 @@
-import {Args, Context, Mutation, Query, Resolver, Subscription} from '@nestjs/graphql';
+import {Args,  Context, Mutation, Query, Resolver, Subscription} from '@nestjs/graphql';
 import { MessagesService } from './messages.service';
 import {Message} from "./entities/message.entity";
 import {Inject, UseGuards} from "@nestjs/common";
@@ -70,23 +70,33 @@ export class MessagesResolver {
     return this.messagesService.getMessageViewers(messageId, chatId, user._id);
   }
 
-  @Subscription(() => Message, {
+
+
+
+@Subscription(() => Message, {
+
     filter:(payload, variables, context) => {//payload --> in the message, variables --> graphQL request
 
-      const userId= context.req.user._id
-
+      const user = context.req?.user || context.connection?.context?.user; // ⬅️ Récupère l'utilisateur
+     if (!user || !user._id) {
+        return false; 
+      }
+      
+      const userId = user._id;
       //console.log("🏓🏓",context.req.user._id);
 
-      return payload.messageCreated.chatId === variables.chatId && userId !== payload.messageCreated.userId;
-    }
-  })
+      return payload.messageCreated.chatId === variables.chatId && userId !== payload.messageCreated.userId;    }
+})
 
-  messageCreated(@Args()chatId:MessageCreatedArgs, @CurrentUser() user:TokenPayload) {
+@UseGuards(GqlAuthGuard)
+messageCreated(@Args()chatId:MessageCreatedArgs, @CurrentUser() user:TokenPayload) { // <-- Le décorateur @CurrentUser va maintenant fonctionner
 
-
+    console.log("Tentative d'accès à l'ID (via @CurrentUser):", user?._id); // ✅ Ceci devrait afficher l'ID maintenant
+    
+    if (!user || !user._id) {
+        throw new Error("Utilisateur non authentifié dans le contexte de la souscription.");                      
+      }
+    
     return this.messagesService.messageCreated(chatId,user._id)
-  }
-
-
 }
-
+}

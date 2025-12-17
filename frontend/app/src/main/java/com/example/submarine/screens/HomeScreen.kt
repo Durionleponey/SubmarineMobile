@@ -109,50 +109,30 @@ fun HomeScreen() {
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            TextButton(
-                onClick = {
-                    val intent = Intent(context, ContactsActivity::class.java)
-                    context.startActivity(intent)
-                },
-                modifier = Modifier.weight(1f)
-            ) {
-                Text(
-                    "Liste Contacts",
-                    fontSize = 12.sp,
-                    modifier = Modifier.fillMaxWidth(),
-                    textAlign = TextAlign.Center
-                )
-            }
 
-            TextButton(
-                onClick = {
-                    val intent = Intent(context, ConversationActivity::class.java)
-                    context.startActivity(intent)
-                },
-                modifier = Modifier.weight(1f)
-            ) {
-                Text(
-                    "Conversations",
-                    fontSize = 12.sp,
-                    modifier = Modifier.fillMaxWidth(),
-                    textAlign = TextAlign.Center
-                )
-            }
+            val context = LocalContext.current // Le contexte doit être redéfini ici ou passé en paramètre
+//            // Bouton pour la liste de contacts
+//            TextButton(onClick = {
+//                val intent = Intent(context, ContactsActivity::class.java)
+//                context.startActivity(intent)
+//            }) {
+//                Text("Liste Contacts", fontSize = 12.sp)
+//            }
 
-            TextButton(
-                onClick = {
-                    val intent = Intent(context, ConversationTestActivity::class.java)
-                    context.startActivity(intent)
-                },
-                modifier = Modifier.weight(1f)
-            ) {
-                Text(
-                    "TEST Conversations",
-                    fontSize = 12.sp,
-                    modifier = Modifier.fillMaxWidth(),
-                    textAlign = TextAlign.Center
-                )
-            }
+//            // Bouton pour la liste de conversations
+//            TextButton(onClick = {
+//                val intent = Intent(context, ConversationActivity::class.java)
+//                context.startActivity(intent)
+//            }) {
+//                Text("Conversations", fontSize = 12.sp)
+//            }
+
+//            TextButton(onClick = {
+//                val intent = Intent(context, ConversationTestActivity::class.java)
+//                context.startActivity(intent)
+//            }) {
+//                Text("TEST Conversations", fontSize = 12.sp)
+//            }
 
             // Contact / Help (votre bouton)
             TextButton(

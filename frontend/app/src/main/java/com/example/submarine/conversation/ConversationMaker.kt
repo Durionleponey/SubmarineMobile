@@ -1,13 +1,13 @@
 package com.example.submarine.conversation
 
 import android.util.Log
-import com.apollographql.apollo3.api.Optional
+import com.apollographql.apollo.api.Optional
 import com.example.submarine.graphql.CreateTestGroupMutation
 import com.example.submarine.network.Apollo
 import com.example.submarine.graphql.CreateMessageMutation
 import com.example.submarine.graphql.type.CreateMessageInput
 import com.example.submarine.graphql.GetMessagesQuery
-import com.apollographql.apollo3.exception.ApolloException
+import com.apollographql.apollo.exception.ApolloException
 import com.example.submarine.graphql.GetMyIdQuery
 import com.example.submarine.graphql.GetMyConversationsQuery
 import com.example.submarine.graphql.GetUserPublicKeyQuery
